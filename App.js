@@ -1,0 +1,69 @@
+import { NavigationContainer } from "@react-navigation/native";
+import { StatusBar } from "expo-status-bar";
+import { StyleSheet, Text, View } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { useCallback, useState } from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+
+import Welcome from "./Screens/Welcome";
+import { useFonts } from "expo-font";
+import {
+  Poppins_100Thin,
+  Poppins_200ExtraLight,
+  Poppins_300Light,
+  Poppins_400Regular,
+  Poppins_500Medium,
+  Poppins_600SemiBold,
+  Poppins_700Bold,
+  Poppins_800ExtraBold,
+  Poppins_900Black,
+} from "@expo-google-fonts/poppins";
+import * as SplashScreen from "expo-splash-screen";
+
+import Tabs from "./navigation/Tabs";
+import OnBoarding from "./components/OnBoarding";
+
+SplashScreen.preventAutoHideAsync();
+const Stack = createNativeStackNavigator();
+
+export default function App() {
+  const [showOnBoarding, setShowOnBoarding] = useState(true); //  start with onboarding
+
+  const [fontsLoaded] = useFonts({
+    "Poppins-100": Poppins_100Thin,
+    "Poppins-200": Poppins_200ExtraLight,
+    "Poppins-300": Poppins_300Light,
+    "Poppins-400": Poppins_400Regular,
+    "Poppins-500": Poppins_500Medium,
+    "Poppins-600": Poppins_600SemiBold,
+    "Poppins-700": Poppins_700Bold,
+    "Poppins-800": Poppins_800ExtraBold,
+    "Poppins-900": Poppins_900Black,
+  });
+
+  const onLayoutRootView = useCallback(async () => {
+    if (fontsLoaded) {
+      // Hide splash screen once fonts are loaded
+      await SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    return null; // Keep splash screen visible
+  }
+
+  return (
+    <SafeAreaProvider>
+      <StatusBar style="dark" />
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <>
+            <Stack.Screen name="OnBoarding" component={OnBoarding} />
+            <Stack.Screen name="Welcome" component={Welcome} />
+            <Stack.Screen name="Home" component={Tabs} />
+          </>
+        </Stack.Navigator>
+      </NavigationContainer>
+    </SafeAreaProvider>
+  );
+}
