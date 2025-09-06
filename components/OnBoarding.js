@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
   },
   paginatorPinned: {
     position: "absolute",
-    bottom: 150, // Adjust so it's above the Next button
+    bottom: 150, //it's above the Next button
     alignSelf: "center",
     zIndex: 10,
   },

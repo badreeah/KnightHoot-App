@@ -1,4 +1,3 @@
-// Paginator.js
 import { View, StyleSheet, Animated } from "react-native";
 import React from "react";
 
