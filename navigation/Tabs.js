@@ -21,7 +21,7 @@ const PRIMARY_COLOR = "#9A9DD7"; // active color
 const INACTIVE_COLOR = "#808086"; // inactive color
 const BG_COLOR = "#222227"; // tab bar bg
 
-// 🔹 Custom Tab Bar Component
+//Custom Tab Bar Component
 function CustomTabBar({ state, descriptors, navigation }) {
   return (
     <View style={styles.tabContainer}>
@@ -76,7 +76,7 @@ function CustomTabBar({ state, descriptors, navigation }) {
   );
 }
 
-// 🔹 Icons mapping
+// Icons mapping
 function getIcon(name) {
   switch (name) {
     case "Home":
