@@ -15,16 +15,19 @@ import Animated, {
   withTiming,
   Easing,
 } from "react-native-reanimated";
+import { useEffect } from "react";
 
 export default function OnBoardingItem({ item }) {
   const { width } = useWindowDimensions();
-
   const floatY = useSharedValue(0);
-  floatY.value = withRepeat(
-    withTiming(-30, { duration: 3000, easing: Easing.inOut(Easing.sin) }),
-    -1,
-    true
-  );
+
+  useEffect(() => {
+    floatY.value = withRepeat(
+      withTiming(-30, { duration: 3000, easing: Easing.inOut(Easing.sin) }),
+      -1,
+      true
+    );
+  }, []);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: floatY.value }],
@@ -51,7 +54,6 @@ export default function OnBoardingItem({ item }) {
     </View>
   );
 }
-
 // Pinned Buttons
 OnBoardingItem.SkipButton = ({ onPress }) => (
   <CustomButton

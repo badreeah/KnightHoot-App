@@ -7,6 +7,7 @@ export const COLORS = {
   purple5: "#6726C3",
   purple6: "#5E62C1",
   purple7: "#4E1B96", // darkest
+  purple8: "#34377B", // darkest
 
   // Grayscale (light → dark)
   gray1: "#ABABAB",

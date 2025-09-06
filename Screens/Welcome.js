@@ -1,65 +1,10 @@
 import React from "react";
 import { StyleSheet, View, Text, Image } from "react-native";
 import { Video } from "expo-av";
+import { useEffect, useRef } from "react";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import CustomButton from "../components/CustomButton";
-
-export default function WelcomeScreen({ navigation }) {
-  return (
-    <View style={styles.container}>
-      {/* Background Video */}
-      <Video
-        source={require("../assets/images/CnwI8ks5la.mp4")}
-        style={StyleSheet.absoluteFill}
-        resizeMode="cover"
-        shouldPlay
-        isLooping
-        isMuted
-      />
-
-      {/* Full-screen blur overlay */}
-      <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
-
-      {/* Foreground content */}
-      <View style={styles.overlay}>
-        {/* Title */}
-        <Text style={styles.title}>Welcome to KnightHooT</Text>
-
-        {/* Row with Sign In / Sign Up */}
-        <View style={styles.buttonRow}>
-          <FrostedButton
-            width={150}
-            height={50}
-            onPress={() => navigation.replace("Home")}
-          >
-            <Text style={styles.buttonText}>Sign In</Text>
-          </FrostedButton>
-
-          <FrostedButton width={150} height={50}>
-            <Text style={styles.buttonText}>Sign Up</Text>
-          </FrostedButton>
-        </View>
-        {/* row image */}
-        <Image
-          source={require("../assets/images/line.png")}
-          style={styles.Image}
-        />
-
-        {/* Google Sign Up button */}
-        <FrostedButton style={styles.googleButton}>
-          <View style={styles.googleButtonContent}>
-            <Image
-              source={require("../assets/icons/google.png")}
-              style={styles.googleIcon}
-            />
-            <Text style={styles.googleText}>Sign up with Google</Text>
-          </View>
-        </FrostedButton>
-      </View>
-    </View>
-  );
-}
 import { TouchableOpacity } from "react-native";
 
 // FrostedButton wrapper for reuse
@@ -89,6 +34,79 @@ const FrostedButton = ({ children, style, width, height, onPress }) => (
     </BlurView>
   </View>
 );
+
+export default function Welcome({ navigation }) {
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      videoRef.current?.playAsync();
+    }, 100); // 100ms delay
+    return () => clearTimeout(timer);
+  }, []);
+  return (
+    <View style={styles.container}>
+      {/* Background Video */}
+      <Video
+        ref={videoRef}
+        source={require("../assets/images/CnwI8ks5la.mp4")}
+        style={StyleSheet.absoluteFill}
+        resizeMode="cover"
+        shouldPlay={false} // initially false, play in useEffect
+        isLooping
+        isMuted
+        useNativeControls={false}
+      />
+
+      {/* Full-screen blur overlay */}
+      <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
+
+      {/* Foreground content */}
+      <View style={styles.overlay}>
+        {/* Title */}
+        <Text style={styles.title}>Welcome to KnightHooT</Text>
+
+        {/* Row with Sign In / Sign Up */}
+        <View style={styles.buttonRow}>
+          <FrostedButton
+            width={150}
+            height={50}
+            onPress={() => navigation.replace("SignIn")}
+          >
+            <Text style={styles.buttonText}>Sign In</Text>
+          </FrostedButton>
+
+          <FrostedButton width={150} height={50}>
+            <Text
+              style={styles.buttonText}
+              onPress={() => navigation.navigate("SignUp")}
+            >
+              Sign Up
+            </Text>
+          </FrostedButton>
+        </View>
+        {/* row image */}
+        <Image
+          source={require("../assets/images/line.png")}
+          style={styles.Image}
+        />
+
+        {/* Google Sign Up button */}
+        <FrostedButton style={styles.googleButton}>
+          <View style={styles.googleButtonContent}>
+            <Image
+              source={require("../assets/icons/google.png")}
+              style={styles.googleIcon}
+            />
+            <Text style={styles.googleText}>Sign up with Google</Text>
+          </View>
+        </FrostedButton>
+      </View>
+    </View>
+  );
+}
+
+export { FrostedButton };
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#000" },

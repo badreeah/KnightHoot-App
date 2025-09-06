@@ -6,7 +6,20 @@ import { useCallback, useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import Welcome from "./Screens/Welcome";
+import Tabs from "./navigation/Tabs";
+import OnBoarding from "./components/OnBoarding";
+import SignIn from "./Screens/SignIn";
 import { useFonts } from "expo-font";
+
+{
+  /* <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <>
+            <Stack.Screen name="OnBoarding" component={OnBoarding} />
+            <Stack.Screen name="Welcome" component={Welcome} />
+            <Stack.Screen name="Home" component={Tabs} />
+          </>
+        </Stack.Navigator> */
+}
 import {
   Poppins_100Thin,
   Poppins_200ExtraLight,
@@ -18,12 +31,8 @@ import {
   Poppins_800ExtraBold,
   Poppins_900Black,
 } from "@expo-google-fonts/poppins";
-import * as SplashScreen from "expo-splash-screen";
+import SignUp from "./Screens/SignUp";
 
-import Tabs from "./navigation/Tabs";
-import OnBoarding from "./components/OnBoarding";
-
-SplashScreen.preventAutoHideAsync();
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -41,17 +50,6 @@ export default function App() {
     "Poppins-900": Poppins_900Black,
   });
 
-  const onLayoutRootView = useCallback(async () => {
-    if (fontsLoaded) {
-      // Hide splash screen once fonts are loaded
-      await SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded]);
-
-  if (!fontsLoaded) {
-    return null; // Keep splash screen visible
-  }
-
   return (
     <SafeAreaProvider>
       <StatusBar style="dark" />
@@ -60,6 +58,8 @@ export default function App() {
           <>
             <Stack.Screen name="OnBoarding" component={OnBoarding} />
             <Stack.Screen name="Welcome" component={Welcome} />
+            <Stack.Screen name="SignIn" component={SignIn} />
+            <Stack.Screen name="SignUp" component={SignUp} />
             <Stack.Screen name="Home" component={Tabs} />
           </>
         </Stack.Navigator>
