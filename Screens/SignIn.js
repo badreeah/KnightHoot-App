@@ -12,16 +12,15 @@ import { COLORS } from "../util/colors";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import CustomButton from "../components/CustomButton";
 
-export default function SignUp({ navigation }) {
+export default function SignIn({ navigation }) {
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [agree, setAgree] = useState(false);
 
   const handleSignIn = () => {
-    navigation.replace("SignIn");
+    navigation.replace("Home");
   };
 
   const handleSignUp = () => {
-    navigation.navigate("Home");
+    navigation.navigate("SignUp");
   };
 
   return (
@@ -34,46 +33,14 @@ export default function SignUp({ navigation }) {
         {/* Header / Title / Subtitle */}
         <View style={styles.topSection}>
           <Text style={styles.header}>KnightHooT</Text>
-          <Text style={styles.title}>Sign Up</Text>
+          <Text style={styles.title}>Sign In</Text>
           <Text style={styles.subTitle}>
-            Fill the form below or register with your Google account.
+            Hi, welcome back! You’ve been missed
           </Text>
         </View>
 
         {/* Form Inputs */}
         <View style={styles.form}>
-          {/* Username */}
-          <Text style={styles.label}>Username</Text>
-          <View style={styles.inputContainer}>
-            <Ionicons
-              name="person"
-              size={20}
-              color="#797df683"
-              style={styles.icon}
-            />
-            <TextInput
-              placeholder="e.g. sara"
-              placeholderTextColor={COLORS.gray1}
-              style={styles.input}
-            />
-          </View>
-
-          {/* Phone number */}
-          <Text style={styles.label}>Phone Number</Text>
-          <View style={styles.inputContainer}>
-            <Ionicons
-              name="call"
-              size={20}
-              color="#797df683"
-              style={styles.icon}
-            />
-            <TextInput
-              placeholder="055xx"
-              placeholderTextColor={COLORS.gray1}
-              style={styles.input}
-            />
-          </View>
-
           {/* Email */}
           <Text style={styles.label}>Email</Text>
           <View style={styles.inputContainer}>
@@ -117,58 +84,50 @@ export default function SignUp({ navigation }) {
               />
             </TouchableOpacity>
           </View>
-
-          {/* Terms & Conditions Checkbox */}
+          {/* Forgot Password */}
           <TouchableOpacity
-            style={styles.checkboxContainer}
-            onPress={() => setAgree(!agree)}
-            activeOpacity={0.7}
+            onPress={() => navigation.navigate("ForgotPassword")}
+            style={styles.forgotPasswordContainer}
           >
-            <Ionicons
-              name={agree ? "checkbox" : "square-outline"}
-              size={20}
-              color={COLORS.purple5}
-              style={{ marginRight: 8 }}
-            />
-            <Text style={styles.checkboxText}>
-              Agree with{" "}
-              <Text style={styles.termsLink}>Terms & Conditions</Text>
-            </Text>
+            <Text style={styles.forgotPasswordText}>Forgot password?</Text>
           </TouchableOpacity>
 
-          {/* Buttons */}
-          <View style={styles.buttonSection}>
-            <CustomButton
-              height={45}
-              width={160}
-              backgroundColor={COLORS.brightTiffany}
-              fontFamily={"Poppins-600"}
-              fontSize={18}
-              borderRadius={6}
-              onPress={handleSignUp}
-            >
-              Sign Up
-            </CustomButton>
-          </View>
+          {/* Sign In Button */}
+          <CustomButton
+            height={45}
+            width={160}
+            backgroundColor={COLORS.brightTiffany}
+            fontFamily={"Poppins-600"}
+            fontSize={18}
+            borderRadius={6}
+            onPress={handleSignIn}
+            style={{ alignSelf: "center", marginBottom: 20 }}
+          >
+            Sign In
+          </CustomButton>
+
+          {/* Row Image */}
+          <Image
+            source={require("../assets/images/row2.png")}
+            style={styles.rowImage}
+          />
 
           {/* Google Button */}
-          <View style={styles.googleSection}>
-            <CustomButton style={styles.googleButton}>
-              <View style={styles.googleButtonContent}>
-                <Image
-                  source={require("../assets/icons/google.png")}
-                  style={styles.googleIcon}
-                />
-                <Text style={styles.googleText}>Sign Up with Google</Text>
-              </View>
-            </CustomButton>
-          </View>
+          <CustomButton style={styles.googleButton}>
+            <View style={styles.googleButtonContent}>
+              <Image
+                source={require("../assets/icons/google.png")}
+                style={styles.googleIcon}
+              />
+              <Text style={styles.googleText}>Sign In with Google</Text>
+            </View>
+          </CustomButton>
 
-          {/* Already have account */}
+          {/* Sign Up Text */}
           <View style={styles.signUpRow}>
-            <Text style={styles.signUpText}>Already have an account? </Text>
-            <TouchableOpacity onPress={handleSignIn}>
-              <Text style={styles.signUpUnderline}>Sign In</Text>
+            <Text style={styles.signUpText}>Don’t have an account? </Text>
+            <TouchableOpacity onPress={handleSignUp}>
+              <Text style={styles.signUpUnderline}>Sign Up</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -183,6 +142,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     justifyContent: "center",
+    alignItems: "center",
   },
   topSection: {
     marginBottom: 40,
@@ -199,14 +159,14 @@ const styles = StyleSheet.create({
     fontSize: 28,
     color: COLORS.purple5,
     marginBottom: 5,
-    marginTop: 20,
+    marginTop: 40,
   },
   subTitle: {
     fontFamily: "Poppins-400",
     fontSize: 16,
     color: COLORS.purple5,
     textAlign: "center",
-    marginTop: 10,
+    marginTop: 20,
   },
   form: {
     alignItems: "center",
@@ -226,7 +186,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.1)",
     borderRadius: 12,
     paddingHorizontal: 10,
-    marginBottom: 15,
+    marginBottom: 20,
     width: "100%",
     maxWidth: 320,
     borderWidth: 1,
@@ -239,19 +199,18 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     fontFamily: "Poppins-400",
   },
-  buttonSection: {
-    marginTop: 25,
-    alignItems: "center",
-  },
-  googleSection: {
-    marginTop: 40,
-    alignItems: "center",
+  rowImage: {
+    width: 300,
+    height: 50,
+    resizeMode: "contain",
+    marginBottom: 20,
   },
   googleButton: {
     width: 320,
     borderRadius: 14,
     borderWidth: 1,
     borderColor: COLORS.purple3,
+    marginBottom: 20,
   },
   googleButtonContent: {
     flexDirection: "row",
@@ -268,7 +227,7 @@ const styles = StyleSheet.create({
   signUpRow: {
     flexDirection: "row",
     justifyContent: "center",
-    marginTop: 20,
+    marginTop: 10,
   },
   signUpText: {
     color: "#4E1B96",
@@ -281,22 +240,18 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins-600",
     textDecorationLine: "underline",
   },
-  checkboxContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 5,
-    marginBottom: 10,
-    alignSelf: "flex-start",
-    marginLeft: 28,
+  forgotPasswordContainer: {
+    width: "100%",
+    maxWidth: 320,
+    alignSelf: "flex-end",
+    paddingRight: 28,
+    marginBottom: 20,
   },
-  checkboxText: {
-    fontFamily: "Poppins-400",
-    fontSize: 13,
-    color: COLORS.purple5,
-  },
-  termsLink: {
-    color: "#797EF6",
+  forgotPasswordText: {
     fontFamily: "Poppins-500",
+    fontSize: 12,
+    color: "#797EF6",
     textDecorationLine: "underline",
+    textAlign: "right",
   },
 });
