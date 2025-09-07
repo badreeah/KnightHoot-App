@@ -9,19 +9,20 @@ import {
   Image,
 } from "react-native";
 import { COLORS } from "../util/colors";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import CustomButton from "../components/CustomButton";
 import KeyboaredAvoidingWrapper from "../components/KeyboaredAvoidingWrapper";
+import { ScrollView } from "react-native";
 
-export default function SignIn({ navigation }) {
-  const [passwordVisible, setPasswordVisible] = useState(false);
-
+export default function ForgetPassword({ navigation }) {
   const handleSignIn = () => {
-    navigation.replace("Home");
+    navigation.replace("SignIn");
   };
-
   const handleSignUp = () => {
-    navigation.navigate("SignUp");
+    navigation.navigate("Home");
+  };
+  const handleVerify = () => {
+    navigation.navigate("VerificationOTP");
   };
 
   return (
@@ -31,14 +32,12 @@ export default function SignIn({ navigation }) {
       resizeMode="cover"
     >
       <KeyboaredAvoidingWrapper>
-        <View style={styles.overlay}>
+        <ScrollView contentContainerStyle={styles.overlay}>
           {/* Header / Title / Subtitle */}
           <View style={styles.topSection}>
             <Text style={styles.header}>KnightHooT</Text>
-            <Text style={styles.title}>Sign In</Text>
-            <Text style={styles.subTitle}>
-              Hi, welcome back! You’ve been missed
-            </Text>
+            <Text style={styles.title}>Forgot Password</Text>
+            <Text style={styles.subTitle}>Enter Email Address</Text>
           </View>
 
           {/* Form Inputs */}
@@ -60,41 +59,15 @@ export default function SignIn({ navigation }) {
               />
             </View>
 
-            {/* Password */}
-            <Text style={styles.label}>Password</Text>
-            <View style={styles.inputContainer}>
-              <MaterialIcons
-                name="lock"
-                size={20}
-                color="#797df683"
-                style={styles.icon}
-              />
-              <TextInput
-                placeholder="At least 8 characters"
-                placeholderTextColor={COLORS.gray1}
-                style={styles.input}
-                secureTextEntry={!passwordVisible}
-              />
-              <TouchableOpacity
-                onPress={() => setPasswordVisible(!passwordVisible)}
-              >
-                <Ionicons
-                  name={passwordVisible ? "eye" : "eye-off"}
-                  size={20}
-                  color="#797df683"
-                  style={styles.eyeIcon}
-                />
+            {/* Already have account */}
+            <View style={styles.signUpRow}>
+              <Text style={styles.signUpText}>You Remembered? </Text>
+              <TouchableOpacity onPress={handleSignIn}>
+                <Text style={styles.signUpUnderline}>Sign In</Text>
               </TouchableOpacity>
             </View>
-            {/* Forgot Password */}
-            <TouchableOpacity
-              onPress={() => navigation.navigate("ForgetPassword")}
-              style={styles.forgotPasswordContainer}
-            >
-              <Text style={styles.forgotPasswordText}>Forgot password?</Text>
-            </TouchableOpacity>
 
-            {/* Sign In Button */}
+            {/* Verify Button */}
             <CustomButton
               height={45}
               width={160}
@@ -102,10 +75,10 @@ export default function SignIn({ navigation }) {
               fontFamily={"Poppins-600"}
               fontSize={18}
               borderRadius={6}
-              onPress={handleSignIn}
-              style={{ alignSelf: "center", marginBottom: 20 }}
+              onPress={handleVerify}
+              style={{ alignSelf: "center", marginTop: 45 }}
             >
-              Sign In
+              Verify
             </CustomButton>
 
             {/* Row Image */}
@@ -133,7 +106,7 @@ export default function SignIn({ navigation }) {
               </TouchableOpacity>
             </View>
           </View>
-        </View>
+        </ScrollView>
       </KeyboaredAvoidingWrapper>
     </ImageBackground>
   );
@@ -142,13 +115,12 @@ export default function SignIn({ navigation }) {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   overlay: {
-    flex: 1,
+    flexGrow: 1, // lets ScrollView expand
     paddingHorizontal: 20,
-    paddingTop: 65,
-
-    justifyContent: "center",
+    paddingTop: 40, // adds space top and bottom
     alignItems: "center",
   },
+
   topSection: {
     marginBottom: 40,
     alignItems: "center",
@@ -158,20 +130,21 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: COLORS.purple8,
     marginBottom: 10,
+    marginTop: 20,
   },
   title: {
     fontFamily: "Poppins-600",
     fontSize: 28,
     color: COLORS.purple5,
     marginBottom: 5,
-    marginTop: 40,
+    marginTop: 60,
   },
   subTitle: {
     fontFamily: "Poppins-400",
     fontSize: 16,
     color: COLORS.purple5,
     textAlign: "center",
-    marginTop: 20,
+    marginTop: 30,
   },
   form: {
     alignItems: "center",
@@ -183,7 +156,7 @@ const styles = StyleSheet.create({
     color: COLORS.purple5,
     alignSelf: "flex-start",
     marginBottom: 5,
-    paddingLeft: 28,
+    paddingLeft: 32,
   },
   inputContainer: {
     flexDirection: "row",
@@ -209,7 +182,7 @@ const styles = StyleSheet.create({
     height: 50,
     resizeMode: "contain",
     marginBottom: 20,
-    marginTop: 120,
+    marginTop: 180,
   },
   googleButton: {
     width: 320,
