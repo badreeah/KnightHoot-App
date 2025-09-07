@@ -9,13 +9,19 @@ import Welcome from "./Screens/Welcome";
 import Tabs from "./navigation/Tabs";
 import OnBoarding from "./components/OnBoarding";
 import SignIn from "./Screens/SignIn";
+import ForgetPassword from "./Screens/ForgetPassword";
+import VerificationOTP from "./Screens/VerificationOTP";
+import SetNewPasswordScreen from "./Screens/SetNewPasswordScreen";
+
 import { useFonts } from "expo-font";
 
 {
-  /* <Stack.Navigator screenOptions={{ headerShown: false }}>
+  /*  <Stack.Navigator screenOptions={{ headerShown: false }}>
           <>
             <Stack.Screen name="OnBoarding" component={OnBoarding} />
             <Stack.Screen name="Welcome" component={Welcome} />
+            <Stack.Screen name="SignIn" component={SignIn} />
+            <Stack.Screen name="SignUp" component={SignUp} />
             <Stack.Screen name="Home" component={Tabs} />
           </>
         </Stack.Navigator> */
@@ -60,6 +66,12 @@ export default function App() {
             <Stack.Screen name="Welcome" component={Welcome} />
             <Stack.Screen name="SignIn" component={SignIn} />
             <Stack.Screen name="SignUp" component={SignUp} />
+            <Stack.Screen name="ForgetPassword" component={ForgetPassword} />
+            <Stack.Screen name="VerificationOTP" component={VerificationOTP} />
+            <Stack.Screen
+              name="SetNewPasswordScreen"
+              component={SetNewPasswordScreen}
+            />
             <Stack.Screen name="Home" component={Tabs} />
           </>
         </Stack.Navigator>

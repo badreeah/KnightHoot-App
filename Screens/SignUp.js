@@ -11,6 +11,7 @@ import {
 import { COLORS } from "../util/colors";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import CustomButton from "../components/CustomButton";
+import KeyboaredAvoidingWrapper from "../components/KeyboaredAvoidingWrapper";
 
 export default function SignUp({ navigation }) {
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -30,149 +31,151 @@ export default function SignUp({ navigation }) {
       style={styles.container}
       resizeMode="cover"
     >
-      <View style={styles.overlay}>
-        {/* Header / Title / Subtitle */}
-        <View style={styles.topSection}>
-          <Text style={styles.header}>KnightHooT</Text>
-          <Text style={styles.title}>Sign Up</Text>
-          <Text style={styles.subTitle}>
-            Fill the form below or register with your Google account.
-          </Text>
-        </View>
-
-        {/* Form Inputs */}
-        <View style={styles.form}>
-          {/* Username */}
-          <Text style={styles.label}>Username</Text>
-          <View style={styles.inputContainer}>
-            <Ionicons
-              name="person"
-              size={20}
-              color="#797df683"
-              style={styles.icon}
-            />
-            <TextInput
-              placeholder="e.g. sara"
-              placeholderTextColor={COLORS.gray1}
-              style={styles.input}
-            />
+      <KeyboaredAvoidingWrapper>
+        <View style={styles.overlay}>
+          {/* Header / Title / Subtitle */}
+          <View style={styles.topSection}>
+            <Text style={styles.header}>KnightHooT</Text>
+            <Text style={styles.title}>Sign Up</Text>
+            <Text style={styles.subTitle}>
+              Fill the form below or register with your Google account.
+            </Text>
           </View>
 
-          {/* Phone number */}
-          <Text style={styles.label}>Phone Number</Text>
-          <View style={styles.inputContainer}>
-            <Ionicons
-              name="call"
-              size={20}
-              color="#797df683"
-              style={styles.icon}
-            />
-            <TextInput
-              placeholder="055xx"
-              placeholderTextColor={COLORS.gray1}
-              style={styles.input}
-            />
-          </View>
-
-          {/* Email */}
-          <Text style={styles.label}>Email</Text>
-          <View style={styles.inputContainer}>
-            <Ionicons
-              name="mail"
-              size={20}
-              color="#797df683"
-              style={styles.icon}
-            />
-            <TextInput
-              placeholder="example@abc.com"
-              placeholderTextColor={COLORS.gray1}
-              style={styles.input}
-              keyboardType="email-address"
-            />
-          </View>
-
-          {/* Password */}
-          <Text style={styles.label}>Password</Text>
-          <View style={styles.inputContainer}>
-            <MaterialIcons
-              name="lock"
-              size={20}
-              color="#797df683"
-              style={styles.icon}
-            />
-            <TextInput
-              placeholder="At least 8 characters"
-              placeholderTextColor={COLORS.gray1}
-              style={styles.input}
-              secureTextEntry={!passwordVisible}
-            />
-            <TouchableOpacity
-              onPress={() => setPasswordVisible(!passwordVisible)}
-            >
+          {/* Form Inputs */}
+          <View style={styles.form}>
+            {/* Username */}
+            <Text style={styles.label}>Username</Text>
+            <View style={styles.inputContainer}>
               <Ionicons
-                name={passwordVisible ? "eye-off" : "eye"}
+                name="person"
                 size={20}
                 color="#797df683"
-                style={styles.eyeIcon}
+                style={styles.icon}
               />
-            </TouchableOpacity>
-          </View>
+              <TextInput
+                placeholder="e.g. sara"
+                placeholderTextColor={COLORS.gray1}
+                style={styles.input}
+              />
+            </View>
 
-          {/* Terms & Conditions Checkbox */}
-          <TouchableOpacity
-            style={styles.checkboxContainer}
-            onPress={() => setAgree(!agree)}
-            activeOpacity={0.7}
-          >
-            <Ionicons
-              name={agree ? "checkbox" : "square-outline"}
-              size={20}
-              color={COLORS.purple5}
-              style={{ marginRight: 8 }}
-            />
-            <Text style={styles.checkboxText}>
-              Agree with{" "}
-              <Text style={styles.termsLink}>Terms & Conditions</Text>
-            </Text>
-          </TouchableOpacity>
+            {/* Phone number */}
+            <Text style={styles.label}>Phone Number</Text>
+            <View style={styles.inputContainer}>
+              <Ionicons
+                name="call"
+                size={20}
+                color="#797df683"
+                style={styles.icon}
+              />
+              <TextInput
+                placeholder="055xx"
+                placeholderTextColor={COLORS.gray1}
+                style={styles.input}
+              />
+            </View>
 
-          {/* Buttons */}
-          <View style={styles.buttonSection}>
-            <CustomButton
-              height={45}
-              width={160}
-              backgroundColor={COLORS.brightTiffany}
-              fontFamily={"Poppins-600"}
-              fontSize={18}
-              borderRadius={6}
-              onPress={handleSignUp}
-            >
-              Sign Up
-            </CustomButton>
-          </View>
+            {/* Email */}
+            <Text style={styles.label}>Email</Text>
+            <View style={styles.inputContainer}>
+              <Ionicons
+                name="mail"
+                size={20}
+                color="#797df683"
+                style={styles.icon}
+              />
+              <TextInput
+                placeholder="example@abc.com"
+                placeholderTextColor={COLORS.gray1}
+                style={styles.input}
+                keyboardType="email-address"
+              />
+            </View>
 
-          {/* Google Button */}
-          <View style={styles.googleSection}>
-            <CustomButton style={styles.googleButton}>
-              <View style={styles.googleButtonContent}>
-                <Image
-                  source={require("../assets/icons/google.png")}
-                  style={styles.googleIcon}
+            {/* Password */}
+            <Text style={styles.label}>Password</Text>
+            <View style={styles.inputContainer}>
+              <MaterialIcons
+                name="lock"
+                size={20}
+                color="#797df683"
+                style={styles.icon}
+              />
+              <TextInput
+                placeholder="At least 8 characters"
+                placeholderTextColor={COLORS.gray1}
+                style={styles.input}
+                secureTextEntry={!passwordVisible}
+              />
+              <TouchableOpacity
+                onPress={() => setPasswordVisible(!passwordVisible)}
+              >
+                <Ionicons
+                  name={passwordVisible ? "eye" : "eye-off"}
+                  size={20}
+                  color="#797df683"
+                  style={styles.eyeIcon}
                 />
-                <Text style={styles.googleText}>Sign Up with Google</Text>
-              </View>
-            </CustomButton>
-          </View>
+              </TouchableOpacity>
+            </View>
 
-          {/* Already have account */}
-          <View style={styles.signUpRow}>
-            <Text style={styles.signUpText}>Already have an account? </Text>
-            <TouchableOpacity onPress={handleSignIn}>
-              <Text style={styles.signUpUnderline}>Sign In</Text>
+            {/* Terms & Conditions Checkbox */}
+            <TouchableOpacity
+              style={styles.checkboxContainer}
+              onPress={() => setAgree(!agree)}
+              activeOpacity={0.7}
+            >
+              <Ionicons
+                name={agree ? "checkbox" : "square-outline"}
+                size={20}
+                color={COLORS.purple5}
+                style={{ marginRight: 8 }}
+              />
+              <Text style={styles.checkboxText}>
+                Agree with{" "}
+                <Text style={styles.termsLink}>Terms & Conditions</Text>
+              </Text>
             </TouchableOpacity>
+
+            {/* Buttons */}
+            <View style={styles.buttonSection}>
+              <CustomButton
+                height={45}
+                width={160}
+                backgroundColor={COLORS.brightTiffany}
+                fontFamily={"Poppins-600"}
+                fontSize={18}
+                borderRadius={6}
+                onPress={handleSignUp}
+              >
+                Sign Up
+              </CustomButton>
+            </View>
+
+            {/* Google Button */}
+            <View style={styles.googleSection}>
+              <CustomButton style={styles.googleButton}>
+                <View style={styles.googleButtonContent}>
+                  <Image
+                    source={require("../assets/icons/google.png")}
+                    style={styles.googleIcon}
+                  />
+                  <Text style={styles.googleText}>Sign Up with Google</Text>
+                </View>
+              </CustomButton>
+            </View>
+
+            {/* Already have account */}
+            <View style={styles.signUpRow}>
+              <Text style={styles.signUpText}>Already have an account? </Text>
+              <TouchableOpacity onPress={handleSignIn}>
+                <Text style={styles.signUpUnderline}>Sign In</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-      </View>
+      </KeyboaredAvoidingWrapper>
     </ImageBackground>
   );
 }
@@ -182,6 +185,7 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     paddingHorizontal: 20,
+    paddingTop: 65,
     justifyContent: "center",
   },
   topSection: {
@@ -190,7 +194,7 @@ const styles = StyleSheet.create({
   },
   header: {
     fontFamily: "Poppins-700",
-    fontSize: 32,
+    fontSize: 24,
     color: COLORS.purple8,
     marginBottom: 10,
   },
@@ -244,7 +248,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   googleSection: {
-    marginTop: 40,
+    marginTop: 65,
     alignItems: "center",
   },
   googleButton: {
