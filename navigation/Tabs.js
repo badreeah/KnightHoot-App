@@ -1,27 +1,41 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createNativeStackNavigator } from '@react-navigation/native-stack'; 
 import Animated, {
   FadeIn,
   FadeOut,
   LinearTransition,
 } from "react-native-reanimated";
 
+
 import Home from "../Screens/Home";
 import Statics from "../Screens/Statics";
 import AddDevice from "../Screens/AddDevice";
+import DeviceRadar from "../Screens/DeviceRadar";
 import ManageAlerts from "../Screens/ManageAlerts";
 import Profile from "../Screens/Profile";
-import { Poppins_600SemiBold } from "@expo-google-fonts/poppins";
+
 
 const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator(); 
+
+function AddDeviceStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="AddDeviceList" component={AddDevice} />
+      <Stack.Screen name="DeviceRadar" component={DeviceRadar} />
+    </Stack.Navigator>
+  );
+}
+
+
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
-const PRIMARY_COLOR = "#9A9DD7"; // active color
-const INACTIVE_COLOR = "#808086"; // inactive color
-const BG_COLOR = "#222227"; // tab bar bg
+const PRIMARY_COLOR = "#9A9DD7";
+const INACTIVE_COLOR = "#808086";
+const BG_COLOR = "#222227";
 
-//Custom Tab Bar Component
 function CustomTabBar({ state, descriptors, navigation }) {
   return (
     <View style={styles.tabContainer}>
@@ -98,17 +112,13 @@ export default function Tabs() {
   return (
     <Tab.Navigator
       tabBar={(props) => <CustomTabBar {...props} />}
-      screenOptions={({ route }) => ({
-        headerShown: route.name === "Home" ? false : true,
-      })}
+      screenOptions={{
+        headerShown: false, 
+      }}
     >
-      <Tab.Screen
-        name="Home"
-        component={Home}
-        screenOptions={{ headerShown: false }}
-      />
+      <Tab.Screen name="Home" component={Home} />
       <Tab.Screen name="Statistics" component={Statics} />
-      <Tab.Screen name="Add Device" component={AddDevice} />
+      <Tab.Screen name="Add Device" component={AddDeviceStack} />
       <Tab.Screen name="Alerts" component={ManageAlerts} />
       <Tab.Screen name="Profile" component={Profile} />
     </Tab.Navigator>
@@ -149,3 +159,4 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins-600",
   },
 });
+
