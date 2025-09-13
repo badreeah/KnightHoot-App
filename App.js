@@ -13,6 +13,7 @@ import ForgetPassword from "./Screens/ForgetPassword";
 import VerificationOTP from "./Screens/VerificationOTP";
 import SetNewPasswordScreen from "./Screens/SetNewPasswordScreen";
 import DeviceRadar from "./Screens/DeviceRadar";
+import ReportScam from "./Screens/ReportScam";
 
 import { useFonts } from "expo-font";
 
@@ -75,6 +76,7 @@ export default function App() {
             />
             <Stack.Screen name="Home" component={Tabs} />
             <Stack.Screen name="DeviceRadar" component={DeviceRadar} /> 
+             <Stack.Screen name="ReportScam" component={ReportScam} />
           </>
         </Stack.Navigator>
       </NavigationContainer>

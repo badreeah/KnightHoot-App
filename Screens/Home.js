@@ -13,7 +13,7 @@ import WordStyling from "../components/WordStyling";
 import TipsInfo from "../util/TipsInfo"; // Array of tips
 import CustomButton from "../components/CustomButton";
 
-export default function Home() {
+export default function Home({ navigation }) {
   return (
     <View style={styles.container}>
       {/* Profile pic and welcome message */}
@@ -106,7 +106,8 @@ export default function Home() {
             iconWidth={114}
             top={-30}
             iconHeight={114}
-            onPress={() => console.log("Report Scam")}
+            onPress={() => navigation.navigate('ReportScam')}
+
           />
         </ScrollView>
       </View>
