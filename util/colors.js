@@ -15,4 +15,19 @@ export const COLORS = {
 
   brightTiffany: "#4AE2E3",
   lightTiffany: "#36B9B9",
+
+
+    // Dark mode colors (
+  darkBackground: "#121212",
+  darkCard: "#1E1E1E",
+  darkText: "#FFFFFF",
+  darkBorder: "#333333",
+  darkInput: "#2A2A2A",
+  
+  // Light mode colors 
+  lightBackground: "#FFFFFF",
+  lightCard: "#F8F8F8",
+  lightText: "#000000",
+  lightBorder: "#E0E0E0",
+  lightInput: "#FFFFFF",
 };

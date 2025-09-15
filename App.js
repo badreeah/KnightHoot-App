@@ -4,6 +4,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useCallback, useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+//import { ThemeProvider } from './util/ThemeContext';
 
 import Welcome from "./Screens/Welcome";
 import Tabs from "./navigation/Tabs";
@@ -44,6 +45,8 @@ import SignUp from "./Screens/SignUp";
 const Stack = createNativeStackNavigator();
 
 export default function App() {
+
+  
   const [showOnBoarding, setShowOnBoarding] = useState(true); //  start with onboarding
 
   const [fontsLoaded] = useFonts({
