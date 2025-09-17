@@ -1,9 +1,10 @@
-import { NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer, DefaultTheme, DarkTheme } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useCallback, useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import React, { useMemo } from "react";
 
 import Welcome from "./Screens/Welcome";
 import Tabs from "./navigation/Tabs";
@@ -14,9 +15,15 @@ import VerificationOTP from "./Screens/VerificationOTP";
 import SetNewPasswordScreen from "./Screens/SetNewPasswordScreen";
 import DeviceRadar from "./Screens/DeviceRadar";
 import ReportScam from "./Screens/ReportScam";
+import Profile from './Screens/Profile';
+import SafeBrowsing from "./Screens/SafeBrowsing";
+import SettingsScreen from './Screens/SettingsScreen';
+
+import "./src/i18n";
+import { AppSettingsProvider, useAppSettings } from "./src/context/AppSettingProvid";
+
 
 import { useFonts } from "expo-font";
-
 {
   /*  <Stack.Navigator screenOptions={{ headerShown: false }}>
           <>
@@ -58,10 +65,27 @@ export default function App() {
     "Poppins-900": Poppins_900Black,
   });
 
+function NavigationWithTheme() {
+  const { theme } = useAppSettings();
+
+  // ثيم النافيقيشن مبني على الثيم العام
+  const navTheme = useMemo(() => {
+    const base = theme.mode === "dark" ? { ...DarkTheme } : { ...DefaultTheme };
+    base.colors.background = theme.colors.background;
+    base.colors.card = theme.colors.card;
+    base.colors.text = theme.colors.text;
+    base.colors.border = theme.colors.cardBorder;
+    base.colors.primary = theme.colors.primary;
+    return base;
+  }, [theme]);
+
+  // expo-status-bar يقبل "light" أو "dark"
+  const statusBarStyle = theme.mode === "dark" ? "light" : "dark";
+
   return (
-    <SafeAreaProvider>
-      <StatusBar style="dark" />
-      <NavigationContainer>
+    <>
+      <StatusBar style={statusBarStyle} backgroundColor={theme.colors.background} />
+      <NavigationContainer theme={navTheme}>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           <>
             <Stack.Screen name="OnBoarding" component={OnBoarding} />
@@ -77,9 +101,22 @@ export default function App() {
             <Stack.Screen name="Home" component={Tabs} />
             <Stack.Screen name="DeviceRadar" component={DeviceRadar} /> 
              <Stack.Screen name="ReportScam" component={ReportScam} />
+            <Stack.Screen name="Profile" component={Profile} />
+            <Stack.Screen name="SafeBrowsing" component={SafeBrowsing} />
+            <Stack.Screen name="Settings" component={SettingsScreen} />
           </>
         </Stack.Navigator>
       </NavigationContainer>
-    </SafeAreaProvider>
+    </>
+  );
+ }
+
+ 
+ return (
+    <AppSettingsProvider>
+      <SafeAreaProvider>
+        <NavigationWithTheme />
+      </SafeAreaProvider>
+    </AppSettingsProvider>
   );
 }
