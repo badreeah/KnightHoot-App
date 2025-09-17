@@ -97,7 +97,7 @@ export default function Home({ navigation }) {
             iconWidth={120}
             iconHeight={120}
             top={-18}
-            onPress={() => console.log("Scan URL")}
+            onPress={() => navigation.navigate('ScanURL')}
           />
           <ActionButton
             title="Report Scam"
@@ -107,7 +107,6 @@ export default function Home({ navigation }) {
             top={-30}
             iconHeight={114}
             onPress={() => navigation.navigate('ReportScam')}
-
           />
         </ScrollView>
       </View>
@@ -119,24 +118,17 @@ export default function Home({ navigation }) {
 function Card({ title, description }) {
   return (
     <View style={styles.cardContainer}>
-      {/* Background */}
       <Image
         source={require("../assets/images/Rectangle2.png")}
         style={styles.cardBackground}
         resizeMode="cover"
       />
-
-      {/* Title */}
       <Text style={styles.cardTitle}>{title}</Text>
-
-      {/* Separator Line */}
       <Image
         source={require("../assets/images/Line3.png")}
         style={styles.cardLine}
         resizeMode="cover"
       />
-
-      {/* Description */}
       <Text style={styles.cardDescription}>{description}</Text>
     </View>
   );
@@ -238,7 +230,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden",
-    backgroundColor: "#fff", // fallback background
+    backgroundColor: "#fff",
     padding: 16,
   },
   cardBackground: {
