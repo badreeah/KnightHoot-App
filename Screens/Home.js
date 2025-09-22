@@ -88,7 +88,7 @@ export default function Home({ navigation }) {
             iconWidth={62}
             iconHeight={62}
             top={-48}
-            onPress={() => console.log("Safe Browsing")}
+            onPress={() => navigation.navigate("SafeBrowsing")}
           />
           <ActionButton
             title="Scan URL"

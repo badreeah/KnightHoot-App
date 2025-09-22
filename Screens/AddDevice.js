@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../util/colors';
+import { useAppSettings } from "../src/context/AppSettingProvid";
+import { useTranslation } from "react-i18next";
 
 // --- للتبديل بين الحالاه ---
 
@@ -72,6 +74,10 @@ export default function AddDevice({ navigation, route }) {
   const [devices, setDevices] = useState(initialMockDevices);
   const [addEnabled, setAddEnabled] = useState(true);
   const [editingDevice, setEditingDevice] = useState(null);
+
+  const { theme, isRTL } = useAppSettings(); 
+  const { t } = useTranslation();            
+  const styles = useMemo(() => createStyles(theme, isRTL), [theme, isRTL]);
 
   useEffect(() => {
     if (route.params?.selectedDevice) {
@@ -268,14 +274,14 @@ export default function AddDevice({ navigation, route }) {
 }
 
 
-const styles = StyleSheet.create({
+const createStyles = (theme, isRTL) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB', 
+    backgroundColor: theme.colors.background, // [theme]
     paddingHorizontal: 16,
   },
   header: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row', 
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingTop: 50, 
@@ -284,7 +290,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: COLORS.purple8
+    color: theme.colors.text, // [theme]
   },
   searchContainer: {
       flexDirection: 'row',
@@ -294,20 +300,22 @@ const styles = StyleSheet.create({
   searchInput: {
       flex: 1,
       height: 50,
-      backgroundColor: 'white',
+      backgroundColor: theme.colors.card, // [theme]
       borderRadius: 999, 
-      paddingLeft: 24,
-      paddingRight: 50,
+      paddingLeft: isRTL ? 16 : 24,       // [rtl]
+      paddingRight: isRTL ? 24 : 50,      // [rtl]
       fontSize: 16,
       borderWidth: 2,
-      borderColor: COLORS.purple8
+      borderColor: theme.colors.cardBorder, // [theme]
+      color: theme.colors.text,             // [theme]
   },
   searchIcon: {
       position: 'absolute',
       right: 20,
+      transform: [{ scaleX: isRTL ? -1 : 1 }], // [rtl] (رمزية فقط)
   },
   card: {
-    backgroundColor: 'white',
+    backgroundColor: theme.colors.card,   // [theme]
     borderRadius: 16,
     padding: 24,
     marginBottom: 16,
@@ -317,55 +325,58 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
     borderWidth: 1,
-    borderColor: '#F3F4F6'
+    borderColor: theme.colors.cardBorder, // [theme]
   },
   row: {
-      flexDirection: 'row',
+      flexDirection: isRTL ? 'row-reverse' : 'row', // [rtl]
       justifyContent: 'space-between',
       alignItems: 'center'
   },
   deviceInfo: {
-      flexDirection: 'row',
+      flexDirection: isRTL ? 'row-reverse' : 'row', // [rtl]
       alignItems: 'center',
       gap: 16,
   },
   deviceName: {
       fontSize: 18,
       fontWeight: '500',
-      color: COLORS.purple8
+      color: theme.colors.text, // [theme]
+      textAlign: isRTL ? 'right' : 'left', // [rtl]
   },
   deviceNameInput: {
       fontSize: 18,
       fontWeight: '500',
-      color: COLORS.purple8
+      color: theme.colors.text, // [theme]
+      textAlign: isRTL ? 'right' : 'left', // [rtl]
   },
   divider: {
       height: 1,
-      backgroundColor: '#F3F4F6',
+      backgroundColor: theme.colors.cardBorder, // [theme]
       marginVertical: 16,
   },
   connectedText: {
-      color: '#10B981', 
+      color: '#10B981',
       fontWeight: '500',
   },
   disconnectedText: {
-      color: COLORS.gray2,
+      color: theme.colors.subtext, // [theme]
       fontWeight: '500',
   },
   selectTypeText: {
-      color: COLORS.purple8, 
+      color: theme.colors.text, // [theme]
   },
   categoryText: {
-      color: COLORS.purple8, 
+      color: theme.colors.text, // [theme]
   },
   categoryTitle: {
     fontSize: 18,
     fontWeight: '500',
     marginBottom: 16,
-    color: COLORS.purple8
+    color: theme.colors.text, // [theme]
+    textAlign: isRTL ? 'right' : 'left', // [rtl]
   },
   categoryFilterContainer: {
-    flexDirection: 'row',
+    flexDirection: isRTL ? 'row-reverse' : 'row', // [rtl]
     gap: 12,
     marginTop: 20
   },
@@ -375,26 +386,27 @@ const styles = StyleSheet.create({
       borderRadius: 999,
       borderWidth: 2,
       borderColor: COLORS.purple1,
-      backgroundColor: 'white',
+      backgroundColor: theme.colors.card, // [theme]
   },
   categoryButtonInactive: {
       paddingVertical: 8,
       paddingHorizontal: 24,
       borderRadius: 999,
       borderWidth: 2,
-      borderColor: '#F3F4F6',
-      backgroundColor: '#F3F4F6',
+      borderColor: theme.colors.cardBorder, // [theme]
+      backgroundColor: theme.colors.card,   // [theme]
+      opacity: 0.85,
   },
   categoryTextActive: {
-      color: COLORS.purple8,
+      color: theme.colors.text, // [theme]
       fontWeight: '500'
   },
   categoryTextInactive: {
-      color: COLORS.gray2,
+      color: theme.colors.subtext, // [theme]
       fontWeight: '500'
   },
   primaryButton: {
-      backgroundColor: COLORS.brightTiffany,
+      backgroundColor: theme.colors.primary, // [theme]
       padding: 16,
       borderRadius: 16,
       alignItems: 'center',
@@ -402,7 +414,7 @@ const styles = StyleSheet.create({
       marginBottom: 40,
   },
   primaryButtonText: {
-      color: 'white',
+      color: theme.colors.primaryTextOn, // [theme]
       fontSize: 18,
       fontWeight: '500',
   },
@@ -423,12 +435,13 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 22,
     fontWeight: '600',
-    color: COLORS.purple8,
+    color: theme.colors.text, // [theme]
     marginBottom: 8,
+    textAlign: 'center',
   },
   emptySubtitle: {
     fontSize: 16,
-    color: COLORS.gray2,
+    color: theme.colors.subtext, // [theme]
     textAlign: 'center',
     marginBottom: 32,
     lineHeight: 24,
