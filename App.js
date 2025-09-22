@@ -14,6 +14,7 @@ import VerificationOTP from "./Screens/VerificationOTP";
 import SetNewPasswordScreen from "./Screens/SetNewPasswordScreen";
 import DeviceRadar from "./Screens/DeviceRadar";
 import ReportScam from "./Screens/ReportScam";
+import AnalyzeCall from "./Screens/AnalyzeCall";
 
 import { useFonts } from "expo-font";
 
@@ -75,8 +76,9 @@ export default function App() {
               component={SetNewPasswordScreen}
             />
             <Stack.Screen name="Home" component={Tabs} />
-            <Stack.Screen name="DeviceRadar" component={DeviceRadar} /> 
-             <Stack.Screen name="ReportScam" component={ReportScam} />
+            <Stack.Screen name="DeviceRadar" component={DeviceRadar} />
+            <Stack.Screen name="ReportScam" component={ReportScam} />
+            <Stack.Screen name="AnalyzeCall" component={AnalyzeCall} />
           </>
         </Stack.Navigator>
       </NavigationContainer>
