@@ -1,6 +1,8 @@
 import { View, Text } from "react-native";
 import React from "react";
 import { StyleSheet } from "react-native";
+import { useAppSettings } from "../src/context/AppSettingProvid";
+import { useTranslation } from "react-i18next";
 
 export default function Statics() {
   return (
@@ -9,7 +11,7 @@ export default function Statics() {
     </View>
   );
 }
-const styles = StyleSheet.create({
+const styles = (theme, isRTL) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",

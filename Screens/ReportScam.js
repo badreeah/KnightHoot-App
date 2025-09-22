@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { COLORS } from '../util/colors';
+import { useAppSettings } from "../src/context/AppSettingProvid"; // [theme][rtl]
+import { useTranslation } from "react-i18next";                    // [i18n]
 
 const scamTypes = [
   { id: 'calls', name: 'Calls', icon: 'call-outline' },
@@ -22,12 +24,15 @@ export default function ReportScam({ navigation }) {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  const { theme, isRTL } = useAppSettings(); // [theme][rtl]
+  const { t } = useTranslation();            // [i18n]
+  const styles = useMemo(() => createStyles(theme, isRTL), [theme, isRTL]); // [theme][rtl]
+
   useEffect(() => {
     if (isSubmitted) {
       const timer = setTimeout(() => {
         navigation.goBack();
       }, 2000);
-
       return () => clearTimeout(timer);
     }
   }, [isSubmitted, navigation]);
@@ -42,37 +47,85 @@ export default function ReportScam({ navigation }) {
       case 'calls':
         return (
           <>
-            <Text style={styles.inputLabel}>Phone Number</Text>
-            <TextInput style={styles.input} placeholder="Enter the suspicious phone number" keyboardType="phone-pad" />
-            <Text style={styles.inputLabel}>Description</Text>
-            <TextInput style={[styles.input, styles.multilineInput]} placeholder="Describe what happened during the call" multiline />
+            <Text style={styles.inputLabel}>{t('reportScam.phone', 'Phone Number')}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder={t('reportScam.phonePh', 'Enter the suspicious phone number')}
+              keyboardType="phone-pad"
+              placeholderTextColor={theme.colors.subtext}   // [theme]
+              textAlign={isRTL ? 'right' : 'left'}          // [rtl]
+            />
+            <Text style={styles.inputLabel}>{t('reportScam.description', 'Description')}</Text>
+            <TextInput
+              style={[styles.input, styles.multilineInput]}
+              placeholder={t('reportScam.callDescPh', 'Describe what happened during the call')}
+              multiline
+              placeholderTextColor={theme.colors.subtext}   // [theme]
+              textAlign={isRTL ? 'right' : 'left'}          // [rtl]
+            />
           </>
         );
       case 'messages':
         return (
           <>
-            <Text style={styles.inputLabel}>Sender's Name / Number</Text>
-            <TextInput style={styles.input} placeholder="Enter the sender's name or number" />
-            <Text style={styles.inputLabel}>Message Content</Text>
-            <TextInput style={[styles.input, styles.multilineInput]} placeholder="Paste the suspicious message here" multiline />
+            <Text style={styles.inputLabel}>{t('reportScam.sender', "Sender's Name / Number")}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder={t('reportScam.senderPh', "Enter the sender's name or number")}
+              placeholderTextColor={theme.colors.subtext}   // [theme]
+              textAlign={isRTL ? 'right' : 'left'}          // [rtl]
+            />
+            <Text style={styles.inputLabel}>{t('reportScam.msgContent', 'Message Content')}</Text>
+            <TextInput
+              style={[styles.input, styles.multilineInput]}
+              placeholder={t('reportScam.msgPh', 'Paste the suspicious message here')}
+              multiline
+              placeholderTextColor={theme.colors.subtext}   // [theme]
+              textAlign={isRTL ? 'right' : 'left'}          // [rtl]
+            />
           </>
         );
       case 'email':
         return (
           <>
-            <Text style={styles.inputLabel}>Sender's Email</Text>
-            <TextInput style={styles.input} placeholder="Enter the sender's email address" keyboardType="email-address" />
-            <Text style={styles.inputLabel}>Email Subject</Text>
-            <TextInput style={styles.input} placeholder="Enter the email subject" />
+            <Text style={styles.inputLabel}>{t('reportScam.email', "Sender's Email")}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder={t('reportScam.emailPh', "Enter the sender's email address")}
+              keyboardType="email-address"
+              placeholderTextColor={theme.colors.subtext}   // [theme]
+              textAlign={isRTL ? 'right' : 'left'}          // [rtl]
+              autoCapitalize="none"
+            />
+            <Text style={styles.inputLabel}>{t('reportScam.emailSubject', 'Email Subject')}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder={t('reportScam.emailSubjectPh', 'Enter the email subject')}
+              placeholderTextColor={theme.colors.subtext}   // [theme]
+              textAlign={isRTL ? 'right' : 'left'}          // [rtl]
+            />
           </>
         );
       case 'web':
         return (
           <>
-            <Text style={styles.inputLabel}>Website URL</Text>
-            <TextInput style={styles.input} placeholder="https://example.com" keyboardType="url" />
-            <Text style={styles.inputLabel}>Description</Text>
-            <TextInput style={[styles.input, styles.multilineInput]} placeholder="Describe the fraudulent website" multiline />
+            <Text style={styles.inputLabel}>{t('reportScam.url', 'Website URL')}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="https://example.com"
+              keyboardType="url"
+              placeholderTextColor={theme.colors.subtext}   // [theme]
+              textAlign={isRTL ? 'right' : 'left'}          // [rtl]
+              autoCapitalize="none"
+            />
+            <Text style={styles.inputLabel}>{t('reportScam.description', 'Description')}</Text>
+            <TextInput
+              style={[styles.input, styles.multilineInput]}
+              placeholder={t('reportScam.webDescPh', 'Describe the fraudulent website')}
+              multiline
+              placeholderTextColor={theme.colors.subtext}   // [theme]
+              textAlign={isRTL ? 'right' : 'left'}          // [rtl]
+            />
           </>
         );
       default:
@@ -88,8 +141,8 @@ export default function ReportScam({ navigation }) {
           style={{ width: 144, height: 144 }}
           resizeMode="contain"
         />
-        <Text style={styles.successTitle}>Report Submitted!</Text>
-        <Text style={styles.successSubtitle}>Thank you for keeping the community safe</Text>
+        <Text style={styles.successTitle}>{t('reportScam.submitted', 'Report Submitted!')}</Text>
+        <Text style={styles.successSubtitle}>{t('reportScam.thanks', 'Thank you for keeping the community safe')}</Text>
       </View>
     );
   }
@@ -106,30 +159,26 @@ export default function ReportScam({ navigation }) {
 
       <Text style={styles.sectionTitle}>What type of scam did you encounter?</Text>
       <View style={styles.categoryContainer}>
-        {scamTypes.map((type) => (
-          <TouchableOpacity
-            key={type.id}
-            style={[
-              styles.categoryCard,
-              selectedCategory === type.id && styles.categoryCardSelected,
-            ]}
-            onPress={() => setSelectedCategory(type.id)}
-          >
-            <Ionicons
-              name={type.icon}
-              size={32}
-              color={selectedCategory === type.id ? COLORS.purple1 : COLORS.purple8}
-            />
-            <Text
-              style={[
-                styles.categoryText,
-                selectedCategory === type.id && styles.categoryTextSelected,
-              ]}
+        {scamTypes.map((type) => {
+          const label = t(`reportScam.types.${type.id}`, type.id); 
+          const selected = selectedCategory === type.id;
+          return (
+            <TouchableOpacity
+              key={type.id}
+              style={[styles.categoryCard, selected && styles.categoryCardSelected]}
+              onPress={() => setSelectedCategory(type.id)}
             >
-              {type.name}
-            </Text>
-          </TouchableOpacity>
-        ))}
+              <Ionicons
+                name={type.icon}
+                size={32}
+                color={selected ? COLORS.purple1 : theme.colors.text} // [theme]
+              />
+              <Text style={[styles.categoryText, selected && styles.categoryTextSelected]}>
+                {label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </View>
 
       {selectedCategory && (
@@ -150,7 +199,7 @@ export default function ReportScam({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: theme.colors.background, 
     paddingHorizontal: 16,
   },
   header: {
@@ -163,12 +212,12 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontFamily: 'Poppins-600',
     fontSize: 20,
-    color: COLORS.purple8,
+    color: theme.colors.text,
   },
   sectionTitle: {
     fontFamily: 'Poppins-500',
     fontSize: 18,
-    color: COLORS.purple7,
+    color: theme.colors.text,
     marginBottom: 16,
     marginTop: 16,
   },
@@ -179,13 +228,13 @@ const styles = StyleSheet.create({
   },
   categoryCard: {
     width: '48%',
-    backgroundColor: 'white',
+    backgroundColor: theme.colors.card,
     padding: 20,
     borderRadius: 16,
     alignItems: 'center',
     marginBottom: 16,
     borderWidth: 2,
-    borderColor: '#E5E7EB',
+    borderColor: theme.colors.cardBorder,
   },
   categoryCardSelected: {
     borderColor: COLORS.purple1,
@@ -194,7 +243,7 @@ const styles = StyleSheet.create({
   categoryText: {
     fontFamily: 'Poppins-500',
     fontSize: 16,
-    color: COLORS.purple8,
+    color: theme.colors.text,
     marginTop: 8,
   },
   categoryTextSelected: {
@@ -206,7 +255,7 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontFamily: 'Poppins-500',
     fontSize: 16,
-    color: COLORS.purple8,
+    color: theme.colors.text,
     marginBottom: 8,
   },
   input: {
@@ -215,9 +264,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: COLORS.gray1,
+    borderColor: theme.colors.cardBorder,
     fontSize: 16,
-    fontFamily: 'Poppins-400',
+    fontFamily: theme.colors.text,
     marginBottom: 20,
   },
   multilineInput: {
@@ -225,7 +274,7 @@ const styles = StyleSheet.create({
       textAlignVertical: 'top',
   },
   submitButton: {
-      backgroundColor: COLORS.brightTiffany,
+      backgroundColor: theme.colors.primary, // [theme]
       padding: 16,
       borderRadius: 16,
       alignItems: 'center',
@@ -233,13 +282,13 @@ const styles = StyleSheet.create({
       marginBottom: 40,
   },
   submitButtonText: {
-      color: 'white',
+      color: theme.colors.primaryTextOn, // [theme]
       fontSize: 18,
       fontFamily: 'Poppins-600',
   },
   successContainer: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: theme.colors.background,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
@@ -253,7 +302,7 @@ const styles = StyleSheet.create({
   successSubtitle: {
     fontFamily: 'Poppins-400',
     fontSize: 16,
-    color: COLORS.purple8,
+    color: theme.colors.text,
     marginTop: 8,
     textAlign: 'center',
   }
