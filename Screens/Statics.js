@@ -1,3 +1,12 @@
+import { View, Text, StyleSheet } from "react-native";
+import React, { useMemo } from "react";
+import { useAppSettings } from "../src/context/AppSettingProvid";
+import { useTranslation } from "react-i18next";
+
+export default function Statics() {
+  const { theme, isRTL } = useAppSettings(); // get theme and RTL
+  const styles = useMemo(() => createStyles(theme, isRTL), [theme, isRTL]); // create styles with theme
+
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Animated } from 'react-native';
 import { BarChart } from "react-native-chart-kit";
@@ -62,6 +71,9 @@ const AlertsScreen = () => {
   }, [activeTab]);
 
   return (
+    <View style={styles.container}>
+      <Text style={styles.text}>Statics</Text>
+    </View>
     <ScrollView style={styles.container}>
       {/* Top Bar */}
       <View style={styles.topBar}>
@@ -168,6 +180,20 @@ const AlertsScreen = () => {
       </View>
     </ScrollView>
   );
+}
+
+const createStyles = (theme, isRTL) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background, // now theme works
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    text: {
+      color: theme.colors.text, // example text color from theme
+    },
+  });
 };
 
 const styles = StyleSheet.create({
