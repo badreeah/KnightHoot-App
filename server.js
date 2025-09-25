@@ -16,6 +16,7 @@ app.post("/transcribe", upload.single("audio"), async (req, res) => {
     const config = {
       encoding: "LINEAR16",
       languageCode: "en-US",
+      alternativeLanguageCodes: ["ar-SA"],
     };
     const request = { audio, config };
 
@@ -36,14 +37,15 @@ app.post("/transcribe", upload.single("audio"), async (req, res) => {
 
 app.get("/transcribe-test", async (req, res) => {
   try {
-    const filePath = "speaker30-000_FzMUZ86Y.wav";
+    const filePath = "ArabicScamAudio.wav";
     const audioBytes = fs.readFileSync(filePath).toString("base64");
 
     const audio = { content: audioBytes };
     const config = {
       encoding: "LINEAR16",
-      sampleRateHertz: 22050, // match  WAV file
+      sampleRateHertz: 24000,
       languageCode: "en-US",
+      alternativeLanguageCodes: ["ar-SA"],
     };
 
     const request = { audio, config };
