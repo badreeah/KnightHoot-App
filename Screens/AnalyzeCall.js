@@ -7,10 +7,10 @@ import {
   TextInput,
   Dimensions,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import { Audio } from "expo-av";
 import { Ionicons } from "@expo/vector-icons";
-import Home from "./Home";
 
 const { height } = Dimensions.get("window");
 
@@ -19,6 +19,7 @@ export default function AnalyzeCall({ navigation }) {
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [loading, setLoading] = useState(false);
+  const [analysis, setAnalysis] = useState(null); // store API response
 
   // Start recording
   const startRecording = async () => {
@@ -58,7 +59,28 @@ export default function AnalyzeCall({ navigation }) {
       });
 
       const data = await res.json();
-      setTranscript(data.text || "No transcription");
+      const text = data.text || "No transcription";
+      setTranscript(text);
+
+      // Send transcription to scam API
+      const scamRes = await fetch(
+        "https://detect-scam-calls-api-production.up.railway.app/predict",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: text }),
+        }
+      );
+      const scamData = await scamRes.json();
+      setAnalysis(scamData);
+
+      // Show alert if scam
+      if (scamData.prediction === "scam") {
+        Alert.alert(
+          "Warning",
+          "This call is detected as a scam. Advise user to hang up!"
+        );
+      }
     } catch (err) {
       console.error(err);
       setTranscript("Error uploading audio");
@@ -73,7 +95,28 @@ export default function AnalyzeCall({ navigation }) {
     try {
       const res = await fetch("http://192.168.100.115:3000/transcribe-test");
       const data = await res.json();
-      setTranscript(data.text || "No transcription");
+      const text = data.text || "No transcription";
+      setTranscript(text);
+
+      // Send transcription to scam API
+      const scamRes = await fetch(
+        "https://detect-scam-calls-api-production.up.railway.app/predict",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: text }),
+        }
+      );
+      const scamData = await scamRes.json();
+      setAnalysis(scamData);
+
+      // Show alert if scam
+      if (scamData.prediction === "scam") {
+        Alert.alert(
+          "Warning",
+          "This call is detected as a scam. Advise user to hang up!"
+        );
+      }
     } catch (err) {
       console.error(err);
       setTranscript("Error fetching transcription");
@@ -91,13 +134,13 @@ export default function AnalyzeCall({ navigation }) {
         paddingHorizontal: 16,
       }}
     >
-      {/* Header: Back arrow + title */}
+      {/* Header */}
       <View
         style={{
           flexDirection: "row",
           alignItems: "center",
           marginBottom: 20,
-          marginTop: 36,
+          marginTop: 40,
         }}
       >
         <TouchableOpacity onPress={() => navigation.navigate("Home")}>
@@ -137,7 +180,43 @@ export default function AnalyzeCall({ navigation }) {
         />
       </View>
 
-      {/* Spinner above buttons */}
+      {/* Analysis Box */}
+      {analysis && (
+        <View
+          style={{
+            backgroundColor:
+              analysis.prediction === "scam" ? "#ffe5e5" : "#e5ffe5",
+            borderWidth: 2,
+            borderColor: analysis.prediction === "scam" ? "#ff9999" : "#99ff99",
+            padding: 16,
+            borderRadius: 12,
+            marginBottom: 20,
+            alignItems: "center",
+          }}
+        >
+          <Text
+            style={{
+              fontFamily: "Poppins-700",
+              fontSize: 24,
+              color: analysis.prediction === "scam" ? "#cc0000" : "#55da55ff",
+              marginBottom: 8,
+            }}
+          >
+            {analysis.prediction?.toUpperCase()}
+          </Text>
+          <Text
+            style={{
+              fontFamily: "Poppins-600",
+              fontSize: 18,
+              color: "#333",
+            }}
+          >
+            {(analysis.probability * 100).toFixed(2)}%
+          </Text>
+        </View>
+      )}
+
+      {/* Spinner */}
       {loading && (
         <ActivityIndicator
           size={60}
@@ -146,7 +225,7 @@ export default function AnalyzeCall({ navigation }) {
         />
       )}
 
-      {/* Buttons below the spinner */}
+      {/* Buttons */}
       <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
         <Pressable
           onPress={isRecording ? stopRecording : startRecording}

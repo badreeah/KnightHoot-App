@@ -2,28 +2,53 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  ImageBackground,
-  Image,
-  ScrollView,
   StyleSheet,
-  TouchableOpacity,
   TextInput,
+  TouchableOpacity,
+  ImageBackground,
+  Alert,
+  ScrollView,
 } from "react-native";
+import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import KeyboaredAvoidingWrapper from "../components/KeyboaredAvoidingWrapper";
 import CustomButton from "../components/CustomButton";
 import { COLORS } from "../util/colors";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import supabase from "../supabase";
 
-export default function SetNewPasswordScreen({ navigation }) {
+export default function SetNewPasswordScreen({ navigation, route }) {
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [newPasswordVisible, setNewPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+  const email = route.params.email;
 
-  const handleSignUp = () => {
-    navigation.navigate("SignUp");
-  };
-  const handelconfirm = () => {
-    navigation.navigate("Home");
+  const handleConfirm = async () => {
+    if (!newPassword || !confirmPassword) {
+      Alert.alert("Error", "Please fill all fields");
+      return;
+    }
+    if (newPassword.length < 8) {
+      Alert.alert("Error", "Password must be at least 8 characters");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      Alert.alert("Error", "Passwords do not match");
+      return;
+    }
+
+    try {
+      // Supabase password update for user email
+      const { data, error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+      if (error) throw error;
+
+      Alert.alert("Success", "Password updated successfully");
+      navigation.navigate("SignIn");
+    } catch (err) {
+      Alert.alert("Error", err.message || "Something went wrong");
+      console.log(err);
+    }
   };
 
   return (
@@ -34,15 +59,13 @@ export default function SetNewPasswordScreen({ navigation }) {
     >
       <KeyboaredAvoidingWrapper>
         <ScrollView contentContainerStyle={styles.overlay}>
-          {/* Header / Title / Subtitle */}
           <View style={styles.topSection}>
             <Text style={styles.header}>KnightHooT</Text>
             <Text style={styles.title}>Set New Password</Text>
             <Text style={styles.subTitle}>Reset your Password</Text>
           </View>
 
-          {/* Enter New Password */}
-          <Text style={styles.label}>Enter New Password</Text>
+          <Text style={styles.label}>New Password</Text>
           <View style={styles.inputContainer}>
             <MaterialIcons
               name="lock"
@@ -55,13 +78,21 @@ export default function SetNewPasswordScreen({ navigation }) {
               placeholderTextColor={COLORS.gray1}
               style={styles.input}
               secureTextEntry={!newPasswordVisible}
+              value={newPassword}
+              onChangeText={setNewPassword}
             />
             <TouchableOpacity
               onPress={() => setNewPasswordVisible(!newPasswordVisible)}
-            ></TouchableOpacity>
+            >
+              <Ionicons
+                name={newPasswordVisible ? "eye" : "eye-off"}
+                size={20}
+                color="#797df683"
+                style={styles.eyeIcon}
+              />
+            </TouchableOpacity>
           </View>
 
-          {/* Confirm Password */}
           <Text style={styles.label}>Confirm Password</Text>
           <View style={styles.inputContainer}>
             <TextInput
@@ -69,6 +100,8 @@ export default function SetNewPasswordScreen({ navigation }) {
               placeholderTextColor={COLORS.gray1}
               style={styles.input}
               secureTextEntry={!confirmPasswordVisible}
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
             />
             <TouchableOpacity
               onPress={() => setConfirmPasswordVisible(!confirmPasswordVisible)}
@@ -82,7 +115,6 @@ export default function SetNewPasswordScreen({ navigation }) {
             </TouchableOpacity>
           </View>
 
-          {/* Sign In Button */}
           <CustomButton
             height={45}
             width={160}
@@ -90,35 +122,11 @@ export default function SetNewPasswordScreen({ navigation }) {
             fontFamily={"Poppins-600"}
             fontSize={18}
             borderRadius={6}
-            onPress={handelconfirm}
-            style={{ alignSelf: "center", marginTop: 42 }}
+            onPress={handleConfirm}
+            style={{ alignSelf: "center", marginTop: 30 }}
           >
             Confirm
           </CustomButton>
-          {/* Row Image */}
-          <Image
-            source={require("../assets/images/row2.png")}
-            style={styles.rowImage}
-          />
-
-          {/* Google Button */}
-          <CustomButton style={styles.googleButton}>
-            <View style={styles.googleButtonContent}>
-              <Image
-                source={require("../assets/icons/google.png")}
-                style={styles.googleIcon}
-              />
-              <Text style={styles.googleText}>Sign In with Google</Text>
-            </View>
-          </CustomButton>
-
-          {/* Sign Up Text */}
-          <View style={styles.signUpRow}>
-            <Text style={styles.signUpText}>Don’t have an account? </Text>
-            <TouchableOpacity onPress={handleSignUp}>
-              <Text style={styles.signUpUnderline}>Sign Up</Text>
-            </TouchableOpacity>
-          </View>
         </ScrollView>
       </KeyboaredAvoidingWrapper>
     </ImageBackground>
@@ -133,10 +141,7 @@ const styles = StyleSheet.create({
     paddingTop: 40,
     alignItems: "center",
   },
-  topSection: {
-    marginBottom: 40,
-    alignItems: "center",
-  },
+  topSection: { marginBottom: 40, alignItems: "center" },
   header: {
     fontFamily: "Poppins-700",
     fontSize: 24,
@@ -185,46 +190,4 @@ const styles = StyleSheet.create({
   },
   icon: { marginRight: 8 },
   eyeIcon: { marginLeft: 8 },
-  rowImage: {
-    width: 300,
-    height: 50,
-    resizeMode: "contain",
-    marginBottom: 20,
-    marginTop: 90,
-  },
-  googleButton: {
-    width: 320,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: COLORS.purple3,
-    marginBottom: 20,
-  },
-  googleButtonContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 12,
-  },
-  googleIcon: { width: 21, height: 21, marginRight: 10 },
-  googleText: {
-    color: COLORS.purple3,
-    fontSize: 16,
-    fontFamily: "Poppins-300",
-  },
-  signUpRow: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 10,
-  },
-  signUpText: {
-    color: "#4E1B96",
-    fontSize: 14,
-    fontFamily: "Poppins-300",
-  },
-  signUpUnderline: {
-    color: "#797EF6",
-    fontSize: 14,
-    fontFamily: "Poppins-600",
-    textDecorationLine: "underline",
-  },
 });
