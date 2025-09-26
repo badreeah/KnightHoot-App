@@ -1,32 +1,49 @@
-import { View, Text, StyleSheet } from "react-native";
-import React, { useMemo } from "react";
-import { useAppSettings } from "../src/context/AppSettingProvid";
-import { useTranslation } from "react-i18next";
+import { View, StyleSheet, Dimensions, ActivityIndicator } from "react-native";
+import React, { useRef, useState } from "react";
+import { Video } from "expo-av";
 
-export default function SplashScreen() {
-  const { theme, isRTL } = useAppSettings(); // get theme & RTL
-  const { t } = useTranslation(); // for i18n
-  const styles = useMemo(() => createStyles(theme, isRTL), [theme, isRTL]);
+const { width, height } = Dimensions.get("window");
+
+export default function SplashScreen({ navigation }) {
+  const videoRef = useRef(null);
+  const [isReady, setIsReady] = useState(false);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>{t("splash.title", "SplashScreen")}</Text>
+      {!isReady && (
+        <ActivityIndicator
+          size="large"
+          color="#6200EE"
+          style={{ alignItems: "center", justifyContent: "center", flex: 1 }}
+        />
+      )}
+      <Video
+        ref={videoRef}
+        source={require("../assets/splash-vid.mp4")}
+        style={styles.video}
+        resizeMode="contain"
+        shouldPlay={isReady} // only play when ready
+        isLooping={false}
+        onReadyForDisplay={() => setIsReady(true)} // video loaded
+        onPlaybackStatusUpdate={(status) => {
+          if (status.didJustFinish) {
+            navigation.replace("OnBoarding");
+          }
+        }}
+      />
     </View>
   );
 }
 
-const createStyles = (theme, isRTL) =>
-  StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: theme.colors.background, // dynamic background
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    text: {
-      color: theme.colors.text, // dynamic text color
-      fontSize: 24,
-      fontFamily: "Poppins-600",
-      textAlign: isRTL ? "right" : "left",
-    },
-  });
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#ffffff44",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  video: {
+    width: width * 0.9, // almost full width
+    height: height * 0.9, // half screen height
+  },
+});

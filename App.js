@@ -23,6 +23,7 @@ import AnalyzeCall from "./Screens/AnalyzeCall";
 import Profile from "./Screens/Profile";
 import SafeBrowsing from "./Screens/SafeBrowsing";
 import SettingsScreen from "./Screens/SettingsScreen";
+import SplashScreen from "./Screens/SplshScreen";
 
 import "./src/i18n";
 import {
@@ -31,17 +32,7 @@ import {
 } from "./src/context/AppSettingProvid";
 
 import { useFonts } from "expo-font";
-{
-  /*  <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <>
-            <Stack.Screen name="OnBoarding" component={OnBoarding} />
-            <Stack.Screen name="Welcome" component={Welcome} />
-            <Stack.Screen name="SignIn" component={SignIn} />
-            <Stack.Screen name="SignUp" component={SignUp} />
-            <Stack.Screen name="Home" component={Tabs} />
-          </>
-        </Stack.Navigator> */
-}
+
 import {
   Poppins_100Thin,
   Poppins_200ExtraLight,
@@ -99,6 +90,8 @@ export default function App() {
         <NavigationContainer theme={navTheme}>
           <Stack.Navigator screenOptions={{ headerShown: false }}>
             <>
+              <Stack.Screen name="Splash" component={SplashScreen} />
+
               <Stack.Screen name="OnBoarding" component={OnBoarding} />
               <Stack.Screen name="Welcome" component={Welcome} />
               <Stack.Screen name="SignIn" component={SignIn} />
