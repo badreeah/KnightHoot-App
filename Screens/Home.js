@@ -79,7 +79,7 @@ export default function Home({ navigation }) {
             iconWidth={72}
             iconHeight={72}
             top={-40}
-            onPress={() => console.log("Analyze Call")}
+            onPress={() => navigation.navigate("AnalyzeCall")}
           />
           <ActionButton
             title="Safe Browsing"
@@ -97,7 +97,7 @@ export default function Home({ navigation }) {
             iconWidth={120}
             iconHeight={120}
             top={-18}
-            onPress={() => navigation.navigate('ScanURL')}
+            onPress={() => navigation.navigate("ScanURL")}
           />
           <ActionButton
             title="Report Scam"
@@ -106,7 +106,7 @@ export default function Home({ navigation }) {
             iconWidth={114}
             top={-30}
             iconHeight={114}
-            onPress={() => navigation.navigate('ReportScam')}
+            onPress={() => navigation.navigate("ReportScam")}
           />
         </ScrollView>
       </View>

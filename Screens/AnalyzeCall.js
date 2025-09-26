@@ -11,7 +11,8 @@ import {
 } from "react-native";
 import { Audio } from "expo-av";
 import { Ionicons } from "@expo/vector-icons";
-
+import supabase from "../supabase";
+import { saveCallResult } from "../services/saveCallResult";
 const { height } = Dimensions.get("window");
 
 export default function AnalyzeCall({ navigation }) {
@@ -73,6 +74,11 @@ export default function AnalyzeCall({ navigation }) {
       );
       const scamData = await scamRes.json();
       setAnalysis(scamData);
+      const user = supabase.auth.getUser();
+      const userId = (await user).data.user?.id;
+      if (userId) {
+        await saveCallResult(userId, scamData.prediction, scamData.probability);
+      }
 
       // Show alert if scam
       if (scamData.prediction === "scam") {
@@ -109,6 +115,11 @@ export default function AnalyzeCall({ navigation }) {
       );
       const scamData = await scamRes.json();
       setAnalysis(scamData);
+      const user = supabase.auth.getUser();
+      const userId = (await user).data.user?.id;
+      if (userId) {
+        await saveCallResult(userId, scamData.prediction, scamData.probability);
+      }
 
       // Show alert if scam
       if (scamData.prediction === "scam") {
