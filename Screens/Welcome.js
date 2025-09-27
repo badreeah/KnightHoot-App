@@ -1,5 +1,5 @@
-import React from "react";
-import { StyleSheet, View, Text, Image } from "react-native";
+import React, { useState } from "react";
+import { StyleSheet, View, Text, Image, ActivityIndicator } from "react-native";
 import { Video } from "expo-av";
 import { useEffect, useRef } from "react";
 import { BlurView } from "expo-blur";
@@ -37,13 +37,13 @@ const FrostedButton = ({ children, style, width, height, onPress }) => (
 
 export default function Welcome({ navigation }) {
   const videoRef = useRef(null);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      videoRef.current?.playAsync();
-    }, 100); // 100ms delay
-    return () => clearTimeout(timer);
-  }, []);
+    if (videoRef.current && isReady) {
+      videoRef.current.playAsync();
+    }
+  }, [isReady]);
   return (
     <View style={styles.container}>
       {/* Background Video */}
@@ -56,7 +56,15 @@ export default function Welcome({ navigation }) {
         isLooping
         isMuted
         useNativeControls={false}
+        onReadyForDisplay={() => setIsReady(true)}
       />
+
+      {/* Loader while video loads */}
+      {!isReady && (
+        <View style={styles.loaderOverlay}>
+          <ActivityIndicator size={100} color="#6200EE" />
+        </View>
+      )}
 
       {/* Full-screen blur overlay */}
       <BlurView intensity={40} tint="light" style={StyleSheet.absoluteFill} />
@@ -85,22 +93,6 @@ export default function Welcome({ navigation }) {
             </Text>
           </FrostedButton>
         </View>
-        {/* row image */}
-        <Image
-          source={require("../assets/images/line.png")}
-          style={styles.Image}
-        />
-
-        {/* Google Sign Up button */}
-        <FrostedButton style={styles.googleButton}>
-          <View style={styles.googleButtonContent}>
-            <Image
-              source={require("../assets/icons/google.png")}
-              style={styles.googleIcon}
-            />
-            <Text style={styles.googleText}>Sign up with Google</Text>
-          </View>
-        </FrostedButton>
       </View>
     </View>
   );
@@ -109,7 +101,12 @@ export default function Welcome({ navigation }) {
 export { FrostedButton };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#000" },
+  container: { flex: 1 },
+  loaderOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   overlay: {
     flex: 1,
     justifyContent: "flex-start",

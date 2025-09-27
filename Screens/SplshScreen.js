@@ -11,20 +11,18 @@ export default function SplashScreen({ navigation }) {
   return (
     <View style={styles.container}>
       {!isReady && (
-        <ActivityIndicator
-          size="large"
-          color="#6200EE"
-          style={{ alignItems: "center", justifyContent: "center", flex: 1 }}
-        />
+        <View style={styles.loaderOverlay}>
+          <ActivityIndicator size={80} color="#6200EE" />
+        </View>
       )}
       <Video
         ref={videoRef}
         source={require("../assets/splash-vid.mp4")}
         style={styles.video}
         resizeMode="contain"
-        shouldPlay={isReady} // only play when ready
+        shouldPlay={isReady}
         isLooping={false}
-        onReadyForDisplay={() => setIsReady(true)} // video loaded
+        onReadyForDisplay={() => setIsReady(true)}
         onPlaybackStatusUpdate={(status) => {
           if (status.didJustFinish) {
             navigation.replace("OnBoarding");
@@ -38,12 +36,18 @@ export default function SplashScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ffffff44",
+    backgroundColor: "#ffffff",
     alignItems: "center",
     justifyContent: "center",
   },
+  loaderOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 10,
+  },
   video: {
-    width: width * 0.9, // almost full width
-    height: height * 0.9, // half screen height
+    width: width * 0.9,
+    height: height * 0.9,
   },
 });

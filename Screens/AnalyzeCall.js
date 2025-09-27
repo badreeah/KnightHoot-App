@@ -232,7 +232,9 @@ export default function AnalyzeCall({ navigation }) {
         <ActivityIndicator
           size={60}
           color="#6200EE"
-          style={{ marginBottom: 20 }}
+          style={{
+            marginBottom: 20,
+          }}
         />
       )}
 
@@ -243,7 +245,7 @@ export default function AnalyzeCall({ navigation }) {
           style={{
             flex: 0.45,
             padding: 8,
-            backgroundColor: "#6200EE",
+            backgroundColor: "#926DFB",
             borderRadius: 12,
             alignItems: "center",
           }}
@@ -265,7 +267,7 @@ export default function AnalyzeCall({ navigation }) {
           style={{
             flex: 0.45,
             padding: 12,
-            backgroundColor: "#03DAC6",
+            backgroundColor: "#4AE2E3",
             borderRadius: 12,
             alignItems: "center",
             justifyContent: "center",
