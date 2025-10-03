@@ -12,7 +12,7 @@ import KeyboaredAvoidingWrapper from "../components/KeyboaredAvoidingWrapper";
 import CustomButton from "../components/CustomButton";
 import { COLORS } from "../util/colors";
 import CodeInputField from "../components/CodeInputField";
-import supabase from "../supabase";
+import { supabase } from "../supabaseClient";
 
 export default function VerificationOTP({ navigation, route }) {
   const [code, setCode] = useState("");

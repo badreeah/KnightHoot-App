@@ -42,3 +42,8 @@ metro.config.js
 # Local build folders
 /android
 /.vscode
+.env
+supabaseClient.js
+Screens/TestEmail.js
+/supabase/functions/analyze-email
+supabase/

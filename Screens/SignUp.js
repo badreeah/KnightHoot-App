@@ -12,7 +12,7 @@ import { COLORS } from "../util/colors";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import CustomButton from "../components/CustomButton";
 import KeyboaredAvoidingWrapper from "../components/KeyboaredAvoidingWrapper";
-import supabase from "../supabase";
+import { supabase } from "../supabaseClient";
 
 export default function SignUp({ navigation }) {
   const [passwordVisible, setPasswordVisible] = useState(false);

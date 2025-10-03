@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { Audio } from "expo-av";
 import { Ionicons } from "@expo/vector-icons";
-import supabase from "../supabase";
+import { supabase } from "../supabaseClient";
 import { saveCallResult } from "../services/saveCallResult";
 const { height } = Dimensions.get("window");
 

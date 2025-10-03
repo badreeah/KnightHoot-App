@@ -14,7 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import KeyboaredAvoidingWrapper from "../components/KeyboaredAvoidingWrapper";
 import CustomButton from "../components/CustomButton";
 import { COLORS } from "../util/colors";
-import supabase from "../supabase";
+import { supabase } from "../supabaseClient";
 
 export default function ForgetPassword({ navigation }) {
   const [email, setEmail] = useState("");
