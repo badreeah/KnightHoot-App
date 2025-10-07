@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Animated } from 'react-native';
 import { BarChart } from "react-native-chart-kit";
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { supabase } from '../supabaseClient';
 
 const initialData = {
   sources: [
     { name: "SMS", count: 22, active: true },
     { name: "Calls", count: 10, active: false },
-    { name: "Email", count: 5, active: false },
+    { name: "Email", count: 0, active: false },
     { name: "URL", count: 12, active: false },
   ],
   severity: [
@@ -35,6 +36,27 @@ const AlertsScreen = () => {
   const [severity] = useState(initialData.severity);
   const [activeTab, setActiveTab] = useState('Today');
   const [animatedData, setAnimatedData] = useState(initialData.riskActivityToday.data.map(() => new Animated.Value(0)));
+
+  useEffect(() => {
+    const fetchEmailStats = async () => {
+      const { count, error } = await supabase
+        .from('email_scans')
+        .select('*', { count: 'exact', head: true });
+
+      if (error) {
+        console.error('Error fetching email stats:', error);
+        return;
+      }
+
+      setSources(prev =>
+        prev.map(source =>
+          source.name === 'Email' ? { ...source, count: count || 0 } : source
+        )
+      );
+    };
+
+    fetchEmailStats();
+  }, []);
 
   const onSourcePress = (index) => {
     if (!allowedActive.includes(sources[index].name)) return;
