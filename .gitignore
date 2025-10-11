@@ -31,7 +31,7 @@ yarn-error.*
 *.pem
 
 # local env files
-.env*.local
+#.env*.local
 
 # typescript
 *.tsbuildinfo
@@ -42,13 +42,11 @@ metro.config.js
 # Local build folders
 /android
 /.vscode
-<<<<<<< Updated upstream
 .env
 supabaseClient.js
 Screens/TestEmail.js
 /supabase/functions/analyze-email
 supabase/
-=======
 Screens/TestEmail.js
 supabase/.temp/cli-latest
 supabase/.temp/gotrue-version
@@ -59,4 +57,3 @@ supabaseClient.js
 supabase/functions/analyze-email/index.ts
 supabase/.temp/rest-version
 supabase/.temp/postgres-version
->>>>>>> Stashed changes

@@ -13,7 +13,7 @@ import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import KeyboaredAvoidingWrapper from "../components/KeyboaredAvoidingWrapper";
 import CustomButton from "../components/CustomButton";
 import { COLORS } from "../util/colors";
-import { supabase } from "../supabaseClient";
+import supabase from "../supabase";
 
 export default function SetNewPasswordScreen({ navigation, route }) {
   const [newPassword, setNewPassword] = useState("");
