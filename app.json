@@ -7,7 +7,7 @@
     "backgroundColor": "#F8F8FF",
     "icon": "./assets/icons/logo.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {},
     "ios": {
       "supportsTablet": true

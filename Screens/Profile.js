@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,12 +9,15 @@ import {
   TextInput,
   Modal,
   Image,
+  Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import { SvgXml } from "react-native-svg";
 import { COLORS } from "../util/colors";
 import { useTranslation } from "react-i18next";
 import { useAppSettings } from "../src/context/AppSettingProvid";
+import { supabase } from "../supabase";
 
 
 export default function Profile() {
@@ -27,6 +30,41 @@ export default function Profile() {
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [showCountryModal, setShowCountryModal] = useState(false);
   const [showDatePickerModal, setShowDatePickerModal] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailInput, setEmailInput] = useState('');
+  const [appPasswordString, setAppPasswordString] = useState('');
+  const [connecting, setConnecting] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [connectedEmail, setConnectedEmail] = useState(null);
+  const [disconnecting, setDisconnecting] = useState(false);
+
+  // Check for connected email account
+  useEffect(() => {
+    const checkEmailConnection = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data, error } = await supabase
+            .from('email_accounts')
+            .select('email_address')
+            .eq('user_id', user.id)
+            .eq('status', 'connected')
+            .single();
+
+          if (data && !error) {
+            setConnectedEmail(data.email_address);
+          } else {
+            setConnectedEmail(null);
+          }
+        }
+      } catch (error) {
+        console.error('Error checking email connection:', error);
+        setConnectedEmail(null);
+      }
+    };
+
+    checkEmailConnection();
+  }, []);
   const [selectedDay, setSelectedDay] = useState(1);
   const [selectedMonth, setSelectedMonth] = useState(0);
   const [selectedYear, setSelectedYear] = useState(2000);
@@ -98,6 +136,26 @@ export default function Profile() {
   const handleGenderSelect = (gender) => {
     setTempData({ ...tempData, gender });
     setShowGenderModal(false);
+  };
+
+  const handleDisconnectEmail = async () => {
+    if (!connectedEmail) return;
+
+    setDisconnecting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('unlink-email', {
+        body: { email: connectedEmail }
+      });
+
+      if (error) throw error;
+
+      alert('Email disconnected successfully!');
+      setConnectedEmail(null);
+    } catch (error) {
+      alert('Failed to disconnect email: ' + error.message);
+    } finally {
+      setDisconnecting(false);
+    }
   };
 
   const renderMainScreen = () => (
@@ -195,6 +253,49 @@ export default function Profile() {
     color={theme.colors.subtext}
   />
 </Pressable>
+
+        {/* Email Scanning */}
+        <Pressable style={styles.settingItem} onPress={() => {
+          if (connectedEmail) {
+            // Show disconnect confirmation
+            Alert.alert(
+              'Disconnect Email',
+              `Disconnect ${connectedEmail} from scam scanning?`,
+              [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                  text: 'Disconnect',
+                  style: 'destructive',
+                  onPress: handleDisconnectEmail
+                }
+              ]
+            );
+          } else {
+            // Show connect modal
+            setShowEmailModal(true);
+          }
+        }}>
+           {/* Email     connection */}
+          <View style={styles.settingInfo}>
+           <Image
+             source={require("../assets/icons/Email.png")}
+               style={styles.emailIconAligned} 
+           />
+            <View style={styles.settingTextContainer}>
+              <Text style={[styles.settingTitle, { color: themeStyles.textColor }]}>
+                {connectedEmail ? 'Email' : 'Email Scanning'}
+              </Text>
+              <Text style={[styles.settingDescription, { color: theme.colors.subtext }]}>
+                {connectedEmail ? 'connected for scanning' : 'connect your email to scan'}
+              </Text>
+            </View>
+          </View>
+          <Ionicons
+            name={connectedEmail ? "checkmark-circle" : (isRTL ? "arrow-back" : "arrow-forward")}
+            size={20}
+            color={connectedEmail ? '#4CAF50' : theme.colors.subtext}
+          />
+        </Pressable>
 
         {/* Privacy */}
         <Pressable style={styles.settingItem} onPress={() => setActiveScreen("privacy")}>
@@ -526,8 +627,11 @@ export default function Profile() {
       {activeScreen === "edit" && renderEditScreen()}
       {activeScreen === "privacy" && renderPrivacyPolicyScreen()}
       {renderLanguageModal()}
+      {renderEmailModal()}
     </View>
   );
+
+  // Email connection logic (moved inline to avoid function reference issues)
 
   // Language Modal
   function renderLanguageModal() {
@@ -548,6 +652,127 @@ export default function Profile() {
             <Pressable style={styles.closeButton} onPress={() => setShowLanguageModal(false)}>
               <Text style={styles.closeButtonText}>{t("close")}</Text>
             </Pressable>
+          </View>
+        </View>
+      </Modal>
+    );
+  }
+
+  function renderEmailModal() {
+    return (
+      <Modal visible={showEmailModal} transparent animationType="slide">
+        <View style={styles.modalContainer}>
+          <View style={[styles.modalContent, { backgroundColor: themeStyles.cardBackground }]}>
+            <Text style={[styles.modalTitle, { color: themeStyles.textColor }]}>Connect Email for Scanning</Text>
+
+            <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>Email Address</Text>
+            <TextInput
+              style={[styles.input, { backgroundColor: themeStyles.inputBackground, color: themeStyles.textColor }]}
+              value={emailInput}
+              onChangeText={setEmailInput}
+              placeholder="Enter your email"
+              placeholderTextColor={theme.colors.subtext}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+
+            <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>App Password</Text>
+          
+            <TextInput
+              style={[
+                styles.singleInput,
+                {
+                  backgroundColor: themeStyles.inputBackground,
+                  color: themeStyles.textColor,
+                  borderColor: appPasswordString.length === 16
+                    ? '#4CAF50'
+                    : appPasswordString.length > 0
+                    ? COLORS.purple1
+                    : theme.colors.cardBorder,
+                },
+              ]}
+              value={appPasswordString}
+              onChangeText={(text) => {
+                const cleanText = text.replace(/\s+/g, '').toLowerCase().slice(0, 16);
+                setAppPasswordString(cleanText);
+                setPasswordError('');
+              }}
+              placeholder="Enter 16-character app password"
+              placeholderTextColor={theme.colors.subtext}
+              keyboardType="default"
+              autoCapitalize="none"
+              secureTextEntry
+              maxLength={16}
+            />
+
+            {/* Error Message */}
+            {passwordError ? (
+              <Text style={[styles.errorText, { color: '#F44336' }]}>
+                {passwordError}
+              </Text>
+            ) : null}
+
+            <View style={styles.buttonRow}>
+              <Pressable
+                style={[styles.cancelButton, { flex: 1 }]}
+                onPress={() => {
+                  setShowEmailModal(false);
+                  setEmailInput('');
+                  setAppPasswordString('');
+                  setPasswordError('');
+                }}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                style={[
+                  styles.saveButton,
+                  { flex: 1 },
+                  connecting && { opacity: 0.5 },
+                  appPasswordString.length === 16 && !connecting && {
+                    backgroundColor: '#4CAF50',
+                    shadowColor: '#4CAF50',
+                  }
+                ]}
+                onPress={async () => {
+                  const appPassword = appPasswordString;
+
+                  if (!emailInput.trim()) {
+                    setPasswordError('Please enter your email address');
+                    return;
+                  }
+                  if (appPassword.length !== 16) {
+                    setPasswordError('Please enter exactly 16 characters for your app password');
+                    return;
+                  }
+
+                  setConnecting(true);
+                  setPasswordError('');
+                  try {
+                    const { data, error } = await supabase.functions.invoke('register-email', {
+                      body: { email: emailInput.trim(), appPassword: appPassword }
+                    });
+
+                    if (error) throw error;
+
+                    alert('Email connected successfully!');
+                    setConnectedEmail(emailInput.trim());
+                    setShowEmailModal(false);
+                    setEmailInput('');
+                    setAppPasswordString('');
+                  } catch (error) {
+                    setPasswordError('Failed to connect email: ' + error.message);
+                  } finally {
+                    setConnecting(false);
+                  }
+                }}
+                disabled={connecting}
+              >
+                <Text style={styles.saveButtonText}>
+                  {connecting ? 'Connecting...' : 'Connect'}
+                </Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       </Modal>
@@ -691,6 +916,26 @@ const createStyles = (theme, themeStyles, isRTL) =>
       backgroundColor: themeStyles.inputBackground,
       textAlign: isRTL ? "right" : "left",
       writingDirection: isRTL ? "rtl" : "ltr",
+    },
+    // Password input styles
+    helperText: {
+      fontSize: 14,
+      marginBottom: 16,
+      textAlign: isRTL ? "right" : "left",
+    },
+    singleInput: {
+      borderWidth: 2,
+      borderRadius: 12,
+      padding: 16,
+      fontSize: 18,
+      textAlign: isRTL ? "right" : "left",
+      minHeight: 50,
+    },
+    errorText: {
+      fontSize: 14,
+      textAlign: 'center',
+      marginTop: 8,
+      fontWeight: '500',
     },
     buttonRow: {
       flexDirection: isRTL ? "row-reverse" : "row",
@@ -842,4 +1087,11 @@ const createStyles = (theme, themeStyles, isRTL) =>
       textAlign: isRTL ? "right" : "left",
       writingDirection: isRTL ? "rtl" : "ltr",
     },
+     emailIconAligned: {
+      width: 50,
+      height: 50,
+      marginHorizontal: 4, 
+      alignSelf: 'center', 
+    },
   });
+
