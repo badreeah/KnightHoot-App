@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Animated } from 'react-native';
 import { BarChart } from "react-native-chart-kit";
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../supabase';
 
 const initialData = {
   sources: [

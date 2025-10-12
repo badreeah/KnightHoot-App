@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, LayoutAnimation, Platform, UIManager } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, LayoutAnimation, Platform, UIManager, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { supabase } from '../supabaseClient';
+import { supabase } from '../supabase';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -84,7 +84,7 @@ const ManageAlertsScreen = () => {
         id: `email-${scan.id}`,
         title: scan.is_scam ? "Suspicious Email Detected!" : "Email Scanned",
         from: scan.from_address,
-        description: scan.subject + (scan.snippet ? ` - ${scan.snippet.substring(0, 50)}...` : ''),
+        description: scan.subject + (scan.snippet ? ` - ${scan.snippet}` : ''),
         action: scan.is_scam ? "Flagged as potential scam" : "Scanned and safe",
         time: new Date(scan.scanned_at).toLocaleTimeString(),
         date: new Date(scan.scanned_at).toLocaleDateString(),
@@ -149,18 +149,109 @@ const ManageAlertsScreen = () => {
     setActiveCardId(activeCardId === id ? null : id);
   };
 
-  const reportAlert = (type, id) => {
-    setAlertsData(prev => ({
-      ...prev,
-      [type]: prev[type].map(alert => alert.id === id ? { ...alert, reported: true, restored: false } : alert)
-    }));
+  const reportAlert = async (type, id) => {
+    const [channel, subType] = type.split('-');
+    if (channel === 'email') {
+      const alert = alertsData[channel][subType].find(a => a.id === id);
+      if (!alert) return;
+      const parts = alert.description.split(' - ');
+      const subject = parts[0];
+      const snippet = parts.slice(1).join(' - ') || '';
+      const reportData = {
+        user_id: userId,
+        scam_type: 'email',
+        description: `Email: ${alert.from}\nSubject: ${subject}\nDescription: ${snippet}`,
+      };
+      try {
+        const { error } = await supabase
+          .from('scam_reports')
+          .insert([reportData]);
+        if (error) {
+          console.error('Error reporting email:', error);
+          Alert.alert('Error', 'Failed to report email. Please try again.');
+          return;
+        }
+        setAlertsData(prev => ({
+          ...prev,
+          [channel]: {
+            ...prev[channel],
+            [subType]: prev[channel][subType].map(a => a.id === id ? { ...a, reported: true, restored: false } : a)
+          }
+        }));
+        Alert.alert('Success', 'Email reported successfully.');
+      } catch (err) {
+        console.error('Error:', err);
+        Alert.alert('Error', 'An error occurred while reporting.');
+      }
+    } else {
+      setAlertsData(prev => ({
+        ...prev,
+        [channel]: {
+          ...prev[channel],
+          [subType]: prev[channel][subType].map(alert => alert.id === id ? { ...alert, reported: true, restored: false } : alert)
+        }
+      }));
+    }
+  };
+
+  const unreportAlert = async (type, id) => {
+    const [channel, subType] = type.split('-');
+    if (channel === 'email') {
+      const alert = alertsData[channel][subType].find(a => a.id === id);
+      if (!alert) return;
+      const parts = alert.description.split(' - ');
+      const subject = parts[0];
+      const snippet = parts.slice(1).join(' - ') || '';
+      const descriptionToDelete = `Email: ${alert.from}\nSubject: ${subject}\nDescription: ${snippet}`;
+      console.log('Unreporting email with userId:', userId, 'description:', descriptionToDelete);
+      try {
+        const { data, error } = await supabase
+          .from('scam_reports')
+          .update({ status: 'dismissed_by_user' })
+          .eq('user_id', userId)
+          .eq('scam_type', 'email')
+          .eq('description', descriptionToDelete)
+          .select();
+        console.log('Update result:', data, 'error:', error);
+        if (error) {
+          console.error('Error unreporting email:', error);
+          Alert.alert('Error', 'Failed to unreport email. Please try again.');
+          return;
+        }
+        setAlertsData(prev => ({
+          ...prev,
+          [channel]: {
+            ...prev[channel],
+            [subType]: prev[channel][subType].map(a => a.id === id ? { ...a, reported: false } : a)
+          }
+        }));
+        Alert.alert('Success', 'Email unreported successfully.');
+      } catch (err) {
+        console.error('Error:', err);
+        Alert.alert('Error', 'An error occurred while unreporting.');
+      }
+    }
   };
 
   const restoreAlert = (type, id) => {
-    setAlertsData(prev => ({
-      ...prev,
-      [type]: prev[type].map(alert => alert.id === id ? { ...alert, restored: true, reported: false } : alert)
-    }));
+    const [channel, subType] = type.split('-');
+    if (channel === 'email') {
+      setAlertsData(prev => ({
+        ...prev,
+        [channel]: {
+          ...prev[channel],
+          [subType]: prev[channel][subType].filter(alert => alert.id !== id)
+        }
+      }));
+    } else {
+      setAlertsData(prev => ({
+        ...prev,
+        [channel]: {
+          ...prev[channel],
+          [subType]: prev[channel][subType].map(alert => alert.id === id ? { ...alert, restored: true, reported: false } : alert)
+        }
+      }));
+    }
   };
 
   const renderAlertCard = (alert, type) => {
@@ -193,19 +284,21 @@ const ManageAlertsScreen = () => {
             <View style={styles.buttonContainer}>
               <TouchableOpacity
                 style={styles.reportButton}
-                onPress={() => reportAlert(type, alert.id)}
+                onPress={() => alert.reported ? unreportAlert(type, alert.id) : reportAlert(type, alert.id)}
               >
                 <Ionicons name="alert-circle-outline" size={18} color="#fff" style={{marginRight: 6}} />
-                <Text style={styles.reportButtonText}>Report</Text>
+                <Text style={styles.reportButtonText}>{alert.reported ? 'Unreport' : 'Report'}</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity
-                style={styles.restoreButton}
-                onPress={() => restoreAlert(type, alert.id)}
-              >
-                <Ionicons name="refresh-outline" size={18} color="#fff" style={{marginRight: 6}} />
-                <Text style={styles.restoreButtonText}>Restore</Text>
-              </TouchableOpacity>
+              {!(type.startsWith('email') && alert.reported) && (
+                <TouchableOpacity
+                  style={styles.restoreButton}
+                  onPress={() => restoreAlert(type, alert.id)}
+                >
+                  <Ionicons name="refresh-outline" size={18} color="#fff" style={{marginRight: 6}} />
+                  <Text style={styles.restoreButtonText}>Restore</Text>
+                </TouchableOpacity>
+              )}
             </View>
           )}
         </View>

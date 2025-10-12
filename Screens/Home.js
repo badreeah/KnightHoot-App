@@ -12,7 +12,7 @@ import { COLORS } from "../util/colors";
 import WordStyling from "../components/WordStyling";
 import TipsInfo from "../util/TipsInfo"; // Array of tips
 import CustomButton from "../components/CustomButton";
-import { supabase } from "../supabaseClient";
+import { supabase } from "../supabase";
 
 export default function Home({ navigation }) {
   return (

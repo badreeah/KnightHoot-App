@@ -49,11 +49,12 @@ supabase/
 Screens\testemail.txt
 # Supabase client files
 supabase.js
-supabaseClient.js
+
 
 # Temporary folders
 tmp/
 temp/
 supabase.js
 Screens/testemail.txt
+supabase.js
 supabase.js

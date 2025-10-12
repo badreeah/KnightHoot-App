@@ -17,7 +17,7 @@ import { SvgXml } from "react-native-svg";
 import { COLORS } from "../util/colors";
 import { useTranslation } from "react-i18next";
 import { useAppSettings } from "../src/context/AppSettingProvid";
-import { supabase } from "../supabaseClient";
+import { supabase } from "../supabase";
 
 
 export default function Profile() {
@@ -283,10 +283,10 @@ export default function Profile() {
            />
             <View style={styles.settingTextContainer}>
               <Text style={[styles.settingTitle, { color: themeStyles.textColor }]}>
-                {connectedEmail ? 'Email Connected' : 'Email Scanning'}
+                {connectedEmail ? 'Email' : 'Email Scanning'}
               </Text>
               <Text style={[styles.settingDescription, { color: theme.colors.subtext }]}>
-                {connectedEmail ? connectedEmail : 'Connect your email to scan for scams'}
+                {connectedEmail ? 'connected for scanning' : 'connect your email to scan'}
               </Text>
             </View>
           </View>
