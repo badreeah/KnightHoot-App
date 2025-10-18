@@ -23,7 +23,7 @@ const Stack = createNativeStackNavigator();
 function AddDeviceStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="AddDeviceList" component={AddDevice} />
+      <Stack.Screen name="AddDevice" component={AddDevice} />
       <Stack.Screen name="DeviceRadar" component={DeviceRadar} />
     </Stack.Navigator>
   );

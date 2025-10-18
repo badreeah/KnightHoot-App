@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
@@ -18,6 +19,35 @@ import ShieldIcon from '../assets/images/shield.png';
 const SUPABASE_URL = 'https://qsgrxnzljtoebmeqcpbp.supabase.co';
 const SUPABASE_ANON_KEY ='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFzZ3J4bnpsanRvZWJtZXFjcGJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg2MzQ1MTMsImV4cCI6MjA3NDIxMDUxM30.2sHDLxRF_dZp0tbZ5_Pefed3rsOoEfw5zMVAjEjIqZs'
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+=======
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Animated } from 'react-native';
+import { BarChart } from "react-native-chart-kit";
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { supabase } from '../supabase';
+
+const initialData = {
+  sources: [
+    { name: "SMS", count: 22, active: true },
+    { name: "Calls", count: 10, active: false },
+    { name: "Email", count: 0, active: false },
+    { name: "URL", count: 12, active: false },
+  ],
+  severity: [
+    { level: "Low", count: 87, colorDot: '#52A7FC' },
+    { level: "Medium", count: 12, colorDot: '#FFC107' },
+    { level: "High", count: 4, colorDot: '#F66E83' },
+  ],
+  riskActivityToday: {
+    labels: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
+    data: [1200, 500, 1500, 800, 2313, 600, 1400],
+  },
+  riskActivityWeek: {
+    labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
+    data: [3500, 4200, 3100, 4600],
+  },
+};
+>>>>>>> 57fbe7bd7995e1c712d61e7c753613b2fbbce4f4
 
 // ---------------- UI Components ----------------
 const FilterButton = ({ text, onPress }) => (
@@ -50,6 +80,7 @@ const SeverityScoreBox = ({ level, value, color }) => (
   </View>
 );
 
+<<<<<<< HEAD
 // ---------------- Main Screen ----------------
 const Statistics = () => {
   const [loading, setLoading] = useState(true);
@@ -110,6 +141,34 @@ const Statistics = () => {
   // ---------------- Filter button handlers ----------------
   const handleThisWeek = () => {
     setFilterWeek(filterWeek === 'thisWeek' ? 'all' : 'thisWeek');
+=======
+  useEffect(() => {
+    const fetchEmailStats = async () => {
+      const { count, error } = await supabase
+        .from('email_scans')
+        .select('*', { count: 'exact', head: true });
+
+      if (error) {
+        console.error('Error fetching email stats:', error);
+        return;
+      }
+
+      setSources(prev =>
+        prev.map(source =>
+          source.name === 'Email' ? { ...source, count: count || 0 } : source
+        )
+      );
+    };
+
+    fetchEmailStats();
+  }, []);
+
+  const onSourcePress = (index) => {
+    if (!allowedActive.includes(sources[index].name)) return;
+    setSources(prev =>
+      prev.map((item, i) => ({ ...item, active: i === index }))
+    );
+>>>>>>> 57fbe7bd7995e1c712d61e7c753613b2fbbce4f4
   };
 
   const handleSourceClick = (sourceName) => {
