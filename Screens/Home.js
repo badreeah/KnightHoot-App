@@ -98,7 +98,7 @@ export default function Home({ navigation }) {
             iconWidth={120}
             iconHeight={120}
             top={-18}
-            onPress={() => navigation.navigate("ScanURL")}
+            onPress={() => console.log("Scan URL")}
           />
           <ActionButton
             title="Report Scam"
@@ -107,7 +107,8 @@ export default function Home({ navigation }) {
             iconWidth={114}
             top={-30}
             iconHeight={114}
-            onPress={() => navigation.navigate("ReportScam")}
+            onPress={() => navigation.navigate('ReportScam')}
+
           />
         </ScrollView>
       </View>

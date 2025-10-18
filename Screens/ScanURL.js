@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 // ملف: ScanURL.js في مجلد Screens
+=======
+// ملف: ScanURLScreen.js في مجلد Screens
+>>>>>>> origin/feature/alerts-stats
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { COLORS } from "../util/colors";
