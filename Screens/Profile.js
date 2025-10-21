@@ -165,20 +165,29 @@ export default function Profile() {
         <Pressable onPress={() => navigation.goBack()}>
         <Ionicons name="arrow-back" size={24} color={COLORS.purple1} />
         </Pressable>
-        <Text style={[styles.headerTitle, { color: themeStyles.textColor }]}>{t("profile")}</Text>
+        <Text style={[styles.headerTitle, { color: themeStyles.textColor }]}>{t("Profile")}</Text>
         <View style={{ width: 24 }} />
       </View>
 
       {/* Profile Section */}
       <View style={[styles.profileSection, { backgroundColor: themeStyles.profileBackground, borderColor: themeStyles.borderColor }]}>
-        <Image source={require("../assets/images/Avatar.png")} style={styles.profileImage} />
-        <Text style={[styles.profileName, { color: themeStyles.profileText }]}>
-          {userData.firstName} {userData.lastName}
-        </Text>
-        <Text style={[styles.profileUsername, { color: themeStyles.profileUsername }]}>
-          {userData.email}
-        </Text>
-      </View>
+  <Image source={require("../assets/images/Avatar.png")} style={styles.profileImage} />
+  <View style={styles.profileInfo}>
+    <Text style={[styles.profileName, { color: themeStyles.profileText, textAlign: isRTL ? "right" : "left" }]}>
+      {tempData.firstName} {tempData.lastName}
+    </Text>
+    {!!tempData.username && (
+      <Text style={[styles.profileUsername, { color: themeStyles.profileUsername, textAlign: isRTL ? "right" : "left" }]}>
+        {tempData.username}
+      </Text>
+    )}
+    {!!tempData.email && (
+      <Text style={[styles.profileUsername, { color: themeStyles.profileUsername, textAlign: isRTL ? "right" : "left" }]}>
+        {tempData.email}
+      </Text>
+    )}
+  </View>
+</View>
 
       <View style={[styles.divider, { backgroundColor: themeStyles.borderColor }]} />
 
@@ -800,35 +809,40 @@ const createStyles = (theme, themeStyles, isRTL) =>
       color: theme.colors.text,
     },
     profileSection: {
-      borderRadius: 16,
-      padding: 24,
-      marginBottom: 16,
-      alignItems: "center",
-      shadowColor: "#797EF6",
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.05,
-      shadowRadius: 2,
-      elevation: 2,
-      borderWidth: 1,
-      borderColor: theme.colors.cardBorder,
-    },
-    profileImage: {
-      width: 100,
-      height: 100,
-      borderRadius: 50,
-      marginBottom: 16,
-    },
-    profileName: {
-      fontSize: 18,
-      fontWeight: "500",
-      marginBottom: 4,
-      color: theme.colors.text,
-    },
-    profileUsername: {
-      fontSize: 16,
-      marginBottom: 16,
-      color: theme.colors.subtext,
-    },
+  borderRadius: 24,
+  padding: 40,
+  marginBottom: 16,
+  flexDirection: isRTL ? "row-reverse" : "row",
+  alignItems: "center",
+  shadowColor: "#797EF6",
+  shadowOffset: { width: 0, height: 1 },
+  shadowOpacity: 0.05,
+  shadowRadius: 2,
+  elevation: 2,
+  borderWidth: 1,
+  borderColor: theme.colors.cardBorder,
+},
+profileImage: {
+  width: 90,
+  height: 90,
+  borderRadius: 39,
+  marginRight: isRTL ? 0 : 12,
+  marginLeft: isRTL ? 12 : 0,
+  backgroundColor: "#fff",
+},
+profileInfo: {
+  flex: 1,
+},
+profileName: {
+  fontSize: 16,
+  fontWeight: "700",
+  marginBottom: 2,
+  color: theme.colors.text,
+},
+profileUsername: {
+  fontSize: 13,
+  color: theme.colors.subtext,
+},
     divider: {
       height: 1,
       marginVertical: 16,

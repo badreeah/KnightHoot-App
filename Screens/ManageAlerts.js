@@ -1,7 +1,9 @@
+// ManageAlerts.js
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, LayoutAnimation, Platform, UIManager, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { supabase } from '../supabase';
+import { useAppSettings } from "../src/context/AppSettingProvid";
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -57,6 +59,9 @@ const initialAlertsData = {
 };
 
 const ManageAlertsScreen = () => {
+  const { theme } = useAppSettings();
+  const styles = makeStyles(theme);
+
   const [alertsData, setAlertsData] = useState(initialAlertsData);
   const [activeCardId, setActiveCardId] = useState(null);
   const [userId, setUserId] = useState(null);
@@ -79,7 +84,7 @@ const ManageAlertsScreen = () => {
       certain: [],
     };
 
-    scans.forEach((scan, index) => {
+    scans.forEach((scan) => {
       const alert = {
         id: `email-${scan.id}`,
         title: scan.is_scam ? "Suspicious Email Detected!" : "Email Scanned",
@@ -88,16 +93,13 @@ const ManageAlertsScreen = () => {
         action: scan.is_scam ? "Flagged as potential scam" : "Scanned and safe",
         time: new Date(scan.scanned_at).toLocaleTimeString(),
         date: new Date(scan.scanned_at).toLocaleDateString(),
-        iconColor: scan.is_scam ? '#FE6D72' : '#52A7FC',
+        iconColor: scan.is_scam ? theme.badges.danger : theme.badges.safe,
         reported: false,
         restored: false,
       };
 
-      if (scan.is_scam) {
-        emailAlerts.certain.push(alert);
-      } else {
-        emailAlerts.uncertain.push(alert);
-      }
+      if (scan.is_scam) emailAlerts.certain.push(alert);
+      else emailAlerts.uncertain.push(alert);
     });
 
     setAlertsData(prev => ({
@@ -114,7 +116,6 @@ const ManageAlertsScreen = () => {
         await fetchEmailScans(user.id);
       }
     };
-
     getUserAndFetch();
   }, []);
 
@@ -131,9 +132,7 @@ const ManageAlertsScreen = () => {
           table: 'email_scans',
           filter: `user_id=eq.${userId}`,
         },
-        async (payload) => {
-          console.log('New email scan inserted:', payload.new);
-          // Refetch to update the list
+        async () => {
           await fetchEmailScans(userId);
         }
       )
@@ -163,9 +162,7 @@ const ManageAlertsScreen = () => {
         description: `Email: ${alert.from}\nSubject: ${subject}\nDescription: ${snippet}`,
       };
       try {
-        const { error } = await supabase
-          .from('scam_reports')
-          .insert([reportData]);
+        const { error } = await supabase.from('scam_reports').insert([reportData]);
         if (error) {
           console.error('Error reporting email:', error);
           Alert.alert('Error', 'Failed to report email. Please try again.');
@@ -203,16 +200,13 @@ const ManageAlertsScreen = () => {
       const subject = parts[0];
       const snippet = parts.slice(1).join(' - ') || '';
       const descriptionToDelete = `Email: ${alert.from}\nSubject: ${subject}\nDescription: ${snippet}`;
-      console.log('Unreporting email with userId:', userId, 'description:', descriptionToDelete);
       try {
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('scam_reports')
           .update({ status: 'dismissed_by_user' })
           .eq('user_id', userId)
           .eq('scam_type', 'email')
-          .eq('description', descriptionToDelete)
-          .select();
-        console.log('Update result:', data, 'error:', error);
+          .eq('description', descriptionToDelete);
         if (error) {
           console.error('Error unreporting email:', error);
           Alert.alert('Error', 'Failed to unreport email. Please try again.');
@@ -283,20 +277,22 @@ const ManageAlertsScreen = () => {
           {isActive && (
             <View style={styles.buttonContainer}>
               <TouchableOpacity
-                style={styles.reportButton}
+                style={[styles.reportButton, { backgroundColor: theme.badges.danger }]}
                 onPress={() => alert.reported ? unreportAlert(type, alert.id) : reportAlert(type, alert.id)}
               >
-                <Ionicons name="alert-circle-outline" size={18} color="#fff" style={{marginRight: 6}} />
-                <Text style={styles.reportButtonText}>{alert.reported ? 'Unreport' : 'Report'}</Text>
+                <Ionicons name="alert-circle-outline" size={18} color={theme.colors.primaryTextOn} style={{marginRight: 6}} />
+                <Text style={[styles.reportButtonText, { color: theme.colors.primaryTextOn }]}>
+                  {alert.reported ? 'Unreport' : 'Report'}
+                </Text>
               </TouchableOpacity>
 
               {!(type.startsWith('email') && alert.reported) && (
                 <TouchableOpacity
-                  style={styles.restoreButton}
+                  style={[styles.restoreButton, { backgroundColor: theme.badges.safe }]}
                   onPress={() => restoreAlert(type, alert.id)}
                 >
-                  <Ionicons name="refresh-outline" size={18} color="#fff" style={{marginRight: 6}} />
-                  <Text style={styles.restoreButtonText}>Restore</Text>
+                  <Ionicons name="refresh-outline" size={18} color={theme.colors.primaryTextOn} style={{marginRight: 6}} />
+                  <Text style={[styles.restoreButtonText, { color: theme.colors.primaryTextOn }]}>Restore</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -332,28 +328,28 @@ const ManageAlertsScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  mainContainer: { flex: 1, backgroundColor: '#f6f6f6' },
+const makeStyles = (theme) => StyleSheet.create({
+  mainContainer: { flex: 1, backgroundColor: theme.colors.background },
   container: { flex: 1, paddingHorizontal: 20, paddingTop: 40 },
-  channelTitle: { fontSize: 20, fontWeight: 'bold', color: '#7F3DFF', marginTop: 20, marginBottom: 10 },
+  channelTitle: { fontSize: 20, fontWeight: 'bold', color: theme.colors.tint, marginTop: 20, marginBottom: 10 },
   section: { marginBottom: 20 },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: '#333', marginBottom: 10 },
-  alertCard: { flexDirection: 'row', backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 15 },
-  alertCardActive: { borderColor: '#7F3DFF', borderWidth: 1 },
-  alertReported: { opacity: 0.6 },
-  alertRestored: { opacity: 0.6 },
+  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: theme.colors.text, marginBottom: 10 },
+  alertCard: { flexDirection: 'row', backgroundColor: theme.colors.card, borderRadius: 16, padding: 16, marginBottom: 15, borderWidth: 1, borderColor: theme.colors.cardBorder },
+  alertCardActive: { borderColor: theme.colors.primary },
+  alertReported: { opacity: 0.7 },
+  alertRestored: { opacity: 0.7 },
   alertIcon: { width: 24, height: 24, borderRadius: 8, marginRight: 15 },
   alertContent: { flex: 1 },
-  alertTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 5 },
-  divider: { height: 1, backgroundColor: '#eee', marginVertical: 8 },
-  alertText: { fontSize: 13, color: '#555' },
-  alertLabel: { fontWeight: 'bold', color: '#333' },
+  alertTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 5, color: theme.colors.text },
+  divider: { height: 1, backgroundColor: theme.colors.cardBorder, marginVertical: 8 },
+  alertText: { fontSize: 13, color: theme.colors.subtext },
+  alertLabel: { fontWeight: 'bold', color: theme.colors.text },
   buttonContainer: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 15 },
-  reportButton: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#e74c3c', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 8, marginRight: 10 },
-  reportButtonText: { color: '#fff', fontWeight: 'bold' },
-  restoreButton: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#3498db', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 8 },
-  restoreButtonText: { color: '#fff', fontWeight: 'bold' },
-  placeholderText: { fontSize: 16, fontStyle: 'italic', color: '#999', textAlign: 'center' },
+  reportButton: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 8, marginRight: 10 },
+  reportButtonText: { fontWeight: 'bold' },
+  restoreButton: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, paddingHorizontal: 16, borderRadius: 8 },
+  restoreButtonText: { fontWeight: 'bold' },
+  placeholderText: { fontSize: 16, fontStyle: 'italic', color: theme.colors.subtext, textAlign: 'center' },
 });
 
 export default ManageAlertsScreen;
