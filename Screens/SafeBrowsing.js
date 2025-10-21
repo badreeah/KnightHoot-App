@@ -16,10 +16,33 @@ import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "../util/colors";
 import { useAppSettings } from "../src/context/AppSettingProvid"; // [theme][rtl]
 import { useTranslation } from "react-i18next"; // [i18n]
+import { saveSafeResult } from "../services/saveWebResult";
+import supabase from "../supabase";
 
 const mockSuspiciousDomains = ["bad-site.example", "phishingsite.com", "malware-downloads.net"];
 const suspiciousKeywords = ["verify account", "update payment", "confirm password", "free gift", "click here"];
 
+const classifyUrlAI = async (inputUrl) => {
+  const { data: { session } } = await supabase.auth.getSession();
+  const response = await fetch(
+    `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/url-classify`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
+        ...(session?.access_token
+          ? { Authorization: `Bearer ${session.access_token}` }
+          : {}),
+      },
+      body: JSON.stringify({ url: inputUrl }),
+    }
+  );
+
+  if (!response.ok) throw new Error("API classification failed");
+  const data = await response.json(); // { label, score, reasons, domain }
+  return data;
+};
 export default function SafeBrowningScreen({ navigation }) {
   const [url, setUrl] = useState("");
   const [siteRating, setSiteRating] = useState(null); // 'safe' | 'suspicious' | 'danger'
@@ -98,6 +121,35 @@ export default function SafeBrowningScreen({ navigation }) {
     return <Text style={styles.ratingPlaceholder}>—</Text>;
   };
 
+  const handleCheck = async () => {
+  const input = (url || "").trim();
+  if (!input) return Alert.alert("Enter a valid URL");
+
+  try {
+    // 1) 
+    const res = await classifyUrlAI(input); 
+
+    // 2) تحديث الواجهة
+    setLastScanInfo({ domain: res.domain, reason: res.reasons?.[0] || "Classified" });
+    setShowWarning(res.label === "notsafe");
+    setSiteRating(res.label === "notsafe" ? "danger" : "safe");
+
+    // 3) تخزين النتيجة
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user?.id) {
+      await saveSafeResult(
+        user.id,
+        input,
+        res.domain,
+        res.label,           
+        res.score,           
+        (res.reasons || []).join("; ")
+      );
+    }
+  } catch (e) {
+    Alert.alert("Scan failed", String(e.message || e));
+  }
+};
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
       {/* Header */}
@@ -109,13 +161,7 @@ export default function SafeBrowningScreen({ navigation }) {
         <Image source={require("../assets/images/protection.png")} style={{ width: 24, height: 24 }} resizeMode="contain" />
       </View>
 
-      {/* Warning banner */}
-      {showWarning && (
-        <View style={styles.warningBox}>
-          <Text style={styles.warningText}>⚠️ {t("safe.banner", "This site looks suspicious — proceed with caution")}</Text> {/* [i18n] */}
-        </View>
-      )}
-
+  
       {/* Check URL */}
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>{t("safe.checkUrl", "Check URL")}</Text> {/* [i18n] */}
@@ -130,7 +176,7 @@ export default function SafeBrowningScreen({ navigation }) {
           placeholderTextColor={theme.colors.subtext} // [theme]
           textAlign={isRTL ? "right" : "left"}        // [rtl]
         />
-        <TouchableOpacity style={styles.primaryBtn} onPress={() => scanUrl(url)}>
+        <TouchableOpacity style={styles.primaryBtn} onPress={handleCheck}>
           <Text style={styles.primaryBtnText}>{t("safe.checkUrl", "Check URL")}</Text> {/* [i18n] */}
         </TouchableOpacity>
       </View>
