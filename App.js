@@ -9,6 +9,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useCallback, useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import React, { useMemo } from "react";
+import Svg, { Circle, Path } from "react-native-svg";
 
 import Welcome from "./Screens/Welcome";
 import Tabs from "./navigation/Tabs";
@@ -24,6 +25,8 @@ import Profile from "./Screens/Profile";
 import SafeBrowsing from "./Screens/SafeBrowsing";
 import SettingsScreen from "./Screens/SettingsScreen";
 import SplashScreen from "./Screens/SplshScreen";
+import Statics from "./Screens/Statics";
+import ManageAlerts from "./Screens/ManageAlerts";
 
 import "./src/i18n";
 import {
