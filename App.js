@@ -24,6 +24,7 @@ import Profile from "./Screens/Profile";
 import SafeBrowsing from "./Screens/SafeBrowsing";
 import SettingsScreen from "./Screens/SettingsScreen";
 import SplashScreen from "./Screens/SplshScreen";
+import ScanURL from "./Screens/ScanURL";
 
 import "./src/i18n";
 import {
@@ -66,7 +67,6 @@ export default function App() {
   function NavigationWithTheme() {
     const { theme } = useAppSettings();
 
-    // ثيم النافيقيشن مبني على الثيم العام
     const navTheme = useMemo(() => {
       const base =
         theme.mode === "dark" ? { ...DarkTheme } : { ...DefaultTheme };
@@ -78,7 +78,6 @@ export default function App() {
       return base;
     }, [theme]);
 
-    // expo-status-bar يقبل "light" أو "dark"
     const statusBarStyle = theme.mode === "dark" ? "light" : "dark";
 
     return (
@@ -112,6 +111,7 @@ export default function App() {
               <Stack.Screen name="Profile" component={Profile} />
               <Stack.Screen name="SafeBrowsing" component={SafeBrowsing} />
               <Stack.Screen name="Settings" component={SettingsScreen} />
+              <Stack.Screen name="ScanURL" component={ScanURL} />
             </>
           </Stack.Navigator>
         </NavigationContainer>

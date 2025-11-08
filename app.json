@@ -17,7 +17,6 @@
         "foregroundImage": "./assets/icons/logo.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true,
       "package": "com.anonymous.KnightHootApp"
     },
     "web": {
