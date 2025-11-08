@@ -1,5 +1,5 @@
 // Screens/Profile.js
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -12,12 +12,17 @@ import {
   Image,
   Alert,
   TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "../util/colors";
 import { useTranslation } from "react-i18next";
 import { useAppSettings } from "../src/context/AppSettingProvid";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ensureProfile, getMyProfile, updateMyProfile } from "../src/api/profile";
 import supabase from "../supabase";
 import { getAvatar } from "../util/avatar"; 
@@ -25,6 +30,8 @@ import { getAvatar } from "../util/avatar";
 export default function Profile() {
   const navigation = useNavigation();
   const { t } = useTranslation();
+  const scrollRef = useRef(null);
+  const insets = useSafeAreaInsets();
 
   const {
     theme,
@@ -67,7 +74,6 @@ export default function Profile() {
   });
   const [tempData, setTempData] = useState({ ...userData });
 
-  // تحميل البروفايل
   useEffect(() => {
     (async () => {
       await ensureProfile();
@@ -94,10 +100,8 @@ export default function Profile() {
         username: p.username ?? "",
       });
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // فحص اتصال الإيميل (Email Scanning)
   useEffect(() => {
     const checkEmailConnection = async () => {
       try {
@@ -149,7 +153,6 @@ export default function Profile() {
   const years = Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i);
   const GENDER_OPTIONS = ["male", "female"];
 
-  // ---------- Utils ----------
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const PHONE_RE = /^[0-9]{7,15}$/;
   const toISODateOrNull = (v) => {
@@ -177,14 +180,11 @@ export default function Profile() {
     return digits;
   }
 
-  // الجنس المعروض فعليًا: من tempData أولًا ثم من profile ثم من user_metadata
   const effectiveGender =
     tempData?.gender || profile?.gender || user?.user_metadata?.gender || null;
 
-  // 🔁 صورة الأفاتار الموحدة لكل الصفحة
   const avatarSrc = useMemo(() => getAvatar(effectiveGender), [effectiveGender]);
 
-  // ---------- حفظ ----------
   const handleSave = async () => {
     try {
       await ensureProfile();
@@ -242,7 +242,6 @@ export default function Profile() {
     setShowDatePickerModal(false);
   };
 
-  // ✅ إصلاح genderKey → key
   const handleGenderSelect = (key) => {
     setTempData((prev) => ({ ...prev, gender: key })); // "male"/"female"
     setShowGenderModal(false);
@@ -453,281 +452,304 @@ export default function Profile() {
   );
 
   const renderEditScreen = () => (
-    <ScrollView style={[styles.container, { backgroundColor: themeStyles.backgroundColor }]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Pressable onPress={() => setActiveScreen("main")}>
-          <Ionicons name="arrow-back" size={24} color={COLORS.purple8} />
-        </Pressable>
-        <View style={{ width: 24 }} />
-      </View>
-
-      {/* Profile Info */}
-      <View
-        style={[
-          styles.profileSection,
-          { backgroundColor: themeStyles.profileBackground, borderColor: themeStyles.borderColor },
-        ]}
-      >
-        <Image source={avatarSrc} style={styles.profileImage} />
-        <Text style={[styles.profileName, { color: themeStyles.profileText }]}>
-          {tempData.firstName} {tempData.lastName}
-        </Text>
-        {!!tempData.username && (
-          <Text style={[styles.profileUsername, { color: themeStyles.profileUsername }]}>
-            {tempData.username}
-          </Text>
-        )}
-      </View>
-
-      {/* Form */}
-      <View
-        style={[
-          styles.formContainer,
-          { backgroundColor: themeStyles.cardBackground, borderColor: themeStyles.borderColor },
-        ]}
-      >
-        {/* First name */}
-        <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>{t("First Name")}</Text>
-        <TextInput
-          style={[styles.input, { backgroundColor: themeStyles.inputBackground, color: themeStyles.textColor }]}
-          value={tempData.firstName}
-          onChangeText={(text) => setTempData({ ...tempData, firstName: text })}
-          textAlign={isRTL ? "right" : "left"}
-          placeholder={t("firstNamePlaceholder")}
-          placeholderTextColor={theme.colors.subtext}
-        />
-
-        {/* Last name */}
-        <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>{t("Last Name")}</Text>
-        <TextInput
-          style={[styles.input, { backgroundColor: themeStyles.inputBackground, color: themeStyles.textColor }]}
-          value={tempData.lastName}
-          onChangeText={(text) => setTempData({ ...tempData, lastName: text })}
-          textAlign={isRTL ? "right" : "left"}
-          placeholder={t("lastNamePlaceholder")}
-          placeholderTextColor={theme.colors.subtext}
-        />
-
-        {/* Gender */}
-        <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>{t("Gender")}</Text>
-        <Pressable
-          style={[styles.input, { backgroundColor: themeStyles.inputBackground, justifyContent: "center" }]}
-          onPress={() => setShowGenderModal(true)}
-        >
-          <Text
-            style={[
-              tempData.gender ? { color: themeStyles.textColor } : { color: theme.colors.subtext },
-              { textAlign: isRTL ? "right" : "left" },
-            ]}
-          >
-            {tempData.gender ? t(tempData.gender) : t("selectGender")}
-          </Text>
-        </Pressable>
-
-        {/* Date of Birth */}
-        <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>{t("Date Of Birth")}</Text>
-        <Pressable
-          style={[styles.input, { backgroundColor: themeStyles.inputBackground }]}
-          onPress={() => setShowDatePickerModal(true)}
-        >
-          <Text
-            style={[
-              tempData.dateOfBirth ? { color: themeStyles.textColor } : { color: theme.colors.subtext },
-              { textAlign: isRTL ? "right" : "left" },
-            ]}
-          >
-            {tempData.dateOfBirth || t("selectDate")}
-          </Text>
-        </Pressable>
-
-        {/* Phone (KSA only) */}
-        <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>{t("Phone Number")}</Text>
-        <View style={styles.phoneRow}>
-          <View style={styles.ksaBadge}>
-            <Text style={styles.ksaFlag}>🇸🇦</Text>
-            <Text style={styles.ksaCode}>+966</Text>
-          </View>
-          <TextInput
-            style={[
-              styles.input,
-              styles.phoneInput,
-              { backgroundColor: themeStyles.inputBackground, color: themeStyles.textColor },
-            ]}
-            value={tempData.phoneNumber}
-            onChangeText={(text) => {
-              const onlyDigits = text.replace(/\D/g, "");
-              setTempData({ ...tempData, phoneNumber: onlyDigits });
-            }}
-            textAlign={isRTL ? "right" : "left"}
-            placeholder="5XXXXXXXX"
-            placeholderTextColor={theme.colors.subtext}
-            keyboardType="phone-pad"
-            maxLength={10}
-          />
-        </View>
-
-        {/* Email */}
-        <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>{t("Email")}</Text>
-        <TextInput
-          style={[styles.input, { backgroundColor: themeStyles.inputBackground, color: themeStyles.textColor }]}
-          value={tempData.email}
-          onChangeText={(text) => setTempData({ ...tempData, email: text })}
-          textAlign={isRTL ? "right" : "left"}
-          placeholder="Enter your email"
-          placeholderTextColor={theme.colors.subtext}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-
-        {/* Password */}
-        <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>{t("Password")}</Text>
-        <View>
-          <TextInput
-            style={[
-              styles.input,
-              { backgroundColor: themeStyles.inputBackground, color: themeStyles.textColor },
-              styles.passwordInput,
-            ]}
-            value={tempData.password}
-            onChangeText={(text) => setTempData({ ...tempData, password: text })}
-            textAlign={isRTL ? "right" : "left"}
-            placeholder="Enter your password"
-            placeholderTextColor={theme.colors?.subtext || "#999"}
-            secureTextEntry={!passwordVisible}
-            autoCapitalize="none"
-          />
-          <TouchableOpacity
-            style={styles.eyeBtn}
-            onPress={() => setPasswordVisible((v) => !v)}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Ionicons name={passwordVisible ? "eye" : "eye-off"} size={20} color="#797df6" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Buttons */}
-        <View style={styles.buttonRow}>
-          <Pressable style={styles.cancelButton} onPress={handleCancel}>
-            <Text style={styles.cancelButtonText}>{t("cancel")}</Text>
+      <KeyboardAvoidingView
+   style={{ flex: 1, backgroundColor: themeStyles.backgroundColor }}
+   behavior={Platform.OS === "ios" ? "padding" : undefined}
+   keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
+>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View style={{ flex: 1 }}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Pressable onPress={() => setActiveScreen("main")}>
+            <Ionicons name="arrow-back" size={24} color={COLORS.purple8} />
           </Pressable>
-          <Pressable style={styles.saveButton} onPress={handleSave}>
-            <Text style={styles.saveButtonText}>{t("save")}</Text>
-          </Pressable>
+          <View style={{ width: 24 }} />
         </View>
-      </View>
 
-      {/* Date Picker Modal */}
-      <Modal visible={showDatePickerModal} transparent animationType="slide">
-        <View style={styles.modalContainer}>
-          <View style={[styles.modalContent, { backgroundColor: themeStyles.cardBackground }]}>
-            <Text style={[styles.modalTitle, { color: themeStyles.textColor }]}>{t("selectDob")}</Text>
-
-            <View style={styles.datePickerContainer}>
-              <ScrollView style={styles.pickerColumn}>
-                {days.map((day) => (
-                  <Pressable
-                    key={day}
-                    style={[styles.pickerOption, selectedDay === day && styles.selectedPickerOption]}
-                    onPress={() => setSelectedDay(day)}
-                  >
-                    <Text
-                      style={[
-                        styles.pickerOptionText,
-                        selectedDay === day && styles.selectedPickerOptionText,
-                      ]}
-                    >
-                      {day}
-                    </Text>
-                  </Pressable>
-                ))}
-              </ScrollView>
-
-              <ScrollView style={styles.pickerColumn}>
-                {months.map((month, index) => (
-                  <Pressable
-                    key={month}
-                    style={[styles.pickerOption, selectedMonth === index && styles.selectedPickerOption]}
-                    onPress={() => setSelectedMonth(index)}
-                  >
-                    <Text
-                      style={[
-                        styles.pickerOptionText,
-                        selectedMonth === index && styles.selectedPickerOptionText,
-                      ]}
-                    >
-                      {month}
-                    </Text>
-                  </Pressable>
-                ))}
-              </ScrollView>
-
-              <ScrollView style={styles.pickerColumn}>
-                {years.map((year) => (
-                  <Pressable
-                    key={year}
-                    style={[styles.pickerOption, selectedYear === year && styles.selectedPickerOption]}
-                    onPress={() => setSelectedYear(year)}
-                  >
-                    <Text
-                      style={[
-                        styles.pickerOptionText,
-                        selectedYear === year && styles.selectedPickerOptionText,
-                      ]}
-                    >
-                      {year}
-                    </Text>
-                  </Pressable>
-                ))}
-              </ScrollView>
-            </View>
-
-            <View style={styles.modalButtons}>
-              <Pressable style={styles.modalButton} onPress={() => setShowDatePickerModal(false)}>
-                <Text style={styles.modalButtonText}>{t("cancel")}</Text>
-              </Pressable>
-              <Pressable
-                style={[styles.modalButton, styles.modalButtonPrimary]}
-                onPress={handleDateSelect}
-              >
-                <Text style={[styles.modalButtonText, styles.modalButtonPrimaryText]}>
-                  {t("selectDate")}
-                </Text>
-              </Pressable>
-            </View>
+        <ScrollView
+          ref={scrollRef}
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: (insets?.bottom ?? 0) + 220 }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
+          scrollEventThrottle={16}
+          contentInsetAdjustmentBehavior="automatic"
+          automaticallyAdjustKeyboardInsets
+          nestedScrollEnabled
+        >
+          {/* Profile Info */}
+          <View
+            style={[
+              styles.profileSection,
+              { backgroundColor: themeStyles.profileBackground, borderColor: themeStyles.borderColor },
+            ]}
+          >
+            <Image source={avatarSrc} style={styles.profileImage} />
+            <Text style={[styles.profileName, { color: themeStyles.profileText }]}>
+              {tempData.firstName} {tempData.lastName}
+            </Text>
+            {!!tempData.username && (
+              <Text style={[styles.profileUsername, { color: themeStyles.profileUsername }]}>
+                {tempData.username}
+              </Text>
+            )}
           </View>
-        </View>
-      </Modal>
 
-      {/* Gender Selection Modal */}
-      <Modal visible={showGenderModal} transparent animationType="slide">
-        <View style={styles.modalContainer}>
-          <View style={[styles.modalContent, { backgroundColor: themeStyles.cardBackground }]}>
-            <Text style={[styles.modalTitle, { color: themeStyles.textColor }]}>{t("selectGender")}</Text>
+          {/* Form */}
+          <View
+            style={[
+              styles.formContainer,
+              { backgroundColor: themeStyles.cardBackground, borderColor: themeStyles.borderColor },
+            ]}
+          >
+            {/* First name */}
+            <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>{t("First Name")}</Text>
+            <TextInput
+              style={[styles.input, { backgroundColor: themeStyles.inputBackground, color: themeStyles.textColor }]}
+              value={tempData.firstName}
+              onChangeText={(text) => setTempData({ ...tempData, firstName: text })}
+              textAlign={isRTL ? "right" : "left"}
+              placeholder={t("First Name")}
+              placeholderTextColor={theme.colors.subtext}
+              returnKeyType="next"
+              blurOnSubmit={false}
+            />
 
-            {GENDER_OPTIONS.map((key) => (
-              <Pressable
-                key={key}
-                style={styles.option}
-                onPress={() => handleGenderSelect(key)}
+            {/* Last name */}
+            <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>{t("Last Name")}</Text>
+            <TextInput
+              style={[styles.input, { backgroundColor: themeStyles.inputBackground, color: themeStyles.textColor }]}
+              value={tempData.lastName}
+              onChangeText={(text) => setTempData({ ...tempData, lastName: text })}
+              textAlign={isRTL ? "right" : "left"}
+              placeholder={t("Last Name")}
+              placeholderTextColor={theme.colors.subtext}
+              returnKeyType="next"
+              blurOnSubmit={false}
+            />
+
+            {/* Gender */}
+            <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>{t("Gender")}</Text>
+            <Pressable
+              style={[styles.input, { backgroundColor: themeStyles.inputBackground, justifyContent: "center" }]}
+              onPress={() => setShowGenderModal(true)}
+            >
+              <Text
+                style={[
+                  tempData.gender ? { color: themeStyles.textColor } : { color: theme.colors.subtext },
+                  { textAlign: isRTL ? "right" : "left" },
+                ]}
               >
-                <Text style={[styles.optionText, { color: themeStyles.textColor }]}>
-                  {t(key)}
-                </Text>
-              </Pressable>
-            ))}
-
-            <Pressable style={styles.closeButton} onPress={() => setShowGenderModal(false)}>
-              <Text style={styles.closeButtonText}>{t("close")}</Text>
+                {tempData.gender ? t(tempData.gender) : t("selectGender")}
+              </Text>
             </Pressable>
+
+            {/* Date of Birth */}
+            <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>{t("Date Of Birth")}</Text>
+            <Pressable
+              style={[styles.input, { backgroundColor: themeStyles.inputBackground }]}
+              onPress={() => setShowDatePickerModal(true)}
+            >
+              <Text
+                style={[
+                  tempData.dateOfBirth ? { color: themeStyles.textColor } : { color: theme.colors.subtext },
+                  { textAlign: isRTL ? "right" : "left" },
+                ]}
+              >
+                {tempData.dateOfBirth || t("selectDate")}
+              </Text>
+            </Pressable>
+
+            {/* Phone (KSA only) */}
+            <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>{t("Phone Number")}</Text>
+            <View style={styles.phoneRow}>
+              <View style={styles.ksaBadge}>
+                <Text style={styles.ksaFlag}>🇸🇦</Text>
+                <Text style={styles.ksaCode}>+966</Text>
+              </View>
+              <TextInput
+                style={[
+                  styles.input,
+                  styles.phoneInput,
+                  { backgroundColor: themeStyles.inputBackground, color: themeStyles.textColor },
+                ]}
+                value={tempData.phoneNumber}
+                onChangeText={(text) => {
+                  const onlyDigits = text.replace(/\D/g, "");
+                  setTempData({ ...tempData, phoneNumber: onlyDigits });
+                }}
+                textAlign={isRTL ? "right" : "left"}
+                placeholder="5XXXXXXXX"
+                placeholderTextColor={theme.colors.subtext}
+                keyboardType="phone-pad"
+                maxLength={10}
+                returnKeyType="next"
+                blurOnSubmit={false}
+              />
+            </View>
+
+            {/* Email */}
+            <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>{t("Email")}</Text>
+            <TextInput
+              onFocus={() => scrollRef.current?.scrollToEnd({ animated: true })}
+              style={[styles.input, { backgroundColor: themeStyles.inputBackground, color: themeStyles.textColor }]}
+              value={tempData.email}
+              onChangeText={(text) => setTempData({ ...tempData, email: text })}
+              textAlign={isRTL ? "right" : "left"}
+              placeholder="Enter your email"
+              placeholderTextColor={theme.colors.subtext}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              returnKeyType="next"
+              blurOnSubmit={false}
+            />
+
+            {/* Password */}
+            <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>{t("Password")}</Text>
+            <View>
+              <TextInput
+              onFocus={() => scrollRef.current?.scrollToEnd({ animated: true })}
+                style={[
+                  styles.input,
+                  { backgroundColor: themeStyles.inputBackground, color: themeStyles.textColor },
+                  styles.passwordInput,
+                ]}
+                value={tempData.password}
+                onChangeText={(text) => setTempData({ ...tempData, password: text })}
+                textAlign={isRTL ? "right" : "left"}
+                placeholder="Enter your password"
+                placeholderTextColor={theme.colors?.subtext || "#999"}
+                secureTextEntry={!passwordVisible}
+                autoCapitalize="none"
+                returnKeyType="done"
+              />
+              <TouchableOpacity
+                style={styles.eyeBtn}
+                onPress={() => setPasswordVisible((v) => !v)}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Ionicons name={passwordVisible ? "eye" : "eye-off"} size={20} color="#797df6" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Buttons */}
+            <View style={styles.buttonRow}>
+              <Pressable style={styles.cancelButton} onPress={handleCancel}>
+                <Text style={styles.cancelButtonText}>{t("cancel")}</Text>
+              </Pressable>
+              <Pressable style={styles.saveButton} onPress={handleSave}>
+                <Text style={styles.saveButtonText}>{t("save")}</Text>
+              </Pressable>
+            </View>
           </View>
-        </View>
-      </Modal>
+        </ScrollView>
 
-      <View style={{ height: 120 }} />
-    </ScrollView>
-  );
+        {/* Date Picker Modal */}
+        <Modal visible={showDatePickerModal} transparent animationType="slide">
+          <View style={styles.modalContainer}>
+            <View style={[styles.modalContent, { backgroundColor: themeStyles.cardBackground }]}>
+              <Text style={[styles.modalTitle, { color: themeStyles.textColor }]}>{t("selectDob")}</Text>
 
+              <View style={styles.datePickerContainer}>
+                <ScrollView style={styles.pickerColumn} keyboardShouldPersistTaps="handled">
+                  {days.map((day) => (
+                    <Pressable
+                      key={day}
+                      style={[styles.pickerOption, selectedDay === day && styles.selectedPickerOption]}
+                      onPress={() => setSelectedDay(day)}
+                    >
+                      <Text
+                        style={[
+                          styles.pickerOptionText,
+                          selectedDay === day && styles.selectedPickerOptionText,
+                        ]}
+                      >
+                        {day}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </ScrollView>
+
+                <ScrollView style={styles.pickerColumn} keyboardShouldPersistTaps="handled">
+                  {months.map((month, index) => (
+                    <Pressable
+                      key={month}
+                      style={[styles.pickerOption, selectedMonth === index && styles.selectedPickerOption]}
+                      onPress={() => setSelectedMonth(index)}
+                    >
+                      <Text
+                        style={[
+                          styles.pickerOptionText,
+                          selectedMonth === index && styles.selectedPickerOptionText,
+                        ]}
+                      >
+                        {month}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </ScrollView>
+
+                <ScrollView style={styles.pickerColumn} keyboardShouldPersistTaps="handled">
+                  {years.map((year) => (
+                    <Pressable
+                      key={year}
+                      style={[styles.pickerOption, selectedYear === year && styles.selectedPickerOption]}
+                      onPress={() => setSelectedYear(year)}
+                    >
+                      <Text
+                        style={[
+                          styles.pickerOptionText,
+                          selectedYear === year && styles.selectedPickerOptionText,
+                        ]}
+                      >
+                        {year}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              </View>
+
+              <View style={styles.modalButtons}>
+                <Pressable style={styles.modalButton} onPress={() => setShowDatePickerModal(false)}>
+                  <Text style={styles.modalButtonText}>{t("cancel")}</Text>
+                </Pressable>
+                <Pressable
+                  style={[styles.modalButton, styles.modalButtonPrimary]}
+                  onPress={handleDateSelect}
+                >
+                  <Text style={[styles.modalButtonText, styles.modalButtonPrimaryText]}>
+                    {t("selectDate")}
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
+        {/* Gender Selection Modal */}
+        <Modal visible={showGenderModal} transparent animationType="slide">
+          <View style={styles.modalContainer}>
+            <View style={[styles.modalContent, { backgroundColor: themeStyles.cardBackground }]}>
+              <Text style={[styles.modalTitle, { color: themeStyles.textColor }]}>{t("selectGender")}</Text>
+
+              {GENDER_OPTIONS.map((key) => (
+                <Pressable key={key} style={styles.option} onPress={() => handleGenderSelect(key)}>
+                  <Text style={[styles.optionText, { color: themeStyles.textColor }]}>{t(key)}</Text>
+                </Pressable>
+              ))}
+
+              <Pressable style={styles.closeButton} onPress={() => setShowGenderModal(false)}>
+                <Text style={styles.closeButtonText}>{t("close")}</Text>
+              </Pressable>
+            </View>
+          </View>
+        </Modal>
+      </View>
+    </TouchableWithoutFeedback>
+  </KeyboardAvoidingView>
+);
   const renderPrivacyPolicyScreen = () => (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -829,7 +851,6 @@ export default function Profile() {
     </View>
   );
 
-  // ---------- Modals خارج JSX الرئيسي ----------
   function renderLanguageModal() {
     return (
       <Modal visible={showLanguageModal} transparent animationType="slide">
@@ -987,7 +1008,6 @@ export default function Profile() {
   }
 }
 
-/* -------------------------------- Styles -------------------------------- */
 
 const createStyles = (theme, themeStyles, isRTL) =>
   StyleSheet.create({
