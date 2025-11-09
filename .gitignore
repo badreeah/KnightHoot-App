@@ -46,15 +46,9 @@ metro.config.js
 # Supabase local development
 .supabase/
 supabase/
-Screens\testemail.txt
 # Supabase client files
 supabase.js
-
 
 # Temporary folders
 tmp/
 temp/
-supabase.js
-Screens/testemail.txt
-supabase.js
-supabase.js
