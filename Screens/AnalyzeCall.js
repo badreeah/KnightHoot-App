@@ -14,8 +14,11 @@ import { Ionicons } from "@expo/vector-icons";
 import supabase from "../supabase";
 import { saveCallResult } from "../services/saveCallResult";
 const { height } = Dimensions.get("window");
+import { useAppSettings } from "../src/context/AppSettingProvid"; 
+
 
 export default function AnalyzeCall({ navigation }) {
+  const { theme } = useAppSettings();
   const [recording, setRecording] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState("");
@@ -140,30 +143,23 @@ export default function AnalyzeCall({ navigation }) {
     <View
       style={{
         flex: 1,
-        backgroundColor: "#fff",
+        backgroundColor: theme.colors.background,
         paddingTop: 50,
         paddingHorizontal: 16,
       }}
     >
       {/* Header */}
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          marginBottom: 20,
-          marginTop: 40,
-        }}
-      >
+      <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 20, marginTop: 40 }}>
         <TouchableOpacity onPress={() => navigation.navigate("Home")}>
-          <Ionicons name="arrow-back" size={28} color="#6726C3" />
+          <Ionicons name="arrow-back" size={28} color={theme.colors.text} />
         </TouchableOpacity>
         <Text
           style={{
             flex: 1,
             textAlign: "center",
             fontSize: 20,
-            fontFamily: "Poppins-500",
-            color: "#6726C3",
+            fontFamily: theme.fonts.medium,
+            color: theme.colors.text,
           }}
         >
           Analyze Call
@@ -176,18 +172,20 @@ export default function AnalyzeCall({ navigation }) {
         style={{
           height: height / 3,
           borderWidth: 1,
-          borderColor: "#d4cfcfff",
+          borderColor: theme.colors.outline,
           borderRadius: 12,
           padding: 12,
           marginBottom: 20,
+          backgroundColor: theme.colors.card,
         }}
       >
         <TextInput
           value={transcript}
           editable={false}
           multiline
-          style={{ fontSize: 16 }}
+          style={{ fontSize: 16, color: theme.colors.text }}
           placeholder="Transcription will appear here..."
+          placeholderTextColor={theme.colors.subtext}
         />
       </View>
 
@@ -196,9 +194,11 @@ export default function AnalyzeCall({ navigation }) {
         <View
           style={{
             backgroundColor:
-              analysis.prediction === "scam" ? "#ffe5e5" : "#e5ffe5",
+              analysis.prediction === "scam"
+                ? theme.badges.danger
+                : theme.badges.safe,
             borderWidth: 2,
-            borderColor: analysis.prediction === "scam" ? "#ff9999" : "#99ff99",
+            borderColor: theme.colors.cardBorder,
             padding: 16,
             borderRadius: 12,
             marginBottom: 20,
@@ -207,9 +207,9 @@ export default function AnalyzeCall({ navigation }) {
         >
           <Text
             style={{
-              fontFamily: "Poppins-700",
+              fontFamily: theme.fonts.bold,
               fontSize: 24,
-              color: analysis.prediction === "scam" ? "#cc0000" : "#55da55ff",
+              color: theme.colors.text,
               marginBottom: 8,
             }}
           >
@@ -217,9 +217,9 @@ export default function AnalyzeCall({ navigation }) {
           </Text>
           <Text
             style={{
-              fontFamily: "Poppins-600",
+              fontFamily: theme.fonts.semibold,
               fontSize: 18,
-              color: "#333",
+              color: theme.colors.text,
             }}
           >
             {(analysis.probability * 100).toFixed(2)}%
@@ -227,15 +227,8 @@ export default function AnalyzeCall({ navigation }) {
         </View>
       )}
 
-      {/* Spinner */}
       {loading && (
-        <ActivityIndicator
-          size={60}
-          color="#6200EE"
-          style={{
-            marginBottom: 20,
-          }}
-        />
+        <ActivityIndicator size={60} color={theme.colors.primary} style={{ marginBottom: 20 }} />
       )}
 
       {/* Buttons */}
@@ -245,19 +238,13 @@ export default function AnalyzeCall({ navigation }) {
           style={{
             flex: 0.45,
             padding: 8,
-            backgroundColor: "#926DFB",
+            backgroundColor: theme.colors.primary,
             borderRadius: 12,
             alignItems: "center",
           }}
         >
-          <Ionicons
-            name={isRecording ? "mic-off" : "mic"}
-            size={24}
-            color="#fff"
-          />
-          <Text
-            style={{ color: "#fff", marginTop: 4, fontFamily: "Poppins-500" }}
-          >
+          <Ionicons name={isRecording ? "mic-off" : "mic"} size={24} color={theme.colors.primaryTextOn} />
+          <Text style={{ color: theme.colors.primaryTextOn, marginTop: 4, fontFamily: theme.fonts.medium }}>
             {isRecording ? "Stop" : "Record"}
           </Text>
         </Pressable>
@@ -267,15 +254,12 @@ export default function AnalyzeCall({ navigation }) {
           style={{
             flex: 0.45,
             padding: 12,
-            backgroundColor: "#4AE2E3",
+            backgroundColor: theme.colors.tint,
             borderRadius: 12,
             alignItems: "center",
-            justifyContent: "center",
           }}
         >
-          <Text style={{ color: "#ffffffff", fontFamily: "Poppins-600" }}>
-            Transcribe
-          </Text>
+          <Text style={{ color: theme.colors.primaryTextOn, fontFamily: theme.fonts.semibold }}>Transcribe</Text>
         </Pressable>
       </View>
     </View>
