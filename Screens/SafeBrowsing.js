@@ -1,5 +1,5 @@
 // Screens/SafeBrowsing.js
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import {
   View,
   Text,
@@ -13,103 +13,130 @@ import {
   Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useFocusEffect } from "@react-navigation/native";
+
 import { COLORS } from "../util/colors";
 import { useAppSettings } from "../src/context/AppSettingProvid";
 import { useTranslation } from "react-i18next";
 import { saveSafeResult } from "../services/saveWebResult";
 import supabase from "../supabase";
 
-const mockSuspiciousDomains = [
-  "bad-site.example",
-  "phishingsite.com",
-  "malware-downloads.net",
-];
-
-const suspiciousKeywords = [
-  "verify account",
-  "update payment",
-  "confirm password",
-  "free gift",
-  "click here",
-];
+const API_BASE =
+  process.env.EXPO_PUBLIC_URL_MODEL_API ??
+  "https://url-scam-detected-production.up.railway.app";
 
 const classifyUrlAI = async (inputUrl) => {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const response = await fetch(`${API_BASE}/predict`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ url: inputUrl }),
+  });
 
-  const response = await fetch(
-    `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/url-classify`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
-        ...(session?.access_token
-          ? { Authorization: `Bearer ${session.access_token}` }
-          : {}),
-      },
-      body: JSON.stringify({ url: inputUrl }),
-    }
-  );
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`API error (${response.status}): ${text}`);
+  }
 
-  if (!response.ok) throw new Error("API classification failed");
-  const data = await response.json(); // { label, score, reasons, domain }
-  return data;
+  const data = await response.json(); // { url, label, prediction, probability }
+
+  const domain = (inputUrl || "")
+    .replace(/^https?:\/\//, "")
+    .split("/")[0]
+    .toLowerCase();
+
+  const isPhishing = data.prediction === "phishing" || data.label === 1;
+  const score = data.probability ?? null;
+
+  return {
+    domain,
+    label: isPhishing ? "notsafe" : "safe",
+    score,
+    reasons: [
+      isPhishing
+        ? "Model classified the URL as phishing"
+        : "Model classified the URL as safe",
+    ],
+    raw: data,
+  };
 };
 
 function SafeBrowsingScreen({ navigation }) {
   const [url, setUrl] = useState("");
-  const [siteRating, setSiteRating] = useState(null); // 'safe' | 'suspicious' | 'danger'
+  const [siteRating, setSiteRating] = useState(null); // 'safe' | 'danger'
   const [downloadProtection, setDownloadProtection] = useState(true);
   const [lastScanInfo, setLastScanInfo] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
   const { theme, isRTL } = useAppSettings();
   const { t } = useTranslation();
 
   const styles = useMemo(() => createStyles(theme, isRTL), [theme, isRTL]);
 
-  const scanUrl = async (inputUrl) => {
-    const normalized = (inputUrl || "").trim().toLowerCase();
-    if (!normalized) {
-      Alert.alert(t("safe.invalidUrl", "Enter a valid URL to scan"));
-      return;
-    }
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
 
-    try {
-      let domain = normalized.replace(/^https?:\/\//, "").split("/")[0];
+      const loadHistory = async () => {
+        try {
+          setLoadingHistory(true);
 
-      if (mockSuspiciousDomains.some((d) => domain.includes(d))) {
-        setSiteRating("danger");
-        setLastScanInfo({
-          domain,
-          reason: "Domain listed in blocked DB",
-        });
-        return;
-      }
+          const {
+            data: { user },
+          } = await supabase.auth.getUser();
+          if (!user || !isActive) {
+            setLoadingHistory(false);
+            return;
+          }
 
-      const matchedKeyword = suspiciousKeywords.find((kw) =>
-        normalized.includes(kw)
-      );
-      if (matchedKeyword) {
-        setSiteRating("suspicious");
-        setLastScanInfo({
-          domain,
-          reason: `Found phishing keyword: "${matchedKeyword}"`,
-        });
-        return;
-      }
+          const { data, error } = await supabase
+            .from("safe_scans")
+            .select("*")
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false })
+            .limit(20);
 
-      setSiteRating("safe");
-      setLastScanInfo({
-        domain,
-        reason: "No immediate issues found (local check)",
-      });
-    } catch (err) {
-      console.warn("scanUrl error", err);
-      Alert.alert(t("safe.scanError", "An error occurred while scanning"));
-    }
-  };
+          if (!isActive) return;
+
+          if (error) {
+            console.log("loadHistory error:", error);
+            setLoadingHistory(false);
+            return;
+          }
+
+          const results = data || [];
+          setHistory(results);
+
+          if (results.length > 0) {
+            const last = results[0];
+            setLastScanInfo({
+              domain: last.domain,
+              reason: last.reasons || "Classified by ML model",
+            });
+            const uiRating = last.label === "notsafe" ? "danger" : "safe";
+            setSiteRating(uiRating);
+          } else {
+            setLastScanInfo(null);
+            setSiteRating(null);
+          }
+
+          setLoadingHistory(false);
+        } catch (e) {
+          if (!isActive) return;
+          console.log("loadHistory error:", e);
+          setLoadingHistory(false);
+        }
+      };
+
+      loadHistory();
+
+      return () => {
+        isActive = false;
+      };
+    }, [])
+  );
 
   const onOpenLink = (link) => {
     if (siteRating === "danger") {
@@ -153,13 +180,6 @@ function SafeBrowsingScreen({ navigation }) {
         </Text>
       );
 
-    if (siteRating === "suspicious")
-      return (
-        <Text style={[styles.rating, styles.suspicious]}>
-          {t("safe.rating.suspicious", "Suspicious")}
-        </Text>
-      );
-
     if (siteRating === "danger")
       return (
         <Text style={[styles.rating, styles.danger]}>
@@ -184,12 +204,16 @@ function SafeBrowsingScreen({ navigation }) {
     try {
       const res = await classifyUrlAI(input);
 
-      setLastScanInfo({
-        domain: res.domain,
-        reason: res.reasons?.[0] || "Classified",
-      });
       const isNotSafe = res.label === "notsafe";
-      setSiteRating(isNotSafe ? "danger" : "safe");
+      const uiRating = isNotSafe ? "danger" : "safe";
+
+      const uiLastScan = {
+        domain: res.domain,
+        reason: res.reasons?.[0] || "Classified by ML model",
+      };
+
+      setLastScanInfo(uiLastScan);
+      setSiteRating(uiRating);
 
       const {
         data: { user },
@@ -204,8 +228,21 @@ function SafeBrowsingScreen({ navigation }) {
           res.score,
           (res.reasons || []).join("; ")
         );
+
+        const newRow = {
+          id: Date.now(), 
+          user_id: user.id,
+          url: input,
+          domain: res.domain,
+          label: res.label,
+          score: res.score,
+          reasons: (res.reasons || []).join("; "),
+          created_at: new Date().toISOString(),
+        };
+        setHistory((prev) => [newRow, ...prev]);
       }
     } catch (e) {
+      console.log("handleCheck error:", e);
       Alert.alert("Scan failed", String(e.message || e));
     }
   };
@@ -260,36 +297,7 @@ function SafeBrowsingScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      {/* File Download Protection */}
-      <View style={styles.cardRow}>
-        <View style={styles.cardLeft}>
-          <Text style={styles.cardTitle}>
-            {t("safe.downloadProtTitle", "File Download Protection")}
-          </Text>
-          <Text style={styles.cardSub}>
-            {t(
-              "safe.downloadProtDesc",
-              "Prevents downloading suspicious files or shows a warning"
-            )}
-          </Text>
-        </View>
-
-        <View style={styles.cardRight}>
-          <Switch
-            value={downloadProtection}
-            onValueChange={setDownloadProtection}
-            trackColor={{
-              false: theme.colors.cardBorder,
-              true: COLORS.purple2,
-            }}
-            thumbColor={
-              downloadProtection ? COLORS.purple5 : theme.colors.card
-            }
-          />
-        </View>
-      </View>
-
-      {/* Site Rating */}
+      {/* Site Rating + Last Scan */}
       <View style={styles.cardRow}>
         <View style={styles.cardLeft}>
           <Text style={styles.cardTitle}>
@@ -314,7 +322,7 @@ function SafeBrowsingScreen({ navigation }) {
         </Text>
 
         <Text style={styles.tip}>
-          {"\u2022 "} {/* نقطة • */}
+          {"\u2022 "}
           {t("safe.tip1", "Make sure you see HTTPS in the address bar")}
         </Text>
 
@@ -329,7 +337,7 @@ function SafeBrowsingScreen({ navigation }) {
         </Text>
       </View>
 
-      {/* Last scanned domain */}
+      {/* Last scanned domain card */}
       {lastScanInfo && (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>
@@ -370,6 +378,39 @@ function SafeBrowsingScreen({ navigation }) {
               </Text>
             </TouchableOpacity>
           </View>
+        </View>
+      )}
+
+      {/* Scan History */}
+      {history.length > 0 && (
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>
+            {t("safe.historyTitle", "Scan History")}
+          </Text>
+
+          {history.map((item, index) => (
+            <View key={item.id ?? index} style={styles.historyRow}>
+              <Text style={styles.historyDomain}>{item.domain}</Text>
+              <Text
+                style={[
+                  styles.historyLabel,
+                  item.label === "notsafe"
+                    ? styles.historyDanger
+                    : styles.historySafe,
+                ]}
+              >
+                {item.label === "notsafe"
+                  ? t("safe.history.phishing", "Phishing")
+                  : t("safe.history.safe", "Safe")}
+              </Text>
+            </View>
+          ))}
+
+          {loadingHistory && (
+            <Text style={styles.cardSub}>
+              {t("safe.loadingHistory", "Loading history...")}
+            </Text>
+          )}
         </View>
       )}
     </ScrollView>
@@ -508,7 +549,6 @@ const createStyles = (theme, isRTL) =>
       fontFamily: "Poppins-400",
     },
     safe: { backgroundColor: COLORS.brightTiffany },
-    suspicious: { backgroundColor: COLORS.purple2 },
     danger: { backgroundColor: COLORS.purple7 },
 
     tip: {
@@ -520,5 +560,36 @@ const createStyles = (theme, isRTL) =>
     actionsRow: {
       flexDirection: isRTL ? "row-reverse" : "row",
       marginTop: 12,
+    },
+
+    historyRow: {
+      flexDirection: isRTL ? "row-reverse" : "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginTop: 8,
+    },
+    historyDomain: {
+      fontFamily: "Poppins-400",
+      fontSize: 12,
+      color: theme.colors.text,
+      flex: 1,
+      marginRight: isRTL ? 0 : 8,
+      marginLeft: isRTL ? 8 : 0,
+    },
+    historyLabel: {
+      fontFamily: "Poppins-600",
+      fontSize: 12,
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      borderRadius: 12,
+      overflow: "hidden",
+    },
+    historySafe: {
+      backgroundColor: COLORS.brightTiffany,
+      color: "#fff",
+    },
+    historyDanger: {
+      backgroundColor: COLORS.purple7,
+      color: "#fff",
     },
   });
