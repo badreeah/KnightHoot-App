@@ -1,8 +1,10 @@
+// Statics.js
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Animated } from 'react-native';
 import { BarChart } from "react-native-chart-kit";
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { supabase } from '../supabase';
+import { useAppSettings } from "../src/context/AppSettingProvid";
 
 const initialData = {
   sources: [
@@ -12,9 +14,9 @@ const initialData = {
     { name: "URL", count: 12, active: false },
   ],
   severity: [
-    { level: "Low", count: 87, colorDot: '#52A7FC' },
-    { level: "Medium", count: 12, colorDot: '#FFC107' },
-    { level: "High", count: 4, colorDot: '#F66E83' },
+    { level: "Low", count: 87 },
+    { level: "Medium", count: 12 },
+    { level: "High", count: 4 },
   ],
   riskActivityToday: {
     labels: ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
@@ -29,6 +31,9 @@ const initialData = {
 const allowedActive = ["SMS", "Email", "URL"];
 
 const AlertsScreen = () => {
+  const { theme } = useAppSettings();
+  const styles = makeStyles(theme);
+
   const screenWidth = Dimensions.get('window').width - 40;
   const boxWidth = (screenWidth - 16) / 2;
 
@@ -89,8 +94,8 @@ const AlertsScreen = () => {
       <View style={styles.topBar}>
         <Text style={styles.timeText}>5:13 PM</Text>
         <View style={styles.topBarRight}>
-          <Ionicons name="wifi" size={16} color="#000" style={{ marginRight: 6 }} />
-          <Ionicons name="battery-full" size={16} color="#000" />
+          <Ionicons name="wifi" size={16} color={theme.colors.text} style={{ marginRight: 6 }} />
+          <Ionicons name="battery-full" size={16} color={theme.colors.text} />
           <Text style={styles.batteryText}>100%</Text>
         </View>
       </View>
@@ -98,21 +103,23 @@ const AlertsScreen = () => {
       {/* Header */}
       <View style={styles.headerContainer}>
         <View style={styles.headerLeft}>
-          <Ionicons name="arrow-back" size={24} color="#7F3DFF" />
+          <Ionicons name="arrow-back" size={24} color={theme.colors.text} />
           <View style={styles.headerIconContainer}>
-            <View style={styles.headerIconRing} />
-            <MaterialCommunityIcons name="shield-check" size={20} color="#6200EE" style={styles.shieldIcon} />
+            <View style={[styles.headerIconRing, { backgroundColor: theme.colors.primary, opacity: 0.12 }]} />
+            <MaterialCommunityIcons name="shield-check" size={20} color={theme.colors.primary} style={styles.shieldIcon} />
           </View>
           <Text style={styles.headerTitle}>Alert by source</Text>
         </View>
-        <View style={styles.tabsContainer}>
+        <View style={[styles.tabsContainer, { backgroundColor: theme.colors.cardBorder + '30' }]}>
           {['Today','This week'].map(tab => (
             <TouchableOpacity
               key={tab}
-              style={[styles.tabButton, activeTab === tab && styles.activeTab]}
+              style={[styles.tabButton, activeTab === tab && { backgroundColor: theme.colors.card }]}
               onPress={() => setActiveTab(tab)}
             >
-              <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>{tab}</Text>
+              <Text style={[styles.tabText, activeTab === tab && { color: theme.colors.text }]}>
+                {tab}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -126,15 +133,19 @@ const AlertsScreen = () => {
           return (
             <TouchableOpacity
               key={index}
-              style={[styles.sourceBox, { width: boxWidth, height: 80 }, isActive && styles.sourceBoxActive, !isActive && styles.sourceBoxBorderBlue]}
+              style={[
+                styles.sourceBox,
+                { width: boxWidth, height: 80, borderColor: theme.colors.outline, backgroundColor: theme.colors.card },
+                isActive && { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary, shadowColor: theme.colors.primary, elevation: 8 }
+              ]}
               activeOpacity={isSelectable ? 0.7 : 1}
               onPress={() => onSourcePress(index)}
               disabled={!isSelectable}
             >
-              <Text style={[isActive ? styles.sourceNameActive : isSelectable ? styles.sourceNamePurple : styles.sourceNameGrey]}>
+              <Text style={isActive ? styles.sourceNameActive : isSelectable ? [styles.sourceNamePurple, { color: theme.colors.primary }] : styles.sourceNameGrey}>
                 {item.name}
               </Text>
-              <Text style={[isActive ? styles.sourceCountActive : isSelectable ? styles.sourceCountPurple : styles.sourceCountGrey]}>
+              <Text style={isActive ? styles.sourceCountActive : isSelectable ? [styles.sourceCountPurple, { color: theme.colors.primary }] : styles.sourceCountGrey}>
                 {item.count}
               </Text>
             </TouchableOpacity>
@@ -146,21 +157,27 @@ const AlertsScreen = () => {
       <View style={styles.severitySection}>
         <Text style={styles.sectionTitle}>Severity score</Text>
         <View style={styles.severityContainer}>
-          {severity.map((item, index) => (
-            <View key={index} style={styles.severityBox}>
-              <View style={styles.severityLabelRow}>
-                <View style={[styles.colorDot, { backgroundColor: item.colorDot }]} />
-                <Text style={styles.severityLabel}>{item.level}</Text>
+          {severity.map((item, index) => {
+            const colorDot =
+              index === 0 ? theme.badges.safe :
+              index === 1 ? theme.badges.warn :
+              theme.badges.danger;
+            return (
+              <View key={index} style={[styles.severityBox, { backgroundColor: theme.colors.card }]}>
+                <View style={styles.severityLabelRow}>
+                  <View style={[styles.colorDot, { backgroundColor: colorDot }]} />
+                  <Text style={styles.severityLabel}>{item.level}</Text>
+                </View>
+                <Text style={styles.severityCount}>{item.count}</Text>
+                <Text style={styles.severityDetail}>Score</Text>
               </View>
-              <Text style={styles.severityCount}>{item.count}</Text>
-              <Text style={styles.severityDetail}>Score</Text>
-            </View>
-          ))}
+            );
+          })}
         </View>
       </View>
 
       {/* Risk Activity Section */}
-      <View style={styles.riskActivityContainer}>
+      <View style={[styles.riskActivityContainer, { backgroundColor: theme.colors.card }]}>
         <Text style={styles.riskActivityTitle}>Risk Activity</Text>
         <BarChart
           data={{
@@ -174,15 +191,15 @@ const AlertsScreen = () => {
           showValuesOnTopOfBars
           withInnerLines={false}
           chartConfig={{
-            backgroundColor: "#fff",
-            backgroundGradientFrom: "#fff",
-            backgroundGradientTo: "#fff",
+            backgroundColor: theme.colors.card,
+            backgroundGradientFrom: theme.colors.card,
+            backgroundGradientTo: theme.colors.card,
             decimalPlaces: 0,
-            color: (opacity = 1, index) => chartData.data[index] === Math.max(...chartData.data) ? `rgba(98, 0, 238, ${opacity})` : `rgba(224,224,224,${opacity})`,
-            labelColor: (opacity = 1) => `rgba(0,0,0,${opacity})`,
+            color: () => theme.colors.primary,              // لون الأعمدة
+            labelColor: () => theme.colors.text,            // لون عناوين المحور
             barPercentage: 0.8,
-            fillShadowGradient: 'rgba(98,0,238,0.5)',
-            fillShadowGradientOpacity: 1,
+            fillShadowGradient: theme.colors.primary,       // تعبئة العمود
+            fillShadowGradientOpacity: 0.75,
             propsForLabels: { fontWeight: 'bold' },
           }}
           style={styles.chartStyle}
@@ -192,44 +209,40 @@ const AlertsScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: { flex: 1, paddingHorizontal: 20, backgroundColor: "#EFEFF4" },
+const makeStyles = (theme) => StyleSheet.create({
+  container: { flex: 1, paddingHorizontal: 20, backgroundColor: theme.colors.background },
   topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10 },
-  timeText: { fontSize: 13, color: "#000", fontWeight: '600' },
+  timeText: { fontSize: 13, color: theme.colors.text, fontWeight: '600' },
   topBarRight: { flexDirection: 'row', alignItems: 'center' },
-  batteryText: { fontSize: 13, marginLeft: 4, fontWeight: '600' },
+  batteryText: { fontSize: 13, marginLeft: 4, fontWeight: '600', color: theme.colors.text },
   headerContainer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
   headerLeft: { flexDirection: 'row', alignItems: 'center' },
   headerIconContainer: { position: 'relative', width: 40, height: 40, justifyContent: 'center', alignItems: 'center', marginLeft: 10 },
-  headerIconRing: { position: 'absolute', width: 38, height: 38, borderRadius: 19, backgroundColor: '#6200EE', opacity: 0.1 },
+  headerIconRing: { position: 'absolute', width: 38, height: 38, borderRadius: 19 },
   shieldIcon: { transform: [{ rotate: '-15deg' }] },
-  headerTitle: { fontSize: 20, fontWeight: 'bold', color: "#333", marginLeft: 10 },
-  tabsContainer: { flexDirection: 'row', backgroundColor: '#E6E6FA', borderRadius: 20 },
+  headerTitle: { fontSize: 20, fontWeight: 'bold', color: theme.colors.text, marginLeft: 10 },
+  tabsContainer: { flexDirection: 'row', borderRadius: 20 },
   tabButton: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 20 },
-  activeTab: { backgroundColor: '#fff' },
-  tabText: { color: '#8A2BE2', fontWeight: '600' },
-  activeTabText: { color: '#333' },
+  tabText: { color: theme.colors.tint, fontWeight: '600' },
   sourcesContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 20 },
-  sourceBox: { borderRadius: 16, paddingHorizontal: 16, marginBottom: 16, alignItems: 'center', backgroundColor: "#fff", borderWidth: 2, borderColor: '#52A7FC' },
-  sourceBoxBorderBlue: { borderColor: '#52A7FC' },
-  sourceBoxActive: { backgroundColor: '#6200EE', borderColor: '#6200EE', shadowColor: '#6200EE', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 5, elevation: 8 },
-  sourceNamePurple: { color: '#6200EE', fontWeight: '600' },
-  sourceNameGrey: { color: '#666', fontWeight: '600' },
-  sourceNameActive: { color: '#fff', fontWeight: '600' },
-  sourceCountPurple: { color: '#6200EE', fontWeight: 'bold', marginTop: 6 },
-  sourceCountGrey: { color: '#666', fontWeight: 'bold', marginTop: 6 },
-  sourceCountActive: { color: '#fff', fontWeight: 'bold', marginTop: 6 },
+  sourceBox: { borderRadius: 16, paddingHorizontal: 16, marginBottom: 16, alignItems: 'center', borderWidth: 2 },
+  sourceNamePurple: { fontWeight: '600' },
+  sourceNameGrey: { color: theme.colors.subtext, fontWeight: '600' },
+  sourceNameActive: { color: theme.colors.primaryTextOn, fontWeight: '600' },
+  sourceCountPurple: { fontWeight: 'bold', marginTop: 6 },
+  sourceCountGrey: { color: theme.colors.subtext, fontWeight: 'bold', marginTop: 6 },
+  sourceCountActive: { color: theme.colors.primaryTextOn, fontWeight: 'bold', marginTop: 6 },
   severitySection: { marginBottom: 20 },
-  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: "#333", marginBottom: 12 },
+  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: theme.colors.text, marginBottom: 12 },
   severityContainer: { flexDirection: 'row', justifyContent: 'space-between', marginHorizontal: -5 },
-  severityBox: { flex: 1, backgroundColor: "#fff", borderRadius: 16, paddingVertical: 16, paddingHorizontal: 12, marginHorizontal: 5, alignItems: 'center', shadowColor: "#000", shadowOpacity: 0.05, shadowOffset: { width: 0, height: 1 }, shadowRadius: 3, elevation: 1 },
+  severityBox: { flex: 1, borderRadius: 16, paddingVertical: 16, paddingHorizontal: 12, marginHorizontal: 5, alignItems: 'center', shadowColor: "#000", shadowOpacity: 0.05, shadowOffset: { width: 0, height: 1 }, shadowRadius: 3, elevation: 1 },
   severityLabelRow: { flexDirection: 'row', alignItems: 'center' },
-  severityLabel: { fontSize: 14, color: "#555", fontWeight: '600' },
+  severityLabel: { fontSize: 14, color: theme.colors.subtext, fontWeight: '600' },
   colorDot: { width: 12, height: 12, borderRadius: 6, marginRight: 6 },
-  severityCount: { fontSize: 20, fontWeight: 'bold', marginTop: 8, color: "#333" },
-  severityDetail: { fontSize: 12, color: '#999', marginTop: 2 },
-  riskActivityContainer: { backgroundColor: '#fff', borderRadius: 20, padding: 20, marginBottom: 20, shadowColor: "#000", shadowOpacity: 0.05, shadowOffset: { width: 0, height: 2 }, shadowRadius: 4, elevation: 2 },
-  riskActivityTitle: { fontSize: 18, fontWeight: 'bold', color: "#333", marginBottom: 12 },
+  severityCount: { fontSize: 20, fontWeight: 'bold', marginTop: 8, color: theme.colors.text },
+  severityDetail: { fontSize: 12, color: theme.colors.subtext, marginTop: 2 },
+  riskActivityContainer: { borderRadius: 20, padding: 20, marginBottom: 20, shadowColor: "#000", shadowOpacity: 0.05, shadowOffset: { width: 0, height: 2 }, shadowRadius: 4, elevation: 2 },
+  riskActivityTitle: { fontSize: 18, fontWeight: 'bold', color: theme.colors.text, marginBottom: 12 },
   chartStyle: { marginVertical: 8, borderRadius: 16, paddingRight: 0, paddingLeft: 0 },
 });
 
