@@ -201,8 +201,8 @@ export default function AnalyzeCall({ navigation }) {
           style={{
             backgroundColor:
               analysis.prediction === "scam"
-                ? theme.badges.danger
-                : theme.badges.safe,
+                ? "#FF7F7F" // light red for scam
+                : "#5cc55fff", // green for safe
             borderWidth: 2,
             borderColor: theme.colors.cardBorder,
             padding: 16,
@@ -215,7 +215,7 @@ export default function AnalyzeCall({ navigation }) {
             style={{
               fontFamily: theme.fonts.bold,
               fontSize: 24,
-              color: theme.colors.text,
+              color: "#FFFFFF", // white text
               marginBottom: 8,
             }}
           >
@@ -225,7 +225,7 @@ export default function AnalyzeCall({ navigation }) {
             style={{
               fontFamily: theme.fonts.semibold,
               fontSize: 18,
-              color: theme.colors.text,
+              color: "#FFFFFF", // white text
             }}
           >
             {(analysis.probability * 100).toFixed(2)}%
