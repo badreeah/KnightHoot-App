@@ -14,8 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import supabase from "../supabase";
 import { saveCallResult } from "../services/saveCallResult";
 const { height } = Dimensions.get("window");
-import { useAppSettings } from "../src/context/AppSettingProvid"; 
-
+import { useAppSettings } from "../src/context/AppSettingProvid";
 
 export default function AnalyzeCall({ navigation }) {
   const { theme } = useAppSettings();
@@ -56,7 +55,7 @@ export default function AnalyzeCall({ navigation }) {
     formData.append("audio", { uri, name: "recording.wav", type: "audio/wav" });
 
     try {
-      const res = await fetch("http://192.168.100.115:3000/transcribe", {
+      const res = await fetch("http://192.168.100.109:3000/transcribe", {
         method: "POST",
         body: formData,
         headers: { "Content-Type": "multipart/form-data" },
@@ -102,7 +101,7 @@ export default function AnalyzeCall({ navigation }) {
   const fetchTestTranscription = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://192.168.100.115:3000/transcribe-test");
+      const res = await fetch("http://192.168.100.109:3000/transcribe-test");
       const data = await res.json();
       const text = data.text || "No transcription";
       setTranscript(text);
@@ -149,7 +148,14 @@ export default function AnalyzeCall({ navigation }) {
       }}
     >
       {/* Header */}
-      <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 20, marginTop: 40 }}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          marginBottom: 20,
+          marginTop: 40,
+        }}
+      >
         <TouchableOpacity onPress={() => navigation.navigate("Home")}>
           <Ionicons name="arrow-back" size={28} color={theme.colors.text} />
         </TouchableOpacity>
@@ -228,7 +234,11 @@ export default function AnalyzeCall({ navigation }) {
       )}
 
       {loading && (
-        <ActivityIndicator size={60} color={theme.colors.primary} style={{ marginBottom: 20 }} />
+        <ActivityIndicator
+          size={60}
+          color={theme.colors.primary}
+          style={{ marginBottom: 20 }}
+        />
       )}
 
       {/* Buttons */}
@@ -243,8 +253,18 @@ export default function AnalyzeCall({ navigation }) {
             alignItems: "center",
           }}
         >
-          <Ionicons name={isRecording ? "mic-off" : "mic"} size={24} color={theme.colors.primaryTextOn} />
-          <Text style={{ color: theme.colors.primaryTextOn, marginTop: 4, fontFamily: theme.fonts.medium }}>
+          <Ionicons
+            name={isRecording ? "mic-off" : "mic"}
+            size={24}
+            color={theme.colors.primaryTextOn}
+          />
+          <Text
+            style={{
+              color: theme.colors.primaryTextOn,
+              marginTop: 4,
+              fontFamily: theme.fonts.medium,
+            }}
+          >
             {isRecording ? "Stop" : "Record"}
           </Text>
         </Pressable>
@@ -259,7 +279,14 @@ export default function AnalyzeCall({ navigation }) {
             alignItems: "center",
           }}
         >
-          <Text style={{ color: theme.colors.primaryTextOn, fontFamily: theme.fonts.semibold }}>Transcribe</Text>
+          <Text
+            style={{
+              color: theme.colors.primaryTextOn,
+              fontFamily: theme.fonts.semibold,
+            }}
+          >
+            Transcribe
+          </Text>
         </Pressable>
       </View>
     </View>

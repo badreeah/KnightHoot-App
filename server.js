@@ -2,10 +2,17 @@ const express = require("express");
 const fs = require("fs");
 const multer = require("multer");
 const speech = require("@google-cloud/speech");
+const serviceAccount = require("./service-account.json");
 
 const app = express();
 const upload = multer({ dest: "uploads/" });
-const client = new speech.SpeechClient({ keyFilename: "service-account.json" });
+const client = new speech.SpeechClient({
+  credentials: {
+    client_email: serviceAccount.client_email,
+    private_key: serviceAccount.private_key,
+  },
+  projectId: serviceAccount.project_id,
+});
 
 app.post("/transcribe", upload.single("audio"), async (req, res) => {
   try {
@@ -16,6 +23,7 @@ app.post("/transcribe", upload.single("audio"), async (req, res) => {
     const config = {
       encoding: "LINEAR16",
       languageCode: "en-US",
+      sampleRateHertz: 44100,
       alternativeLanguageCodes: ["ar-SA"],
     };
     const request = { audio, config };
