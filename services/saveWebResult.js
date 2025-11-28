@@ -1,27 +1,26 @@
-import supabase from "../supabase";
+// src/services/saveSmsResult.js
+import { supabase } from "./supabase";
 
-export async function saveSafeResult(userId, url, domain, label, score, reasons) {
-  try {
-    const { data, error } = await supabase.from("safe_scans").insert([
-      {
-        user_id: userId,
-        url,
-        domain,
-        label,   // safe / notsafe
-        score,
-        reasons,
-      },
-    ]);
+export async function updateSmsScanResult(log_id, classification, score, details) {
+    try {
+        const { data, error } = await supabase
+            .from('communication_logs')
+            .update({
+                classification_response: classification,
+                score: score,
+                details: details, 
+            })
+            .eq('id', log_id); 
 
-    if (error) {
-      console.error("Could not save Result:", error.message);
-      return null;
+        if (error) {
+            console.error(`Supabase UPDATE Error for ID ${log_id}:`, error.message);
+            return false;
+        }
+
+        console.log(`Log ID ${log_id} updated successfully.`);
+        return true; 
+    } catch (err) {
+        console.error("Unexpected error during update operation:", err);
+        return false;
     }
-
-    console.log("Result saved");
-    return data;
-  } catch (err) {
-    console.error("Unexpected error:", err);
-    return null;
-  }
 }
