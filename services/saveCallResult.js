@@ -13,10 +13,10 @@ export async function saveCallResult(userId, prediction, confidence) {
       console.error("ERROR : could not save the call", error.message);
       return null;
     }
-    console.log("✅ Call saved");
+    console.log("Call saved");
     return data;
   } catch (err) {
-    console.error("⚠️ Unexpected error:", err);
+    console.error("Unexpected error:", err);
     return null;
   }
 }
