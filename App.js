@@ -24,6 +24,7 @@ import Profile from "./Screens/Profile";
 import SafeBrowsing from "./Screens/SafeBrowsing";
 import SettingsScreen from "./Screens/SettingsScreen";
 import SplashScreen from "./Screens/SplshScreen";
+import ScanURLScreen from "./Screens/ScanURL";
 
 import "./src/i18n";
 import {
@@ -112,6 +113,7 @@ export default function App() {
               <Stack.Screen name="Profile" component={Profile} />
               <Stack.Screen name="SafeBrowsing" component={SafeBrowsing} />
               <Stack.Screen name="Settings" component={SettingsScreen} />
+              <Stack.Screen name="ScanURL" component={ScanURLScreen} />
             </>
           </Stack.Navigator>
         </NavigationContainer>
