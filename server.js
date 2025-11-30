@@ -37,7 +37,7 @@ app.post("/transcribe", upload.single("audio"), async (req, res) => {
 
 app.get("/transcribe-test", async (req, res) => {
   try {
-    const filePath = "notScamAudio.wav";
+    const filePath = "scam-arabic.wav";
     const audioBytes = fs.readFileSync(filePath).toString("base64");
 
     const audio = { content: audioBytes };
