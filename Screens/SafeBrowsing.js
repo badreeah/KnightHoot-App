@@ -5,7 +5,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Switch,
   StyleSheet,
   Alert,
   Linking,
@@ -18,13 +17,15 @@ import { useFocusEffect } from "@react-navigation/native";
 import { COLORS } from "../util/colors";
 import { useAppSettings } from "../src/context/AppSettingProvid";
 import { useTranslation } from "react-i18next";
-import { saveSafeResult } from "../services/saveWebResult";
 import supabase from "../supabase";
+import { saveSafeResult } from "../services/saveWebResult";
 
+// عنوان الـ API على Railway
 const API_BASE =
   process.env.EXPO_PUBLIC_URL_MODEL_API ??
-  "https://url-scam-detected-production.up.railway.app";
+  "https://url-scam-detector-api-production.up.railway.app";
 
+// دالة استدعاء المودل + حساب الـ risk + label للتخزين
 const classifyUrlAI = async (inputUrl) => {
   const response = await fetch(`${API_BASE}/predict`, {
     method: "POST",
@@ -39,25 +40,60 @@ const classifyUrlAI = async (inputUrl) => {
     throw new Error(`API error (${response.status}): ${text}`);
   }
 
-  const data = await response.json(); // { url, label, prediction, probability }
+  const data = await response.json();
 
-  const domain = (inputUrl || "")
-    .replace(/^https?:\/\//, "")
-    .split("/")[0]
-    .toLowerCase();
+  const domain =
+    data.domain ||
+    (inputUrl || "").replace(/^https?:\/\//, "").split("/")[0].toLowerCase();
 
-  const isPhishing = data.prediction === "phishing" || data.label === 1;
-  const score = data.probability ?? null;
+  // احتمال أن الرابط خبيث من الـ API
+  const proba =
+    data.probability_malicious ??
+    data.probability ??
+    data.score ??
+    null;
+
+  // تحديد الـ risk ثلاثي (للوصف)
+  let risk = "safe"; // safe | suspicious | malicious
+
+  if (proba !== null) {
+    if (proba >= 0.85) {
+      risk = "malicious";
+    } else if (proba > 0.3) {
+      risk = "suspicious";
+    } else {
+      risk = "safe";
+    }
+  }
+
+  let finalLabel;
+  if (risk === "malicious") {
+    finalLabel = "notsafe";
+  } else if (risk === "suspicious") {
+    if (proba !== null && proba < 0.8) {
+      finalLabel = "safe";
+    } else {
+      finalLabel = "notsafe";
+    }
+  } else {
+    finalLabel = "safe";
+  }
+
+  const reasons = [];
+  if (risk === "malicious") {
+    reasons.push("Model classified the URL as malicious");
+  } else if (risk === "suspicious") {
+    reasons.push("Model classified the URL as suspicious");
+  } else {
+    reasons.push("Model classified the URL as safe");
+  }
 
   return {
     domain,
-    label: isPhishing ? "notsafe" : "safe",
-    score,
-    reasons: [
-      isPhishing
-        ? "Model classified the URL as phishing"
-        : "Model classified the URL as safe",
-    ],
+    risk, // safe | suspicious | malicious (لوصف الحالة)
+    label: finalLabel, // safe | notsafe حسب القاعدة
+    score: proba,
+    reasons,
     raw: data,
   };
 };
@@ -65,7 +101,6 @@ const classifyUrlAI = async (inputUrl) => {
 function SafeBrowsingScreen({ navigation }) {
   const [url, setUrl] = useState("");
   const [siteRating, setSiteRating] = useState(null); // 'safe' | 'danger'
-  const [downloadProtection, setDownloadProtection] = useState(true);
   const [lastScanInfo, setLastScanInfo] = useState(null);
   const [history, setHistory] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
@@ -75,6 +110,7 @@ function SafeBrowsingScreen({ navigation }) {
 
   const styles = useMemo(() => createStyles(theme, isRTL), [theme, isRTL]);
 
+  // تحميل آخر 20 نتيجة من جدول safe_scans (قراءة فقط)
   useFocusEffect(
     useCallback(() => {
       let isActive = true;
@@ -194,6 +230,7 @@ function SafeBrowsingScreen({ navigation }) {
     );
   };
 
+  // فحص الرابط هنا مباشرة + حفظه في Supabase
   const handleCheck = async () => {
     const input = (url || "").trim();
     if (!input) {
@@ -204,8 +241,8 @@ function SafeBrowsingScreen({ navigation }) {
     try {
       const res = await classifyUrlAI(input);
 
-      const isNotSafe = res.label === "notsafe";
-      const uiRating = isNotSafe ? "danger" : "safe";
+      // rating في الواجهة نعتمد على label المخزّن (safe / notsafe)
+      const uiRating = res.label === "notsafe" ? "danger" : "safe";
 
       const uiLastScan = {
         domain: res.domain,
@@ -224,13 +261,14 @@ function SafeBrowsingScreen({ navigation }) {
           user.id,
           input,
           res.domain,
-          res.label,
+          res.label, // safe | notsafe حسب القاعدة
           res.score,
           (res.reasons || []).join("; ")
         );
 
+        // نحدّث الـ history محلياً بدون انتظار refresh من السيرفر
         const newRow = {
-          id: Date.now(), 
+          id: Date.now(), // ID مؤقت محلي
           user_id: user.id,
           url: input,
           domain: res.domain,
@@ -269,51 +307,7 @@ function SafeBrowsingScreen({ navigation }) {
         />
       </View>
 
-      {/* Check URL */}
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>
-          {t("safe.checkUrl", "Check URL")}
-        </Text>
-
-        <Text style={styles.inputLabel}>
-          {t("safe.websiteUrl", "Website URL")}
-        </Text>
-
-        <TextInput
-          style={styles.input}
-          placeholder={t("safe.urlPlaceholder", "https://example.com")}
-          value={url}
-          onChangeText={setUrl}
-          autoCapitalize="none"
-          keyboardType="url"
-          placeholderTextColor={theme.colors.subtext}
-          textAlign={isRTL ? "right" : "left"}
-        />
-
-        <TouchableOpacity style={styles.primaryBtn} onPress={handleCheck}>
-          <Text style={styles.primaryBtnText}>
-            {t("safe.checkUrl", "Check URL")}
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Site Rating + Last Scan */}
-      <View style={styles.cardRow}>
-        <View style={styles.cardLeft}>
-          <Text style={styles.cardTitle}>
-            {t("safe.websiteRating", "Website Rating")}
-          </Text>
-
-          <Text style={styles.cardSub}>
-            {t("safe.lastScan", "Last scan result")}{" "}
-            {lastScanInfo
-              ? lastScanInfo.reason
-              : t("safe.notScanned", "Not scanned yet")}
-          </Text>
-        </View>
-
-        <View style={styles.cardRight}>{renderRatingBadge()}</View>
-      </View>
+      
 
       {/* Browsing Tips */}
       <View style={styles.card}>
@@ -470,6 +464,7 @@ const createStyles = (theme, isRTL) =>
     },
     cardLeft: { flex: 1 },
     cardRight: { marginLeft: 12, alignItems: "flex-end" },
+
     cardTitle: {
       fontFamily: "Poppins-500",
       fontSize: 16,
