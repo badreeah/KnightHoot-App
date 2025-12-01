@@ -21,7 +21,6 @@ const API_BASE =
   process.env.EXPO_PUBLIC_URL_MODEL_API ??
   "https://url-scam-detector-api-production.up.railway.app";
 
-// استدعاء مودل الذكاء الاصطناعي
 const classifyUrlAI = async (inputUrl) => {
   const response = await fetch(`${API_BASE}/predict`, {
     method: "POST",
@@ -46,7 +45,6 @@ const classifyUrlAI = async (inputUrl) => {
   const proba =
     data.probability_malicious ?? data.probability ?? data.score ?? null;
 
-  // 1) risk ثلاثي للواجهة
   let risk = "safe";
   if (prediction === "malicious") {
     risk = "malicious";
@@ -54,20 +52,17 @@ const classifyUrlAI = async (inputUrl) => {
     risk = "suspicious";
   }
 
-  // 2) label ثنائي للـ DB مع شرط الـ 80%
-  let label = "safe"; // القيمة الافتراضية
+  let label = "safe"; 
 
   if (risk === "safe") {
     label = "safe";
   } else if (risk === "suspicious") {
-    // إذا مشبوه لكن الاحتمال أقل من 80% نخزّنه كـ safe
     if (proba != null && proba < 0.8) {
       label = "safe";
     } else {
       label = "notsafe";
     }
   } else {
-    // malicious
     label = "notsafe";
   }
 
@@ -82,8 +77,8 @@ const classifyUrlAI = async (inputUrl) => {
 
   return {
     domain,
-    risk,   // safe | suspicious | malicious (للـ UI)
-    label,  // safe | notsafe (للـ جدول safe_scans)
+    risk,   
+    label,  
     score: proba,
     reasons,
     raw: data,
@@ -94,7 +89,7 @@ const classifyUrlAI = async (inputUrl) => {
 export default function ScanURLScreen({ navigation }) {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null); // { domain, risk, label, score, reasons }
+  const [result, setResult] = useState(null); 
 
   const { theme, isRTL } = useAppSettings();
   const { t } = useTranslation();
