@@ -9,7 +9,7 @@ export async function createScanLog(user_id, url, domain) {
         user_id,
         url,
         domain,
-        label: "unknown",   // 
+        label: "unknown",  
         score: null,
         reasons: null,
       },
