@@ -5,8 +5,14 @@ const speech = require("@google-cloud/speech");
 
 const app = express();
 const upload = multer({ dest: "uploads/" });
-const client = new speech.SpeechClient({ keyFilename: "service-account.json" });
+let client;
 
+try {
+  client = new speech.SpeechClient({ keyFilename: "service-account.json" });
+  console.log("Google client loaded successfully.");
+} catch (err) {
+  console.error("Google client failed:", err);
+}
 app.post("/transcribe", upload.single("audio"), async (req, res) => {
   try {
     const file = req.file;
@@ -37,7 +43,7 @@ app.post("/transcribe", upload.single("audio"), async (req, res) => {
 
 app.get("/transcribe-test", async (req, res) => {
   try {
-    const filePath = "scam-arabic.wav";
+    const filePath = "non-scam-arabic.wav";
     const audioBytes = fs.readFileSync(filePath).toString("base64");
 
     const audio = { content: audioBytes };

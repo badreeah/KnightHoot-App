@@ -18,8 +18,10 @@ import { getAvatar } from "../util/avatar";
 import { useAppSettings } from "../src/context/AppSettingProvid";
 
 export default function Home({ navigation }) {
-  const { profile, user } = useAppSettings(); 
-  const [gender, setGender] = useState(profile?.gender ?? user?.user_metadata?.gender ?? null);
+  const { profile, user } = useAppSettings();
+  const [gender, setGender] = useState(
+    profile?.gender ?? user?.user_metadata?.gender ?? null
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -31,7 +33,11 @@ export default function Home({ navigation }) {
           const { data: auth } = await supabase.auth.getUser();
           const uid = auth?.user?.id;
           if (uid) {
-            const { data } = await supabase.from("profiles").select("gender").eq("id", uid).single();
+            const { data } = await supabase
+              .from("profiles")
+              .select("gender")
+              .eq("id", uid)
+              .single();
             g = data?.gender ?? null;
           }
         }
@@ -42,15 +48,15 @@ export default function Home({ navigation }) {
       return () => {
         alive = false;
       };
-    }, [profile?.gender]) 
+    }, [profile?.gender])
   );
 
   const avatarSrc = getAvatar(gender);
   const firstName = (
-    profile?.full_name?.trim()
-    || profile?.username?.trim()
-    || user?.email?.split("@")[0]
-    || "Friend"
+    profile?.full_name?.trim() ||
+    profile?.username?.trim() ||
+    user?.email?.split("@")[0] ||
+    "Friend"
   ).split(" ")[0];
 
   return (
@@ -59,7 +65,13 @@ export default function Home({ navigation }) {
       <View style={styles.greetingContainer}>
         <Image source={avatarSrc} style={styles.avatarImage} />
         <Text style={styles.greetngText}>
-          <WordStyling style={{ fontFamily: "Poppins-500", fontSize: 16, color: COLORS.purple3 }}>
+          <WordStyling
+            style={{
+              fontFamily: "Poppins-500",
+              fontSize: 16,
+              color: COLORS.purple3,
+            }}
+          >
             {`Hello, ${firstName}`}
           </WordStyling>
           {"\n"}Glad to see you!
@@ -120,6 +132,7 @@ export default function Home({ navigation }) {
             top={-48}
             onPress={() => navigation.navigate("SafeBrowsing")}
           />
+          {/* 
           <ActionButton
             title="Scan URL"
             icon={require("../assets/icons/Search.png")}
@@ -129,6 +142,7 @@ export default function Home({ navigation }) {
             top={-18}
             onPress={() => navigation.navigate("ScanURL")}
           />
+          */}
           <ActionButton
             title="Report Scam"
             icon={require("../assets/icons/alarm.png")}
@@ -229,8 +243,8 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: "#fff",     
-    borderWidth: 1,               
+    backgroundColor: "#fff",
+    borderWidth: 1,
     borderColor: "#E8E8F4",
   },
   greetngText: {
