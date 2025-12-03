@@ -308,7 +308,52 @@ function SafeBrowsingScreen({ navigation }) {
       </View>
 
       
+ {/* Check URL */}
+      <View style={styles.card}>
+        <Text style={styles.sectionTitle}>
+          {t("safe.checkUrl", "Check URL")}
+        </Text>
 
+        <Text style={styles.inputLabel}>
+          {t("safe.websiteUrl", "Website URL")}
+        </Text>
+
+        <TextInput
+          style={styles.input}
+          placeholder={t("safe.urlPlaceholder", "https://example.com")}
+          value={url}
+          onChangeText={setUrl}
+          autoCapitalize="none"
+          keyboardType="url"
+          placeholderTextColor={theme.colors.subtext}
+          textAlign={isRTL ? "right" : "left"}
+        />
+
+        <TouchableOpacity style={styles.primaryBtn} onPress={handleCheck}>
+          <Text style={styles.primaryBtnText}>
+            {t("safe.checkUrl", "Check URL")}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Site Rating + Last Scan */}
+      <View style={styles.cardRow}>
+        <View style={styles.cardLeft}>
+          <Text style={styles.cardTitle}>
+            {t("safe.websiteRating", "Website Rating")}
+          </Text>
+
+          <Text style={styles.cardSub}>
+            {t("safe.lastScan", "Last scan result")}{" "}
+            {lastScanInfo
+              ? lastScanInfo.reason
+              : t("safe.notScanned", "Not scanned yet")}
+          </Text>
+        </View>
+
+        <View style={styles.cardRight}>{renderRatingBadge()}</View>
+      </View>
+      
       {/* Browsing Tips */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>
