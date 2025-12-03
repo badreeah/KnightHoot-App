@@ -1,12 +1,14 @@
-import React, { useMemo } from "react";
 import {
   NavigationContainer,
   DefaultTheme,
   DarkTheme,
 } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
+import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { useCallback, useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import React, { useMemo } from "react";
 
 import Welcome from "./Screens/Welcome";
 import Tabs from "./navigation/Tabs";
@@ -23,7 +25,6 @@ import SafeBrowsing from "./Screens/SafeBrowsing";
 import SettingsScreen from "./Screens/SettingsScreen";
 import SplashScreen from "./Screens/SplshScreen";
 import ScanURLScreen from "./Screens/ScanURL";
-import SignUp from "./Screens/SignUp";
 
 import "./src/i18n";
 import {
@@ -32,6 +33,7 @@ import {
 } from "./src/context/AppSettingProvid";
 
 import { useFonts } from "expo-font";
+
 import {
   Poppins_100Thin,
   Poppins_200ExtraLight,
@@ -43,63 +45,13 @@ import {
   Poppins_800ExtraBold,
   Poppins_900Black,
 } from "@expo-google-fonts/poppins";
+import SignUp from "./Screens/SignUp";
 
 const Stack = createNativeStackNavigator();
 
-function NavigationWithTheme() {
-  const { theme } = useAppSettings();
-
-  // ثيم النافيقيشن مبني على الثيم العام
-  const navTheme = useMemo(() => {
-    const base =
-      theme.mode === "dark" ? { ...DarkTheme } : { ...DefaultTheme };
-    base.colors.background = theme.colors.background;
-    base.colors.card = theme.colors.card;
-    base.colors.text = theme.colors.text;
-    base.colors.border = theme.colors.cardBorder;
-    base.colors.primary = theme.colors.primary;
-    return base;
-  }, [theme]);
-
-  const statusBarStyle = theme.mode === "dark" ? "light" : "dark";
-
-  return (
-    <>
-      <StatusBar
-        style={statusBarStyle}
-        backgroundColor={theme.colors.background}
-      />
-      <NavigationContainer theme={navTheme}>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="Splash" component={SplashScreen} />
-          <Stack.Screen name="OnBoarding" component={OnBoarding} />
-          <Stack.Screen name="Welcome" component={Welcome} />
-          <Stack.Screen name="SignIn" component={SignIn} />
-          <Stack.Screen name="SignUp" component={SignUp} />
-          <Stack.Screen name="ForgetPassword" component={ForgetPassword} />
-          <Stack.Screen name="VerificationOTP" component={VerificationOTP} />
-          <Stack.Screen
-            name="SetNewPasswordScreen"
-            component={SetNewPasswordScreen}
-          />
-
-          {/* هنا بدلنا اسم الشاشة من Home إلى MainTabs */}
-          <Stack.Screen name="MainTabs" component={Tabs} />
-
-          <Stack.Screen name="DeviceRadar" component={DeviceRadar} />
-          <Stack.Screen name="ReportScam" component={ReportScam} />
-          <Stack.Screen name="AnalyzeCall" component={AnalyzeCall} />
-          <Stack.Screen name="Profile" component={Profile} />
-          <Stack.Screen name="SafeBrowsing" component={SafeBrowsing} />
-          <Stack.Screen name="Settings" component={SettingsScreen} />
-          <Stack.Screen name="ScanURL" component={ScanURLScreen} />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </>
-  );
-}
-
 export default function App() {
+  const [showOnBoarding, setShowOnBoarding] = useState(true); //  start with onboarding
+
   const [fontsLoaded] = useFonts({
     "Poppins-100": Poppins_100Thin,
     "Poppins-200": Poppins_200ExtraLight,
@@ -111,6 +63,63 @@ export default function App() {
     "Poppins-800": Poppins_800ExtraBold,
     "Poppins-900": Poppins_900Black,
   });
+
+  function NavigationWithTheme() {
+    const { theme } = useAppSettings();
+
+    // ثيم النافيقيشن مبني على الثيم العام
+    const navTheme = useMemo(() => {
+      const base =
+        theme.mode === "dark" ? { ...DarkTheme } : { ...DefaultTheme };
+      base.colors.background = theme.colors.background;
+      base.colors.card = theme.colors.card;
+      base.colors.text = theme.colors.text;
+      base.colors.border = theme.colors.cardBorder;
+      base.colors.primary = theme.colors.primary;
+      return base;
+    }, [theme]);
+
+    // expo-status-bar يقبل "light" أو "dark"
+    const statusBarStyle = theme.mode === "dark" ? "light" : "dark";
+
+    return (
+      <>
+        <StatusBar
+          style={statusBarStyle}
+          backgroundColor={theme.colors.background}
+        />
+        <NavigationContainer theme={navTheme}>
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <>
+              <Stack.Screen name="Splash" component={SplashScreen} />
+
+              <Stack.Screen name="OnBoarding" component={OnBoarding} />
+              <Stack.Screen name="Welcome" component={Welcome} />
+              <Stack.Screen name="SignIn" component={SignIn} />
+              <Stack.Screen name="SignUp" component={SignUp} />
+              <Stack.Screen name="ForgetPassword" component={ForgetPassword} />
+              <Stack.Screen
+                name="VerificationOTP"
+                component={VerificationOTP}
+              />
+              <Stack.Screen
+                name="SetNewPasswordScreen"
+                component={SetNewPasswordScreen}
+              />
+              <Stack.Screen name="Home" component={Tabs} />
+              <Stack.Screen name="DeviceRadar" component={DeviceRadar} />
+              <Stack.Screen name="ReportScam" component={ReportScam} />
+              <Stack.Screen name="AnalyzeCall" component={AnalyzeCall} />
+              <Stack.Screen name="Profile" component={Profile} />
+              <Stack.Screen name="SafeBrowsing" component={SafeBrowsing} />
+              <Stack.Screen name="Settings" component={SettingsScreen} />
+              <Stack.Screen name="ScanURL" component={ScanURLScreen} />
+            </>
+          </Stack.Navigator>
+        </NavigationContainer>
+      </>
+    );
+  }
 
   return (
     <AppSettingsProvider>
