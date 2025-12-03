@@ -79,7 +79,11 @@ export default function AnalyzeCall({ navigation }) {
       const user = supabase.auth.getUser();
       const userId = (await user).data.user?.id;
       if (userId) {
-        await saveCallResult(userId, scamData.prediction, scamData.probability);
+        await await saveCallResult(
+          userId,
+          scamData.final_prediction,
+          scamData.confidence
+        );
       }
 
       // Show alert if scam
@@ -120,7 +124,11 @@ export default function AnalyzeCall({ navigation }) {
       const user = supabase.auth.getUser();
       const userId = (await user).data.user?.id;
       if (userId) {
-        await saveCallResult(userId, scamData.prediction, scamData.probability);
+        await saveCallResult(
+          userId,
+          scamData.final_prediction,
+          scamData.confidence
+        );
       }
 
       // Show alert if scam
@@ -200,9 +208,7 @@ export default function AnalyzeCall({ navigation }) {
         <View
           style={{
             backgroundColor:
-              analysis.prediction === "scam"
-                ? "#FF7F7F" // light red for scam
-                : "#5cc55fff", // green for safe
+              analysis.final_prediction === "scam" ? "#FF7F7F" : "#5cc55fff",
             borderWidth: 2,
             borderColor: theme.colors.cardBorder,
             padding: 16,
@@ -215,20 +221,21 @@ export default function AnalyzeCall({ navigation }) {
             style={{
               fontFamily: theme.fonts.bold,
               fontSize: 24,
-              color: "#FFFFFF", // white text
+              color: "#FFFFFF",
               marginBottom: 8,
             }}
           >
-            {analysis.prediction?.toUpperCase()}
+            {analysis.final_prediction?.toUpperCase()}
           </Text>
+
           <Text
             style={{
               fontFamily: theme.fonts.semibold,
               fontSize: 18,
-              color: "#FFFFFF", // white text
+              color: "#FFFFFF",
             }}
           >
-            {(analysis.probability * 100).toFixed(2)}%
+            {(analysis.confidence * 100).toFixed(2)}%
           </Text>
         </View>
       )}
