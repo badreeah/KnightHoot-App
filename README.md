@@ -52,6 +52,7 @@ Before running the application, ensure you have the following installed:
 - **Expo CLI** (install globally with `npm install -g expo-cli`)
 - **Expo Go** app on an android emulator or your mobile device (for testing)
 - **Google Cloud Service Account** (for speech recognition features)
+- **SDK** 54
 
 ## Installation
 
@@ -104,10 +105,10 @@ The server will start on port 3000 .
 
 - **Welcome/Onboarding**: First-time user introduction
 - **Authentication**: Sign in, sign up, password recovery
-- **Home**: Main dashboard with quick access to features
+- **Home**: Main Homepage with quick access to features
 - **URL Scanner**: Scan and analyze suspicious URLs
-- **Call Analyzer**: Record and analyze phone calls
-- **Device Radar**: Monitor network and connected devices
+- **Call Analyzer**: Record and analyze phone calls audios
+- **Device Radar**: Monitor connected devices
 - **Safe Browsing**: Secure web browsing interface
 - **Profile**: User settings and preferences
 - **Statistics**: View scan history and analytics
