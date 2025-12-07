@@ -24,8 +24,10 @@ import Profile from "./Screens/Profile";
 import SafeBrowsing from "./Screens/SafeBrowsing";
 import SettingsScreen from "./Screens/SettingsScreen";
 import SplashScreen from "./Screens/SplshScreen";
-import ScanURLScreen from "./Screens/ScanURL";
-
+import EditProfile from "./Screens/EditProfile";
+import PrivacyScreen from "./Screens/PrivacyScreen";
+import ChangePasswordScreen from "./Screens/ChangePasswordScreen";
+import ChangeEmailScreen from "./Screens/ChangeEmailScreen";
 import "./src/i18n";
 import {
   AppSettingsProvider,
@@ -113,7 +115,10 @@ export default function App() {
               <Stack.Screen name="Profile" component={Profile} />
               <Stack.Screen name="SafeBrowsing" component={SafeBrowsing} />
               <Stack.Screen name="Settings" component={SettingsScreen} />
-              <Stack.Screen name="ScanURL" component={ScanURLScreen} />
+              <Stack.Screen name="EditProfile" component={EditProfile} />
+              <Stack.Screen name="Privacy" component={PrivacyScreen} />
+              <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+              <Stack.Screen name="ChangeEmail" component={ChangeEmailScreen} />
             </>
           </Stack.Navigator>
         </NavigationContainer>

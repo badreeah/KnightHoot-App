@@ -98,6 +98,34 @@ const classifyUrlAI = async (inputUrl) => {
   };
 };
 
+// تهذيب والتحقق من الـ URL (فورمات معيّن)
+const normalizeAndValidateUrl = (raw) => {
+  const trimmed = (raw || "").trim();
+  if (!trimmed) return null;
+
+  let candidate = trimmed;
+
+  // لو ما فيه بروتوكول، نضيف https:// تلقائياً
+  if (!/^https?:\/\//i.test(candidate)) {
+    candidate = `https://${candidate}`;
+  }
+
+  try {
+    const urlObj = new URL(candidate);
+
+    // تأكد أن فيه hostname وفيه نقطة (example.com)
+    if (!urlObj.hostname || !urlObj.hostname.includes(".")) {
+      return null;
+    }
+
+    // نرجع الرابط النهائي كـ string نظيف
+    return urlObj.toString();
+  } catch (err) {
+    // لو new URL فشل، يعني الفورمات غلط
+    return null;
+  }
+};
+
 function SafeBrowsingScreen({ navigation }) {
   const [url, setUrl] = useState("");
   const [siteRating, setSiteRating] = useState(null); // 'safe' | 'danger'
@@ -150,6 +178,7 @@ function SafeBrowsingScreen({ navigation }) {
             setLastScanInfo({
               domain: last.domain,
               reason: last.reasons || "Classified by ML model",
+              url: last.url,
             });
             const uiRating = last.label === "notsafe" ? "danger" : "safe";
             setSiteRating(uiRating);
@@ -175,6 +204,11 @@ function SafeBrowsingScreen({ navigation }) {
   );
 
   const onOpenLink = (link) => {
+    if (!link) {
+      Alert.alert(t("safe.invalidUrl", "Enter a valid URL to scan"));
+      return;
+    }
+
     if (siteRating === "danger") {
       Alert.alert(
         t("safe.warnTitle", "Warning: Suspicious Site"),
@@ -232,14 +266,24 @@ function SafeBrowsingScreen({ navigation }) {
 
   // فحص الرابط هنا مباشرة + حفظه في Supabase
   const handleCheck = async () => {
-    const input = (url || "").trim();
-    if (!input) {
-      Alert.alert(t("safe.invalidUrl", "Enter a valid URL to scan"));
+    const rawInput = url;
+
+    // نستخدم الدالة الجديدة للتحقق من الفورمات + إضافة البروتوكول
+    const normalizedUrl = normalizeAndValidateUrl(rawInput);
+
+    if (!normalizedUrl) {
+      Alert.alert(
+        t("safe.invalidUrlFormatTitle", "Invalid URL format"),
+        t(
+          "safe.invalidUrlFormatBody",
+          "Please enter a valid website address like example.com or https://example.com"
+        )
+      );
       return;
     }
 
     try {
-      const res = await classifyUrlAI(input);
+      const res = await classifyUrlAI(normalizedUrl);
 
       // rating في الواجهة نعتمد على label المخزّن (safe / notsafe)
       const uiRating = res.label === "notsafe" ? "danger" : "safe";
@@ -247,6 +291,7 @@ function SafeBrowsingScreen({ navigation }) {
       const uiLastScan = {
         domain: res.domain,
         reason: res.reasons?.[0] || "Classified by ML model",
+        url: normalizedUrl,
       };
 
       setLastScanInfo(uiLastScan);
@@ -259,7 +304,7 @@ function SafeBrowsingScreen({ navigation }) {
       if (user?.id) {
         await saveSafeResult(
           user.id,
-          input,
+          normalizedUrl, // نخزن الفورمات النهائي النظيف
           res.domain,
           res.label, // safe | notsafe حسب القاعدة
           res.score,
@@ -270,7 +315,7 @@ function SafeBrowsingScreen({ navigation }) {
         const newRow = {
           id: Date.now(), // ID مؤقت محلي
           user_id: user.id,
-          url: input,
+          url: normalizedUrl,
           domain: res.domain,
           label: res.label,
           score: res.score,
@@ -283,6 +328,20 @@ function SafeBrowsingScreen({ navigation }) {
       console.log("handleCheck error:", e);
       Alert.alert("Scan failed", String(e.message || e));
     }
+  };
+
+  // ربط زر Report مع صفحة البلاغ ReportScam
+  const handleReport = () => {
+    if (!lastScanInfo || !lastScanInfo.url) {
+      Alert.alert("No URL", "Please scan a website first.");
+      return;
+    }
+
+    navigation.navigate("ReportScam", {
+      selectedCategory: "web",
+      url: lastScanInfo.url,
+      description: "",
+    });
   };
 
   return (
@@ -307,8 +366,7 @@ function SafeBrowsingScreen({ navigation }) {
         />
       </View>
 
-      
- {/* Check URL */}
+      {/* Check URL */}
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>
           {t("safe.checkUrl", "Check URL")}
@@ -353,7 +411,7 @@ function SafeBrowsingScreen({ navigation }) {
 
         <View style={styles.cardRight}>{renderRatingBadge()}</View>
       </View>
-      
+
       {/* Browsing Tips */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>
@@ -395,7 +453,14 @@ function SafeBrowsingScreen({ navigation }) {
             <TouchableOpacity
               style={styles.primaryBtn}
               onPress={() => {
-                const toOpen = url.startsWith("http") ? url : `https://${url}`;
+                const scanUrl = lastScanInfo?.url;
+                const toOpen =
+                  scanUrl && scanUrl.startsWith("http")
+                    ? scanUrl
+                    : scanUrl
+                    ? `https://${scanUrl}`
+                    : null;
+
                 onOpenLink(toOpen);
               }}
             >
@@ -406,11 +471,7 @@ function SafeBrowsingScreen({ navigation }) {
 
             <TouchableOpacity
               style={styles.secondaryBtn}
-              onPress={() => {
-                Alert.alert(
-                  t("safe.reportSent", "Report sent to the system (Mock)")
-                );
-              }}
+              onPress={handleReport}
             >
               <Text style={styles.secondaryBtnText}>
                 {t("safe.report", "Report")}
