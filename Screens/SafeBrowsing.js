@@ -330,6 +330,20 @@ function SafeBrowsingScreen({ navigation }) {
     }
   };
 
+  // ربط زر Report مع صفحة البلاغ ReportScam
+  const handleReport = () => {
+    if (!lastScanInfo || !lastScanInfo.url) {
+      Alert.alert("No URL", "Please scan a website first.");
+      return;
+    }
+
+    navigation.navigate("ReportScam", {
+      selectedCategory: "web",
+      url: lastScanInfo.url,
+      description: "",
+    });
+  };
+
   return (
     <ScrollView
       style={styles.container}
@@ -457,11 +471,7 @@ function SafeBrowsingScreen({ navigation }) {
 
             <TouchableOpacity
               style={styles.secondaryBtn}
-              onPress={() => {
-                Alert.alert(
-                  t("safe.reportSent", "Report sent to the system (Mock)")
-                );
-              }}
+              onPress={handleReport}
             >
               <Text style={styles.secondaryBtnText}>
                 {t("safe.report", "Report")}
