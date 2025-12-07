@@ -3,7 +3,7 @@ import supabase from "../supabase";
 
 export async function createScanLog(user_id, url, domain) {
   const { data, error } = await supabase
-    .from("safe_scans")
+    .from("Url_scans")
     .insert([
       {
         user_id,

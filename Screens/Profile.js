@@ -673,7 +673,7 @@ const createStyles = (theme, themeStyles, isRTL) =>
       paddingHorizontal: 10,
     },
     header: {
-      flexDirection: isRTL ? "row-reverse" : "row",
+      flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",
       paddingTop: 50,

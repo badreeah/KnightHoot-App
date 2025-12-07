@@ -117,9 +117,9 @@ export default function ScanURLScreen({ navigation }) {
         data: { user },
       } = await supabase.auth.getUser();
 
-      // 3) حفظ النتيجة في جدول safe_scans
+      // 3) حفظ النتيجة في جدول Url_scans
       if (user?.id) {
-        const { error } = await supabase.from("safe_scans").insert([
+        const { error } = await supabase.from("Url_scans").insert([
           {
             user_id: user.id,
             url: input,
@@ -131,7 +131,7 @@ export default function ScanURLScreen({ navigation }) {
         ]);
 
         if (error) {
-          console.error("Supabase insert error (safe_scans):", error);
+          console.error("Supabase insert error (Url_scans):", error);
         }
       }
     } catch (e) {

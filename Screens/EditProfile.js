@@ -701,7 +701,7 @@ export default function EditProfile() {
 const createStyles = (theme, themeStyles, isRTL) =>
   StyleSheet.create({
     header: {
-      flexDirection: isRTL ? "row-reverse" : "row",
+      flexDirection:  "row",
       justifyContent: "space-between",
       alignItems: "center",
       paddingTop: 50,

@@ -1,7 +1,7 @@
 import { supabase } from "../services/supabase"; 
 export async function saveSafeResult(userId, url, domain, label, score, reasons) {
     try {
-        const { data, error } = await supabase.from("safe_scans").insert([
+        const { data, error } = await supabase.from("Url_scans").insert([
             {
                 user_id: userId,
                 url,

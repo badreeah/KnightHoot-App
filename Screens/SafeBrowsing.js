@@ -138,7 +138,7 @@ function SafeBrowsingScreen({ navigation }) {
 
   const styles = useMemo(() => createStyles(theme, isRTL), [theme, isRTL]);
 
-  // تحميل آخر 20 نتيجة من جدول safe_scans (قراءة فقط)
+  // تحميل آخر 20 نتيجة من جدول Url_scans (قراءة فقط)
   useFocusEffect(
     useCallback(() => {
       let isActive = true;
@@ -156,7 +156,7 @@ function SafeBrowsingScreen({ navigation }) {
           }
 
           const { data, error } = await supabase
-            .from("safe_scans")
+            .from("Url_scans")
             .select("*")
             .eq("user_id", user.id)
             .order("created_at", { ascending: false })
@@ -528,7 +528,7 @@ const createStyles = (theme, isRTL) =>
     },
 
     header: {
-      flexDirection: isRTL ? "row-reverse" : "row",
+      flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",
       paddingTop: 60,
