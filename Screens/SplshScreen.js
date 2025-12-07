@@ -1,8 +1,13 @@
 import { View, StyleSheet, Dimensions, ActivityIndicator } from "react-native";
+<<<<<<< HEAD
 import React, { useRef, useState, useEffect } from "react";
 import { Video } from "expo-av";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import supabase from "../supabase";
+=======
+import React, { useRef, useState } from "react";
+import { Video } from "expo-av";
+>>>>>>> main
 
 const { width, height } = Dimensions.get("window");
 
@@ -10,6 +15,7 @@ export default function SplashScreen({ navigation }) {
   const videoRef = useRef(null);
   const [isReady, setIsReady] = useState(false);
 
+<<<<<<< HEAD
   useEffect(() => {
     checkUserSession();
   }, []);
@@ -34,6 +40,8 @@ export default function SplashScreen({ navigation }) {
     }
   };
 
+=======
+>>>>>>> main
   return (
     <View style={styles.container}>
       {!isReady && (
@@ -49,6 +57,7 @@ export default function SplashScreen({ navigation }) {
         shouldPlay={isReady}
         isLooping={false}
         onReadyForDisplay={() => setIsReady(true)}
+<<<<<<< HEAD
         onPlaybackStatusUpdate={async (status) => {
           if (status.didJustFinish) {
             // Check if user has valid session
@@ -61,6 +70,10 @@ export default function SplashScreen({ navigation }) {
                 return;
               }
             }
+=======
+        onPlaybackStatusUpdate={(status) => {
+          if (status.didJustFinish) {
+>>>>>>> main
             navigation.replace("OnBoarding");
           }
         }}

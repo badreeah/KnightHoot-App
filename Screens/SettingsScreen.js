@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 // screens/SettingsScreen.js
+=======
+>>>>>>> main
 import React, { useState } from "react";
 import {
   View,
@@ -7,19 +10,33 @@ import {
   StyleSheet,
   Pressable,
   Switch,
+<<<<<<< HEAD
   StyleSheet as RNStyleSheet,
+=======
+  Alert,
+  StyleSheet as RNStyleSheet,
+  Linking,
+>>>>>>> main
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useAppSettings } from "../src/context/AppSettingProvid";
 import { useTranslation } from "react-i18next";
 import { COLORS } from "../util/colors";
+<<<<<<< HEAD
+=======
+import supabase from "../supabase";
+>>>>>>> main
 
 export default function SettingsScreen() {
   const nav = useNavigation();
   const { theme, isRTL } = useAppSettings();
   const { t } = useTranslation();
 
+<<<<<<< HEAD
+=======
+  // تقدرِين تستخدمينهم لاحقاً لو رجعتي سويتشات أو إعدادات إضافية
+>>>>>>> main
   const [realTime, setRealTime] = useState(true);
   const [downloadProt, setDownloadProt] = useState(true);
   const [twoFA, setTwoFA] = useState(false);
@@ -39,7 +56,10 @@ export default function SettingsScreen() {
     borderColor: cardBorder,
   };
   const titleStyle = { color: theme.colors.text };
+<<<<<<< HEAD
   const subStyle = { color: theme.colors.subtext };
+=======
+>>>>>>> main
 
   const Row = ({ left, sub, right, onPress }) => (
     <Pressable
@@ -58,28 +78,118 @@ export default function SettingsScreen() {
     >
       <View style={{ flex: 1 }}>
         <Text
+<<<<<<< HEAD
           numberOfLines={1}
+=======
+>>>>>>> main
           style={{ fontSize: 16, fontWeight: "500", color: theme.colors.text }}
         >
           {left}
         </Text>
+<<<<<<< HEAD
         {sub ? (
           <Text
             numberOfLines={2}
             style={{ fontSize: 12, marginTop: 2, color: theme.colors.subtext }}
+=======
+
+        {sub ? (
+          <Text
+            numberOfLines={2}
+            style={{
+              fontSize: 12,
+              marginTop: 2,
+              color: theme.colors.subtext,
+            }}
+>>>>>>> main
           >
             {sub}
           </Text>
         ) : null}
       </View>
+<<<<<<< HEAD
       <View
         style={{ marginLeft: isRTL ? 0 : 12, marginRight: isRTL ? 12 : 0 }}
+=======
+
+      <View
+        style={{
+          marginLeft: isRTL ? 0 : 12,
+          marginRight: isRTL ? 12 : 0,
+        }}
+>>>>>>> main
       >
         {right}
       </View>
     </Pressable>
   );
 
+<<<<<<< HEAD
+=======
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      Alert.alert("Error", error.message);
+      return;
+    }
+
+    nav.reset({
+      index: 0,
+      routes: [{ name: "SignIn" }],
+    });
+  };
+
+  const handleDeleteAccount = async () => {
+    Alert.alert("Delete Account", "Are you sure? This action is permanent.", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            const { data } = await supabase.auth.getUser();
+            const user = data?.user;
+
+            if (!user) {
+              Alert.alert("Error", "User not found");
+              return;
+            }
+
+            await supabase.from("profiles").delete().eq("id", user.id);
+
+            await supabase.auth.signOut();
+
+            nav.reset({
+              index: 0,
+              routes: [{ name: "SignIn" }],
+            });
+          } catch (err) {
+            Alert.alert("Error", err.message);
+          }
+        },
+      },
+    ]);
+  };
+
+  const handleContactSupport = () => {
+    const subject = encodeURIComponent("KnightHoot Support");
+    const body = encodeURIComponent("Hi KnightHoot team,\n\n");
+    const email = "support@knighthoot.app"; // ايميل التواصل
+
+    Linking.openURL(`mailto:${email}?subject=${subject}&body=${body}`).catch(
+      () => Alert.alert("Error", "Unable to open email app.")
+    );
+  };
+
+  const handleRateApp = () => {
+    const url = "https://knighthoot.app"; // رابط في حال نشرناه
+    Linking.openURL(url).catch(() =>
+      Alert.alert("Error", "Unable to open the link.")
+    );
+  };
+
+>>>>>>> main
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
@@ -98,6 +208,7 @@ export default function SettingsScreen() {
             color={theme.colors.text}
           />
         </Pressable>
+<<<<<<< HEAD
         <Text style={[styles.headerTitle, titleStyle]}>
           {t("settings", "Settings")}
         </Text>
@@ -212,6 +323,18 @@ export default function SettingsScreen() {
 
       {/* Account & Security */}
       <View style={[styles.card, cardStyle, { borderColor: cardBorder }]}>
+=======
+
+        <Text style={[styles.headerTitle, titleStyle]}>
+          {t("settings", "Settings")}
+        </Text>
+
+        <View style={{ width: 24 }} />
+      </View>
+
+      {/* Account & Security */}
+      <View style={[styles.card, cardStyle]}>
+>>>>>>> main
         <Text style={[styles.sectionTitle, titleStyle]}>
           {t("accountSecurity", "Account & Security")}
         </Text>
@@ -223,6 +346,7 @@ export default function SettingsScreen() {
           }
           onPress={() => nav.navigate("ChangePassword")}
         />
+<<<<<<< HEAD
         <Row
           left={t("twoFA", "Two-Factor Authentication")}
           right={
@@ -273,11 +397,49 @@ export default function SettingsScreen() {
             <Ionicons name={arrow} size={18} color={theme.colors.subtext} />
           }
           onPress={() => nav.navigate("LanguagePicker")}
+=======
+
+        <Row
+          left={t("changeEmail", "Change Email")}
+          right={
+            <Ionicons name={arrow} size={18} color={theme.colors.subtext} />
+          }
+          onPress={() => nav.navigate("ChangeEmail")}
+        />
+      </View>
+
+      {/* Account Actions */}
+      <View style={[styles.card, cardStyle]}>
+        <Text style={[styles.sectionTitle, titleStyle]}>
+          {t("accountActions", "Account Actions")}
+        </Text>
+
+        <Row
+          left={t("logout", "Log Out")}
+          right={
+            <Ionicons
+              name="log-out-outline"
+              size={18}
+              color={theme.colors.subtext}
+            />
+          }
+          onPress={handleLogout}
+        />
+
+        <Row
+          left={t("deleteAccount", "Delete Account")}
+          right={<Ionicons name="trash-outline" size={18} color="red" />}
+          onPress={handleDeleteAccount}
+>>>>>>> main
         />
       </View>
 
       {/* About */}
+<<<<<<< HEAD
       <View style={[styles.card, cardStyle, { borderColor: cardBorder }]}>
+=======
+      <View style={[styles.card, cardStyle]}>
+>>>>>>> main
         <Text style={[styles.sectionTitle, titleStyle]}>
           {t("about", "About")}
         </Text>
@@ -289,6 +451,7 @@ export default function SettingsScreen() {
           }
           onPress={() => nav.navigate("Privacy")}
         />
+<<<<<<< HEAD
         <Row
           left={t("terms", "Terms of Use")}
           right={
@@ -296,6 +459,33 @@ export default function SettingsScreen() {
           }
           onPress={() => nav.navigate("Terms")}
         />
+=======
+
+        <Row
+          left={t("contactSupport", "Contact Support")}
+          right={
+            <Ionicons
+              name="mail-outline"
+              size={18}
+              color={theme.colors.subtext}
+            />
+          }
+          onPress={handleContactSupport}
+        />
+
+        <Row
+          left={t("rateApp", "Rate KnightHoot")}
+          right={
+            <Ionicons
+              name="star-outline"
+              size={18}
+              color={theme.colors.subtext}
+            />
+          }
+          onPress={handleRateApp}
+        />
+
+>>>>>>> main
         <Row
           left={`${t("version", "Version")} 1.0.0`}
           right={

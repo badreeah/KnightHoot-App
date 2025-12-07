@@ -55,21 +55,61 @@ export default function ReportScam({ navigation }) {
     }
   }, [isSubmitted, navigation]);
 
+<<<<<<< HEAD
+=======
+  // استقبال البيانات من SafeBrowsing (selectedCategory = "web", url, description)
+  useEffect(() => {
+    if (navigation?.getState) {
+      const params = navigation.getState().routes.slice(-1)[0]?.params;
+
+      if (params?.selectedCategory === "web") {
+        setSelectedCategory("web");
+        setFormData((prev) => ({
+          ...prev,
+          url: params.url || "",
+          webDescription: params.description || "",
+        }));
+      }
+    }
+  }, [navigation]);
+
+>>>>>>> main
   const validateForm = () => {
     switch (selectedCategory) {
       case "calls":
         if (!formData.phone.trim()) {
+<<<<<<< HEAD
           Alert.alert(t("error", "Error"), t("phoneRequired", "Phone number is required"));
           return false;
         }
         if (!formData.description.trim()) {
           Alert.alert(t("error", "Error"), t("descriptionRequired", "Description is required"));
+=======
+          Alert.alert(
+            t("error", "Error"),
+            t("phoneRequired", "Phone number is required")
+          );
+          return false;
+        }
+        if (!formData.description.trim()) {
+          Alert.alert(
+            t("error", "Error"),
+            t("descriptionRequired", "Description is required")
+          );
+>>>>>>> main
           return false;
         }
         break;
       case "messages":
         if (!formData.sender.trim()) {
+<<<<<<< HEAD
           Alert.alert(t("error", "Error"), t("senderRequired", "Sender is required"));
+=======
+          Alert.alert(
+            t("error", "Error"),
+            t("senderRequired", "Sender is required")
+          );
+>>>>>>> main
           return false;
         }
         if (!formData.msgContent.trim()) {
