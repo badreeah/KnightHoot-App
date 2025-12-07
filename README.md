@@ -20,7 +20,9 @@ A comprehensive mobile security application built with React Native and Expo, de
    - [Start the Backend Server](#start-the-backend-server)
 7. [Configuration](#configuration)
 8. [Main Screens](#main-screens)
-9. [Note](#note)
+9. [Feature Guides](#feature-guides)
+    - [Email Scanning](#email-scanning)
+10. [Note](#note)
 
 
 ## Features
@@ -112,6 +114,21 @@ The server will start on port 3000 .
 - **Safe Browsing**: Secure web browsing interface
 - **Profile**: User settings and preferences
 - **Statistics**: View scan history and analytics
+
+## Feature Guides
+
+### Email Scanning
+
+To scan your emails for phishing attempts:
+
+1. Navigate to the **Profile** screen from the app menu.
+2. Tap on **Email Scanning** in the settings section.
+3. If not connected, enter your email address and a 16-character app password (generated from your email provider's security settings, e.g., Gmail App Passwords).
+4. Connect your email account.
+5. Once connected, the app will automatically scan your emails for phishing indicators.
+6. View email statistics and alerts in the **Statistics** screen or **Manage Alerts** section.
+
+To disconnect your email account, return to the **Profile** screen and tap on **Email Scanning** again, then confirm the disconnection.
 
 ---
 
