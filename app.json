@@ -33,6 +33,15 @@
           "supportsPictureInPicture": true
         }
       ]
+<<<<<<< HEAD
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "91b45013-0ee5-4085-834d-66e62c08b548"
+      }
+    }
+=======
     ]
+>>>>>>> main
   }
 }

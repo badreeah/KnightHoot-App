@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+// screens/SettingsScreen.js
+=======
+>>>>>>> main
 import React, { useState } from "react";
 import {
   View,
@@ -6,23 +10,33 @@ import {
   StyleSheet,
   Pressable,
   Switch,
+<<<<<<< HEAD
+  StyleSheet as RNStyleSheet,
+=======
   Alert,
   StyleSheet as RNStyleSheet,
   Linking,
+>>>>>>> main
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useAppSettings } from "../src/context/AppSettingProvid";
 import { useTranslation } from "react-i18next";
 import { COLORS } from "../util/colors";
+<<<<<<< HEAD
+=======
 import supabase from "../supabase";
+>>>>>>> main
 
 export default function SettingsScreen() {
   const nav = useNavigation();
   const { theme, isRTL } = useAppSettings();
   const { t } = useTranslation();
 
+<<<<<<< HEAD
+=======
   // تقدرِين تستخدمينهم لاحقاً لو رجعتي سويتشات أو إعدادات إضافية
+>>>>>>> main
   const [realTime, setRealTime] = useState(true);
   const [downloadProt, setDownloadProt] = useState(true);
   const [twoFA, setTwoFA] = useState(false);
@@ -42,6 +56,10 @@ export default function SettingsScreen() {
     borderColor: cardBorder,
   };
   const titleStyle = { color: theme.colors.text };
+<<<<<<< HEAD
+  const subStyle = { color: theme.colors.subtext };
+=======
+>>>>>>> main
 
   const Row = ({ left, sub, right, onPress }) => (
     <Pressable
@@ -60,10 +78,20 @@ export default function SettingsScreen() {
     >
       <View style={{ flex: 1 }}>
         <Text
+<<<<<<< HEAD
+          numberOfLines={1}
+=======
+>>>>>>> main
           style={{ fontSize: 16, fontWeight: "500", color: theme.colors.text }}
         >
           {left}
         </Text>
+<<<<<<< HEAD
+        {sub ? (
+          <Text
+            numberOfLines={2}
+            style={{ fontSize: 12, marginTop: 2, color: theme.colors.subtext }}
+=======
 
         {sub ? (
           <Text
@@ -73,23 +101,31 @@ export default function SettingsScreen() {
               marginTop: 2,
               color: theme.colors.subtext,
             }}
+>>>>>>> main
           >
             {sub}
           </Text>
         ) : null}
       </View>
+<<<<<<< HEAD
+      <View
+        style={{ marginLeft: isRTL ? 0 : 12, marginRight: isRTL ? 12 : 0 }}
+=======
 
       <View
         style={{
           marginLeft: isRTL ? 0 : 12,
           marginRight: isRTL ? 12 : 0,
         }}
+>>>>>>> main
       >
         {right}
       </View>
     </Pressable>
   );
 
+<<<<<<< HEAD
+=======
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
 
@@ -153,6 +189,7 @@ export default function SettingsScreen() {
     );
   };
 
+>>>>>>> main
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: theme.colors.background }]}
@@ -171,6 +208,122 @@ export default function SettingsScreen() {
             color={theme.colors.text}
           />
         </Pressable>
+<<<<<<< HEAD
+        <Text style={[styles.headerTitle, titleStyle]}>
+          {t("settings", "Settings")}
+        </Text>
+        <View style={{ width: 24 }} />
+      </View>
+
+      {/* Protection */}
+      <View style={[styles.card, cardStyle, { borderColor: cardBorder }]}>
+        <Text style={[styles.sectionTitle, titleStyle]}>
+          {t("protection", "Protection")}
+        </Text>
+
+        <Row
+          left={t("realTime", "Real-time Protection")}
+          sub={t("realTimeSub", "Scan URLs, calls, and SMS in the background")}
+          right={
+            <Switch
+              value={realTime}
+              onValueChange={setRealTime}
+              trackColor={{
+                false: theme.colors.cardBorder,
+                true: COLORS.purple1,
+              }}
+              thumbColor={"#fff"}
+            />
+          }
+        />
+
+        <Row
+          left={t("safeBrowsing", "Safe Browsing")}
+          sub={t("safeBrowsingSub", "Check URLs before opening")}
+          right={
+            <Ionicons name={arrow} size={18} color={theme.colors.subtext} />
+          }
+          onPress={() => nav.navigate("SafeBrowsing")}
+        />
+
+        <Row
+          left={t("downloadProt", "Download Protection")}
+          sub={t("downloadProtSub", "Warn or block suspicious files")}
+          right={
+            <Switch
+              value={downloadProt}
+              onValueChange={setDownloadProt}
+              trackColor={{
+                false: theme.colors.cardBorder,
+                true: COLORS.purple1,
+              }}
+              thumbColor={"#fff"}
+            />
+          }
+        />
+      </View>
+
+      {/* Notifications */}
+      <View style={[styles.card, cardStyle, { borderColor: cardBorder }]}>
+        <Text style={[styles.sectionTitle, titleStyle]}>
+          {t("notifications", "Notifications")}
+        </Text>
+
+        <Row
+          left={t("callsAlert", "Calls Alerts")}
+          right={
+            <Switch
+              value={alertCalls}
+              onValueChange={setAlertCalls}
+              trackColor={{
+                false: theme.colors.cardBorder,
+                true: COLORS.purple1,
+              }}
+              thumbColor={"#fff"}
+            />
+          }
+        />
+        <Row
+          left={t("smsAlert", "SMS Alerts")}
+          right={
+            <Switch
+              value={alertSMS}
+              onValueChange={setAlertSMS}
+              trackColor={{
+                false: theme.colors.cardBorder,
+                true: COLORS.purple1,
+              }}
+              thumbColor={"#fff"}
+            />
+          }
+        />
+        <Row
+          left={t("emailAlert", "Email Alerts")}
+          right={
+            <Switch
+              value={alertEmail}
+              onValueChange={setAlertEmail}
+              trackColor={{
+                false: theme.colors.cardBorder,
+                true: COLORS.purple1,
+              }}
+              thumbColor={"#fff"}
+            />
+          }
+        />
+        <Row
+          left={t("quietHours", "Quiet Hours")}
+          sub={t("quietHoursSub", "Silence alerts during selected time")}
+          right={
+            <Ionicons name={arrow} size={18} color={theme.colors.subtext} />
+          }
+          onPress={() => nav.navigate("QuietHours")}
+        />
+      </View>
+
+      {/* Account & Security */}
+      <View style={[styles.card, cardStyle, { borderColor: cardBorder }]}>
+=======
 
         <Text style={[styles.headerTitle, titleStyle]}>
           {t("settings", "Settings")}
@@ -181,6 +334,7 @@ export default function SettingsScreen() {
 
       {/* Account & Security */}
       <View style={[styles.card, cardStyle]}>
+>>>>>>> main
         <Text style={[styles.sectionTitle, titleStyle]}>
           {t("accountSecurity", "Account & Security")}
         </Text>
@@ -192,6 +346,58 @@ export default function SettingsScreen() {
           }
           onPress={() => nav.navigate("ChangePassword")}
         />
+<<<<<<< HEAD
+        <Row
+          left={t("twoFA", "Two-Factor Authentication")}
+          right={
+            <Switch
+              value={twoFA}
+              onValueChange={setTwoFA}
+              trackColor={{
+                false: theme.colors.cardBorder,
+                true: COLORS.purple1,
+              }}
+              thumbColor={"#fff"}
+            />
+          }
+        />
+        <Row
+          left={t("sessions", "Sessions / Devices")}
+          right={
+            <Ionicons name={arrow} size={18} color={theme.colors.subtext} />
+          }
+          onPress={() => nav.navigate("AddDevice")}
+        />
+        <Row
+          left={t("exportDelete", "Export / Delete Data")}
+          right={
+            <Ionicons name={arrow} size={18} color={theme.colors.subtext} />
+          }
+          onPress={() => nav.navigate("DataCenter")}
+        />
+      </View>
+
+      {/* Appearance & Language */}
+      <View style={[styles.card, cardStyle, { borderColor: cardBorder }]}>
+        <Text style={[styles.sectionTitle, titleStyle]}>
+          {t("appearanceLang", "Appearance & Language")}
+        </Text>
+
+        <Row
+          left={t("theme", "Theme")}
+          sub={t("themeSub", "System / Light / Dark")}
+          right={
+            <Ionicons name={arrow} size={18} color={theme.colors.subtext} />
+          }
+          onPress={() => nav.navigate("ThemePicker")}
+        />
+        <Row
+          left={t("language", "Language")}
+          right={
+            <Ionicons name={arrow} size={18} color={theme.colors.subtext} />
+          }
+          onPress={() => nav.navigate("LanguagePicker")}
+=======
 
         <Row
           left={t("changeEmail", "Change Email")}
@@ -224,11 +430,16 @@ export default function SettingsScreen() {
           left={t("deleteAccount", "Delete Account")}
           right={<Ionicons name="trash-outline" size={18} color="red" />}
           onPress={handleDeleteAccount}
+>>>>>>> main
         />
       </View>
 
       {/* About */}
+<<<<<<< HEAD
+      <View style={[styles.card, cardStyle, { borderColor: cardBorder }]}>
+=======
       <View style={[styles.card, cardStyle]}>
+>>>>>>> main
         <Text style={[styles.sectionTitle, titleStyle]}>
           {t("about", "About")}
         </Text>
@@ -240,6 +451,15 @@ export default function SettingsScreen() {
           }
           onPress={() => nav.navigate("Privacy")}
         />
+<<<<<<< HEAD
+        <Row
+          left={t("terms", "Terms of Use")}
+          right={
+            <Ionicons name={arrow} size={18} color={theme.colors.subtext} />
+          }
+          onPress={() => nav.navigate("Terms")}
+        />
+=======
 
         <Row
           left={t("contactSupport", "Contact Support")}
@@ -265,6 +485,7 @@ export default function SettingsScreen() {
           onPress={handleRateApp}
         />
 
+>>>>>>> main
         <Row
           left={`${t("version", "Version")} 1.0.0`}
           right={

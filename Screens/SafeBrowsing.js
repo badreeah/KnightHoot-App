@@ -98,6 +98,8 @@ const classifyUrlAI = async (inputUrl) => {
   };
 };
 
+<<<<<<< HEAD
+=======
 // تهذيب والتحقق من الـ URL (فورمات معيّن)
 const normalizeAndValidateUrl = (raw) => {
   const trimmed = (raw || "").trim();
@@ -126,6 +128,7 @@ const normalizeAndValidateUrl = (raw) => {
   }
 };
 
+>>>>>>> main
 function SafeBrowsingScreen({ navigation }) {
   const [url, setUrl] = useState("");
   const [siteRating, setSiteRating] = useState(null); // 'safe' | 'danger'
@@ -178,7 +181,10 @@ function SafeBrowsingScreen({ navigation }) {
             setLastScanInfo({
               domain: last.domain,
               reason: last.reasons || "Classified by ML model",
+<<<<<<< HEAD
+=======
               url: last.url,
+>>>>>>> main
             });
             const uiRating = last.label === "notsafe" ? "danger" : "safe";
             setSiteRating(uiRating);
@@ -204,11 +210,14 @@ function SafeBrowsingScreen({ navigation }) {
   );
 
   const onOpenLink = (link) => {
+<<<<<<< HEAD
+=======
     if (!link) {
       Alert.alert(t("safe.invalidUrl", "Enter a valid URL to scan"));
       return;
     }
 
+>>>>>>> main
     if (siteRating === "danger") {
       Alert.alert(
         t("safe.warnTitle", "Warning: Suspicious Site"),
@@ -266,6 +275,11 @@ function SafeBrowsingScreen({ navigation }) {
 
   // فحص الرابط هنا مباشرة + حفظه في Supabase
   const handleCheck = async () => {
+<<<<<<< HEAD
+    const input = (url || "").trim();
+    if (!input) {
+      Alert.alert(t("safe.invalidUrl", "Enter a valid URL to scan"));
+=======
     const rawInput = url;
 
     // نستخدم الدالة الجديدة للتحقق من الفورمات + إضافة البروتوكول
@@ -279,11 +293,16 @@ function SafeBrowsingScreen({ navigation }) {
           "Please enter a valid website address like example.com or https://example.com"
         )
       );
+>>>>>>> main
       return;
     }
 
     try {
+<<<<<<< HEAD
+      const res = await classifyUrlAI(input);
+=======
       const res = await classifyUrlAI(normalizedUrl);
+>>>>>>> main
 
       // rating في الواجهة نعتمد على label المخزّن (safe / notsafe)
       const uiRating = res.label === "notsafe" ? "danger" : "safe";
@@ -291,7 +310,10 @@ function SafeBrowsingScreen({ navigation }) {
       const uiLastScan = {
         domain: res.domain,
         reason: res.reasons?.[0] || "Classified by ML model",
+<<<<<<< HEAD
+=======
         url: normalizedUrl,
+>>>>>>> main
       };
 
       setLastScanInfo(uiLastScan);
@@ -304,7 +326,11 @@ function SafeBrowsingScreen({ navigation }) {
       if (user?.id) {
         await saveSafeResult(
           user.id,
+<<<<<<< HEAD
+          input,
+=======
           normalizedUrl, // نخزن الفورمات النهائي النظيف
+>>>>>>> main
           res.domain,
           res.label, // safe | notsafe حسب القاعدة
           res.score,
@@ -315,7 +341,11 @@ function SafeBrowsingScreen({ navigation }) {
         const newRow = {
           id: Date.now(), // ID مؤقت محلي
           user_id: user.id,
+<<<<<<< HEAD
+          url: input,
+=======
           url: normalizedUrl,
+>>>>>>> main
           domain: res.domain,
           label: res.label,
           score: res.score,
@@ -330,6 +360,8 @@ function SafeBrowsingScreen({ navigation }) {
     }
   };
 
+<<<<<<< HEAD
+=======
   // ربط زر Report مع صفحة البلاغ ReportScam
   const handleReport = () => {
     if (!lastScanInfo || !lastScanInfo.url) {
@@ -344,6 +376,7 @@ function SafeBrowsingScreen({ navigation }) {
     });
   };
 
+>>>>>>> main
   return (
     <ScrollView
       style={styles.container}
@@ -366,7 +399,12 @@ function SafeBrowsingScreen({ navigation }) {
         />
       </View>
 
+<<<<<<< HEAD
+      
+ {/* Check URL */}
+=======
       {/* Check URL */}
+>>>>>>> main
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>
           {t("safe.checkUrl", "Check URL")}
@@ -411,7 +449,11 @@ function SafeBrowsingScreen({ navigation }) {
 
         <View style={styles.cardRight}>{renderRatingBadge()}</View>
       </View>
+<<<<<<< HEAD
+      
+=======
 
+>>>>>>> main
       {/* Browsing Tips */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>
@@ -453,6 +495,9 @@ function SafeBrowsingScreen({ navigation }) {
             <TouchableOpacity
               style={styles.primaryBtn}
               onPress={() => {
+<<<<<<< HEAD
+                const toOpen = url.startsWith("http") ? url : `https://${url}`;
+=======
                 const scanUrl = lastScanInfo?.url;
                 const toOpen =
                   scanUrl && scanUrl.startsWith("http")
@@ -461,6 +506,7 @@ function SafeBrowsingScreen({ navigation }) {
                     ? `https://${scanUrl}`
                     : null;
 
+>>>>>>> main
                 onOpenLink(toOpen);
               }}
             >
@@ -471,7 +517,15 @@ function SafeBrowsingScreen({ navigation }) {
 
             <TouchableOpacity
               style={styles.secondaryBtn}
+<<<<<<< HEAD
+              onPress={() => {
+                Alert.alert(
+                  t("safe.reportSent", "Report sent to the system (Mock)")
+                );
+              }}
+=======
               onPress={handleReport}
+>>>>>>> main
             >
               <Text style={styles.secondaryBtnText}>
                 {t("safe.report", "Report")}
@@ -693,4 +747,8 @@ const createStyles = (theme, isRTL) =>
       backgroundColor: COLORS.purple7,
       color: "#fff",
     },
+<<<<<<< HEAD
   });
+=======
+  });
+>>>>>>> main

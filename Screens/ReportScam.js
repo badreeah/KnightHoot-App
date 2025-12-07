@@ -55,6 +55,8 @@ export default function ReportScam({ navigation }) {
     }
   }, [isSubmitted, navigation]);
 
+<<<<<<< HEAD
+=======
   // استقبال البيانات من SafeBrowsing (selectedCategory = "web", url, description)
   useEffect(() => {
     if (navigation?.getState) {
@@ -71,10 +73,18 @@ export default function ReportScam({ navigation }) {
     }
   }, [navigation]);
 
+>>>>>>> main
   const validateForm = () => {
     switch (selectedCategory) {
       case "calls":
         if (!formData.phone.trim()) {
+<<<<<<< HEAD
+          Alert.alert(t("error", "Error"), t("phoneRequired", "Phone number is required"));
+          return false;
+        }
+        if (!formData.description.trim()) {
+          Alert.alert(t("error", "Error"), t("descriptionRequired", "Description is required"));
+=======
           Alert.alert(
             t("error", "Error"),
             t("phoneRequired", "Phone number is required")
@@ -86,15 +96,20 @@ export default function ReportScam({ navigation }) {
             t("error", "Error"),
             t("descriptionRequired", "Description is required")
           );
+>>>>>>> main
           return false;
         }
         break;
       case "messages":
         if (!formData.sender.trim()) {
+<<<<<<< HEAD
+          Alert.alert(t("error", "Error"), t("senderRequired", "Sender is required"));
+=======
           Alert.alert(
             t("error", "Error"),
             t("senderRequired", "Sender is required")
           );
+>>>>>>> main
           return false;
         }
         if (!formData.msgContent.trim()) {

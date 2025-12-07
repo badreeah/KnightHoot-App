@@ -13,7 +13,11 @@ import WordStyling from "../components/WordStyling";
 import TipsInfo from "../util/TipsInfo"; // Array of tips
 import CustomButton from "../components/CustomButton";
 import { supabase } from "../supabase";
+<<<<<<< HEAD
+import { useFocusEffect, CommonActions } from "@react-navigation/native";
+=======
 import { useFocusEffect } from "@react-navigation/native";
+>>>>>>> main
 import { getAvatar } from "../util/avatar";
 import { useAppSettings } from "../src/context/AppSettingProvid";
 
@@ -144,7 +148,11 @@ export default function Home({ navigation }) {
           />
           */}
           <ActionButton
+<<<<<<< HEAD
+            title="Report a Scam"
+=======
             title="Report Scam"
+>>>>>>> main
             icon={require("../assets/icons/alarm.png")}
             imageSource={require("../assets/images/Actions.png")}
             iconWidth={114}
@@ -152,6 +160,18 @@ export default function Home({ navigation }) {
             iconHeight={114}
             onPress={() => navigation.navigate("ReportScam")}
           />
+<<<<<<< HEAD
+           <ActionButton
+            title="SMS Scam"
+            icon={require("../assets/icons/sms_scam.png")}
+            imageSource={require("../assets/images/Actions.png")}
+            iconWidth={114}
+            top={-30}
+            iconHeight={114}
+            onPress={() => navigation.navigate("SmsScam")}
+          />
+=======
+>>>>>>> main
         </ScrollView>
       </View>
     </View>
