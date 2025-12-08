@@ -130,6 +130,13 @@ To scan your emails for phishing attempts:
 
 To disconnect your email account, return to the **Profile** screen and tap on **Email Scanning** again, then confirm the disconnection.
 
+
+
+> ### About The Email Phishing Model 
+> **Model:** Logistic Regression + TF-IDF  
+> **Task:** Binary Classification • Phishing vs Legitimate  
+> **Dataset:** 82,500 emails  
+> **Accuracy:** 98.7%
 ---
 
 # SMS Scam Detection API
