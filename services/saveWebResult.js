@@ -22,9 +22,4 @@ export const saveSafeResult = async (
     console.log("saveSafeResult error:", error);
     throw error;
   }
-<<<<<<< HEAD
 };
-=======
-};
-
->>>>>>> main

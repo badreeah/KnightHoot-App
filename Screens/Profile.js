@@ -1,9 +1,10 @@
-// Screens/Profile.js
-<<<<<<< HEAD
-import React, { useState, useMemo, useEffect, useRef } from "react";
-=======
-import React, { useState, useMemo, useEffect, useCallback } from "react";
->>>>>>> main
+import React, {
+  useState,
+  useMemo,
+  useEffect,
+  useRef,
+  useCallback,
+} from "react";
 import {
   View,
   Text,
@@ -11,7 +12,6 @@ import {
   ScrollView,
   Pressable,
   Switch,
-<<<<<<< HEAD
   TextInput,
   Modal,
   Image,
@@ -22,66 +22,34 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
-=======
-  Image,
-  Alert,
-  Modal,
-  TextInput,
-} from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
->>>>>>> main
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "../util/colors";
 import { useTranslation } from "react-i18next";
 import { useAppSettings } from "../src/context/AppSettingProvid";
-<<<<<<< HEAD
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ensureProfile, getMyProfile, updateMyProfile } from "../src/api/profile";
+import {
+  ensureProfile,
+  getMyProfile,
+  updateMyProfile,
+} from "../src/api/profile";
 import supabase from "../supabase";
 import { getAvatar } from "../util/avatar";
-=======
-import supabase from "../supabase";
-import { getAvatar } from "../util/avatar";
-import { ensureProfile, getMyProfile } from "../src/api/profile";
->>>>>>> main
 
 export default function Profile() {
   const navigation = useNavigation();
   const { t } = useTranslation();
-<<<<<<< HEAD
   const scrollRef = useRef(null);
   const insets = useSafeAreaInsets();
-=======
->>>>>>> main
 
-  const {
-    theme,
-    isRTL,
-    language,
-    setLanguage,
-    setThemeMode,
-    profile,
-    user,
-  } = useAppSettings();
+  const { theme, isRTL, language, setLanguage, setThemeMode, profile, user } =
+    useAppSettings();
 
-<<<<<<< HEAD
   const [activeScreen, setActiveScreen] = useState("main"); // "main" | "edit" | "Privacy"
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [showGenderModal, setShowGenderModal] = useState(false);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
   const [showDatePickerModal, setShowDatePickerModal] = useState(false);
-=======
-  const [userData, setUserData] = useState({
-  firstName: "Name",
-  lastName: "",
-  username: "",
-  email: "",
-  gender: "",
-});
-
-  const [showLanguageModal, setShowLanguageModal] = useState(false);
->>>>>>> main
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [emailInput, setEmailInput] = useState("");
   const [appPasswordString, setAppPasswordString] = useState("");
@@ -90,7 +58,6 @@ export default function Profile() {
   const [connectedEmail, setConnectedEmail] = useState(null);
   const [disconnecting, setDisconnecting] = useState(false);
 
-<<<<<<< HEAD
   // تاريخ لاختيار اليوم/الشهر/السنة
   const [selectedDay, setSelectedDay] = useState(1);
   const [selectedMonth, setSelectedMonth] = useState(0); // 0-11
@@ -109,6 +76,24 @@ export default function Profile() {
   });
   const [tempData, setTempData] = useState({ ...userData });
 
+  // رقم السعودية
+  const KSA_PREFIX = "+966";
+  function toE164Ksa(local) {
+    if (!local) return null;
+    const digits = String(local).replace(/\D/g, "");
+    const withoutLeadingZero = digits.replace(/^0+/, "");
+    if (!withoutLeadingZero) return null;
+    return KSA_PREFIX + withoutLeadingZero;
+  }
+  function toLocalKsa(full) {
+    if (!full) return "";
+    const digits = String(full).replace(/\D/g, "");
+    if (digits.startsWith("966")) {
+      return digits.slice(3);
+    }
+    return digits;
+  }
+
   // تحميل بيانات البروفايل من جدول profiles
   useEffect(() => {
     (async () => {
@@ -118,7 +103,7 @@ export default function Profile() {
       setTempData({
         firstName: p.first_name ?? "",
         lastName: p.last_name ?? "",
-        gender: p.gender ?? (user?.user_metadata?.gender ?? ""),
+        gender: p.gender ?? user?.user_metadata?.gender ?? "",
         dateOfBirth: p.date_of_birth ?? "",
         phoneNumber: localFromFull ?? "",
         email: p.email ?? user?.email ?? "",
@@ -128,7 +113,7 @@ export default function Profile() {
       setUserData({
         firstName: p.first_name ?? "",
         lastName: p.last_name ?? "",
-        gender: p.gender ?? (user?.user_metadata?.gender ?? ""),
+        gender: p.gender ?? user?.user_metadata?.gender ?? "",
         dateOfBirth: p.date_of_birth ?? "",
         phoneNumber: localFromFull ?? "",
         email: p.email ?? user?.email ?? "",
@@ -137,6 +122,41 @@ export default function Profile() {
       });
     })();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      const loadProfile = async () => {
+        try {
+          await ensureProfile();
+          const p = await getMyProfile();
+          const localFromFull = toLocalKsa(p.phone || "");
+
+          const newUserData = {
+            firstName: p.first_name ?? "Name",
+            lastName: p.last_name ?? "",
+            username: p.username ?? "",
+            email: p.email ?? user?.email ?? "",
+            gender: p.gender ?? user?.user_metadata?.gender ?? "",
+            dateOfBirth: p.date_of_birth ?? "",
+            phoneNumber: localFromFull ?? "",
+            password: "",
+          };
+
+          setUserData(newUserData);
+
+          if (activeScreen === "edit") {
+            // Keep tempData in sync if we're on the edit screen
+            setTempData(newUserData);
+          }
+        } catch (e) {
+          console.log("Failed to load profile in Profile screen:", e);
+        }
+      };
+
+      loadProfile();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user, activeScreen])
+  );
 
   useEffect(() => {
     const loadAuthEmail = async () => {
@@ -158,32 +178,7 @@ export default function Profile() {
     loadAuthEmail();
   }, []);
 
-=======
- useFocusEffect(
-  useCallback(() => {
-    const loadProfile = async () => {
-      try {
-        await ensureProfile();
-        const p = await getMyProfile();
-
-        setUserData({
-          firstName: p.first_name ?? "Name",
-          lastName: p.last_name ?? "",
-          username: p.username ?? "",
-          email: p.email ?? user?.email ?? "",
-          gender: p.gender ?? user?.user_metadata?.gender ?? "",
-        });
-      } catch (e) {
-        console.log("Failed to load profile in Profile screen:", e);
-      }
-    };
-
-    loadProfile();
-  }, [user])
-);
-
   // التحقق من ربط الإيميل
->>>>>>> main
   useEffect(() => {
     const checkEmailConnection = async () => {
       try {
@@ -212,13 +207,8 @@ export default function Profile() {
   }, []);
 
   // ثيم
-<<<<<<< HEAD
   const themeStyles = useMemo(() => {
     return {
-=======
-  const themeStyles = useMemo(
-    () => ({
->>>>>>> main
       backgroundColor: theme.colors.background,
       textColor: theme.colors.text,
       cardBackground: theme.colors.card,
@@ -226,8 +216,8 @@ export default function Profile() {
       inputBackground: theme.mode === "dark" ? "#161b25" : "#fff",
       profileBackground: theme.mode === "dark" ? theme.colors.card : "#797EF6",
       profileText: theme.colors.text,
-<<<<<<< HEAD
-      profileUsername: theme.mode === "dark" ? theme.colors.subtext : "#b8b8b8ff",
+      profileUsername:
+        theme.mode === "dark" ? theme.colors.subtext : "#b8b8b8ff",
     };
   }, [theme]);
 
@@ -248,7 +238,10 @@ export default function Profile() {
     "December",
   ];
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
-  const years = Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i);
+  const years = Array.from(
+    { length: 100 },
+    (_, i) => new Date().getFullYear() - i
+  );
   const GENDER_OPTIONS = ["male", "female"];
 
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -260,77 +253,66 @@ export default function Profile() {
     return isNaN(d) ? null : d.toISOString().slice(0, 10);
   };
 
-  // رقم السعودية
-  const KSA_PREFIX = "+966";
-  function toE164Ksa(local) {
-    if (!local) return null;
-    const digits = String(local).replace(/\D/g, "");
-    const withoutLeadingZero = digits.replace(/^0+/, "");
-    if (!withoutLeadingZero) return null;
-    return KSA_PREFIX + withoutLeadingZero;
-  }
-  function toLocalKsa(full) {
-    if (!full) return "";
-    const digits = String(full).replace(/\D/g, "");
-    if (digits.startsWith("966")) {
-      return digits.slice(3);
-    }
-    return digits;
-  }
-
   const effectiveGender =
     tempData?.gender || profile?.gender || user?.user_metadata?.gender || null;
 
-  const avatarSrc = useMemo(() => getAvatar(effectiveGender), [effectiveGender]);
+  const avatarSrc = useMemo(
+    () => getAvatar(effectiveGender),
+    [effectiveGender]
+  );
 
   // حفظ التغييرات
   const handleSave = async () => {
-  try {
-    await ensureProfile();
+    try {
+      await ensureProfile();
 
-    const dob = toISODateOrNull(tempData.dateOfBirth);
-    const fullPhone = toE164Ksa(tempData.phoneNumber);
+      const dob = toISODateOrNull(tempData.dateOfBirth);
+      const fullPhone = toE164Ksa(tempData.phoneNumber);
 
-    const cleanedEmail = (tempData.email || "").trim();
+      const cleanedEmail = (tempData.email || "").trim();
 
-    if (cleanedEmail && !EMAIL_RE.test(cleanedEmail)) {
-      Alert.alert("Invalid email", "ايميل غير صحيح");
-      return;
-    }
-    if (tempData.phoneNumber && !PHONE_RE.test(tempData.phoneNumber.replace(/^0+/, ""))) {
-      Alert.alert("Invalid phone", "اكتب رقم جوال صحيح بدون مسافات");
-      return;
-    }
+      if (cleanedEmail && !EMAIL_RE.test(cleanedEmail)) {
+        Alert.alert("Invalid email", "ايميل غير صحيح");
+        return;
+      }
+      if (
+        tempData.phoneNumber &&
+        !PHONE_RE.test(tempData.phoneNumber.replace(/^0+/, ""))
+      ) {
+        Alert.alert("Invalid phone", "اكتب رقم جوال صحيح بدون مسافات");
+        return;
+      }
 
-    // 1) تحديث جدول profiles فقط
-    await updateMyProfile({
-      first_name: tempData.firstName,
-      last_name: tempData.lastName,
-      username: tempData.username || null,
-      gender: tempData.gender || null,      // "male" أو "female"
-      date_of_birth: dob,                   // null أو YYYY-MM-DD
-      phone: fullPhone,                     // بصيغة E.164
-      email: cleanedEmail || null,          // contact email فقط
-    });
-
-    // 2) تحديث metadata (مثلاً الجندر) في auth
-    await supabase.auth.updateUser({ data: { gender: tempData.gender || null } });
-
-    if (tempData.password) {
-      const { error: passErr } = await supabase.auth.updateUser({
-        password: tempData.password,
+      // 1) تحديث جدول profiles فقط
+      await updateMyProfile({
+        first_name: tempData.firstName,
+        last_name: tempData.lastName,
+        username: tempData.username || null,
+        gender: tempData.gender || null, // "male" أو "female"
+        date_of_birth: dob, // null أو YYYY-MM-DD
+        phone: fullPhone, // بصيغة E.164
+        email: cleanedEmail || null, // contact email فقط
       });
-      if (passErr) throw passErr;
+
+      // 2) تحديث metadata (مثلاً الجندر) في auth
+      await supabase.auth.updateUser({
+        data: { gender: tempData.gender || null },
+      });
+
+      if (tempData.password) {
+        const { error: passErr } = await supabase.auth.updateUser({
+          password: tempData.password,
+        });
+        if (passErr) throw passErr;
+      }
+
+      Alert.alert("Saved", "Profile updated successfully!");
+      setUserData({ ...tempData, email: cleanedEmail });
+      setActiveScreen("main");
+    } catch (e) {
+      Alert.alert("Error", e?.message ?? String(e));
     }
-
-    Alert.alert("Saved", "Profile updated successfully!");
-    setUserData({ ...tempData, email: cleanedEmail });
-    setActiveScreen("main");
-  } catch (e) {
-    Alert.alert("Error", e?.message ?? String(e));
-  }
-};
-
+  };
 
   const handleCancel = () => {
     setTempData({ ...userData });
@@ -349,20 +331,6 @@ export default function Profile() {
     setTempData((prev) => ({ ...prev, gender: key })); // "male"/"female"
     setShowGenderModal(false);
   };
-=======
-      profileUsername:
-        theme.mode === "dark" ? theme.colors.subtext : "#b8b8b8ff",
-    }),
-    [theme]
-  );
-
-  const styles = createStyles(theme, themeStyles, isRTL);
-
-  const effectiveGender =
-  userData.gender || profile?.gender || user?.user_metadata?.gender || null;
-
-const avatarSrc = useMemo(() => getAvatar(effectiveGender), [effectiveGender]);
->>>>>>> main
 
   const handleDisconnectEmail = async () => {
     if (!connectedEmail) return;
@@ -381,11 +349,13 @@ const avatarSrc = useMemo(() => getAvatar(effectiveGender), [effectiveGender]);
     }
   };
 
-<<<<<<< HEAD
   // ---------- الشاشات ----------
   const renderMainScreen = () => (
     <ScrollView
-      style={[styles.container, { backgroundColor: themeStyles.backgroundColor }]}
+      style={[
+        styles.container,
+        { backgroundColor: themeStyles.backgroundColor },
+      ]}
     >
       {/* Header */}
       <View style={styles.header}>
@@ -420,10 +390,10 @@ const avatarSrc = useMemo(() => getAvatar(effectiveGender), [effectiveGender]);
               },
             ]}
           >
-            {tempData.firstName} {tempData.lastName}
+            {userData.firstName} {userData.lastName}
           </Text>
 
-          {!!tempData.username && (
+          {!!userData.username && (
             <Text
               style={[
                 styles.profileUsername,
@@ -433,11 +403,11 @@ const avatarSrc = useMemo(() => getAvatar(effectiveGender), [effectiveGender]);
                 },
               ]}
             >
-              {tempData.username}
+              {userData.username}
             </Text>
           )}
 
-          {!!tempData.email && (
+          {!!userData.email && (
             <Text
               style={[
                 styles.profileUsername,
@@ -447,7 +417,7 @@ const avatarSrc = useMemo(() => getAvatar(effectiveGender), [effectiveGender]);
                 },
               ]}
             >
-              {tempData.email}
+              {userData.email}
             </Text>
           )}
         </View>
@@ -647,7 +617,11 @@ const avatarSrc = useMemo(() => getAvatar(effectiveGender), [effectiveGender]);
           </View>
           <Ionicons
             name={
-              connectedEmail ? "checkmark-circle" : isRTL ? "arrow-back" : "arrow-forward"
+              connectedEmail
+                ? "checkmark-circle"
+                : isRTL
+                ? "arrow-back"
+                : "arrow-forward"
             }
             size={20}
             color={connectedEmail ? "#4CAF50" : theme.colors.subtext}
@@ -751,7 +725,9 @@ const avatarSrc = useMemo(() => getAvatar(effectiveGender), [effectiveGender]);
               ]}
             >
               <Image source={avatarSrc} style={styles.profileImage} />
-              <Text style={[styles.profileName, { color: themeStyles.profileText }]}>
+              <Text
+                style={[styles.profileName, { color: themeStyles.profileText }]}
+              >
                 {tempData.firstName} {tempData.lastName}
               </Text>
               {!!tempData.username && (
@@ -777,7 +753,9 @@ const avatarSrc = useMemo(() => getAvatar(effectiveGender), [effectiveGender]);
               ]}
             >
               {/* First name */}
-              <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>
+              <Text
+                style={[styles.formLabel, { color: themeStyles.textColor }]}
+              >
                 {t("First Name")}
               </Text>
               <TextInput
@@ -800,7 +778,9 @@ const avatarSrc = useMemo(() => getAvatar(effectiveGender), [effectiveGender]);
               />
 
               {/* Last name */}
-              <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>
+              <Text
+                style={[styles.formLabel, { color: themeStyles.textColor }]}
+              >
                 {t("Last Name")}
               </Text>
               <TextInput
@@ -823,7 +803,9 @@ const avatarSrc = useMemo(() => getAvatar(effectiveGender), [effectiveGender]);
               />
 
               {/* Gender */}
-              <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>
+              <Text
+                style={[styles.formLabel, { color: themeStyles.textColor }]}
+              >
                 {t("Gender")}
               </Text>
               <Pressable
@@ -849,7 +831,9 @@ const avatarSrc = useMemo(() => getAvatar(effectiveGender), [effectiveGender]);
               </Pressable>
 
               {/* Date of Birth */}
-              <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>
+              <Text
+                style={[styles.formLabel, { color: themeStyles.textColor }]}
+              >
                 {t("Date Of Birth")}
               </Text>
               <Pressable
@@ -872,7 +856,9 @@ const avatarSrc = useMemo(() => getAvatar(effectiveGender), [effectiveGender]);
               </Pressable>
 
               {/* Phone (KSA only) */}
-              <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>
+              <Text
+                style={[styles.formLabel, { color: themeStyles.textColor }]}
+              >
                 {t("Phone Number")}
               </Text>
               <View style={styles.phoneRow}>
@@ -905,11 +891,15 @@ const avatarSrc = useMemo(() => getAvatar(effectiveGender), [effectiveGender]);
               </View>
 
               {/* Email */}
-              <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>
+              <Text
+                style={[styles.formLabel, { color: themeStyles.textColor }]}
+              >
                 {t("Email")}
               </Text>
               <TextInput
-                onFocus={() => scrollRef.current?.scrollToEnd({ animated: true })}
+                onFocus={() =>
+                  scrollRef.current?.scrollToEnd({ animated: true })
+                }
                 style={[
                   styles.input,
                   {
@@ -931,12 +921,16 @@ const avatarSrc = useMemo(() => getAvatar(effectiveGender), [effectiveGender]);
               />
 
               {/* Password */}
-              <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>
+              <Text
+                style={[styles.formLabel, { color: themeStyles.textColor }]}
+              >
                 {t("Password")}
               </Text>
               <View>
                 <TextInput
-                  onFocus={() => scrollRef.current?.scrollToEnd({ animated: true })}
+                  onFocus={() =>
+                    scrollRef.current?.scrollToEnd({ animated: true })
+                  }
                   style={[
                     styles.input,
                     {
@@ -982,7 +976,11 @@ const avatarSrc = useMemo(() => getAvatar(effectiveGender), [effectiveGender]);
           </ScrollView>
 
           {/* Date Picker Modal */}
-          <Modal visible={showDatePickerModal} transparent animationType="slide">
+          <Modal
+            visible={showDatePickerModal}
+            transparent
+            animationType="slide"
+          >
             <View style={styles.modalContainer}>
               <View
                 style={[
@@ -1012,9 +1010,13 @@ const avatarSrc = useMemo(() => getAvatar(effectiveGender), [effectiveGender]);
                       >
                         <Text
                           style={[
-                            styles.pickerOptionText,
-                            selectedDay === day &&
-                              styles.selectedPickerOptionText,
+                            styles.pickerText,
+                            {
+                              color:
+                                selectedDay === day
+                                  ? COLORS.purple1
+                                  : themeStyles.textColor,
+                            },
                           ]}
                         >
                           {day}
@@ -1022,33 +1024,36 @@ const avatarSrc = useMemo(() => getAvatar(effectiveGender), [effectiveGender]);
                       </Pressable>
                     ))}
                   </ScrollView>
-
                   <ScrollView
                     style={styles.pickerColumn}
                     keyboardShouldPersistTaps="handled"
                   >
                     {months.map((month, index) => (
                       <Pressable
-                        key={month}
+                        key={index}
                         style={[
                           styles.pickerOption,
-                          selectedMonth === index && styles.selectedPickerOption,
+                          selectedMonth === index &&
+                            styles.selectedPickerOption,
                         ]}
                         onPress={() => setSelectedMonth(index)}
                       >
                         <Text
                           style={[
-                            styles.pickerOptionText,
-                            selectedMonth === index &&
-                              styles.selectedPickerOptionText,
+                            styles.pickerText,
+                            {
+                              color:
+                                selectedMonth === index
+                                  ? COLORS.purple1
+                                  : themeStyles.textColor,
+                            },
                           ]}
                         >
-                          {month}
+                          {t(month)}
                         </Text>
                       </Pressable>
                     ))}
                   </ScrollView>
-
                   <ScrollView
                     style={styles.pickerColumn}
                     keyboardShouldPersistTaps="handled"
@@ -1064,9 +1069,13 @@ const avatarSrc = useMemo(() => getAvatar(effectiveGender), [effectiveGender]);
                       >
                         <Text
                           style={[
-                            styles.pickerOptionText,
-                            selectedYear === year &&
-                              styles.selectedPickerOptionText,
+                            styles.pickerText,
+                            {
+                              color:
+                                selectedYear === year
+                                  ? COLORS.purple1
+                                  : themeStyles.textColor,
+                            },
                           ]}
                         >
                           {year}
@@ -1076,32 +1085,25 @@ const avatarSrc = useMemo(() => getAvatar(effectiveGender), [effectiveGender]);
                   </ScrollView>
                 </View>
 
-                <View style={styles.modalButtons}>
+                <View style={styles.buttonRow}>
                   <Pressable
-                    style={styles.modalButton}
+                    style={styles.cancelButton}
                     onPress={() => setShowDatePickerModal(false)}
                   >
-                    <Text style={styles.modalButtonText}>{t("cancel")}</Text>
+                    <Text style={styles.cancelButtonText}>{t("cancel")}</Text>
                   </Pressable>
                   <Pressable
-                    style={[styles.modalButton, styles.modalButtonPrimary]}
+                    style={styles.saveButton}
                     onPress={handleDateSelect}
                   >
-                    <Text
-                      style={[
-                        styles.modalButtonText,
-                        styles.modalButtonPrimaryText,
-                      ]}
-                    >
-                      {t("selectDate")}
-                    </Text>
+                    <Text style={styles.saveButtonText}>{t("select")}</Text>
                   </Pressable>
                 </View>
               </View>
             </View>
           </Modal>
 
-          {/* Gender Selection Modal */}
+          {/* Gender Modal */}
           <Modal visible={showGenderModal} transparent animationType="slide">
             <View style={styles.modalContainer}>
               <View
@@ -1115,29 +1117,43 @@ const avatarSrc = useMemo(() => getAvatar(effectiveGender), [effectiveGender]);
                 >
                   {t("selectGender")}
                 </Text>
-
-                {GENDER_OPTIONS.map((key) => (
+                {GENDER_OPTIONS.map((gender) => (
                   <Pressable
-                    key={key}
-                    style={styles.option}
-                    onPress={() => handleGenderSelect(key)}
+                    key={gender}
+                    style={({ pressed }) => [
+                      styles.genderOption,
+                      tempData.gender === gender && styles.selectedGenderOption,
+                      pressed && styles.pressedGenderOption,
+                    ]}
+                    onPress={() => handleGenderSelect(gender)}
                   >
                     <Text
                       style={[
-                        styles.optionText,
-                        { color: themeStyles.textColor },
+                        styles.genderText,
+                        {
+                          color:
+                            tempData.gender === gender
+                              ? COLORS.purple1
+                              : themeStyles.textColor,
+                        },
                       ]}
                     >
-                      {t(key)}
+                      {t(gender)}
                     </Text>
+                    {tempData.gender === gender && (
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={20}
+                        color={COLORS.purple1}
+                      />
+                    )}
                   </Pressable>
                 ))}
-
                 <Pressable
-                  style={styles.closeButton}
+                  style={[styles.cancelButton, { marginTop: 20 }]}
                   onPress={() => setShowGenderModal(false)}
                 >
-                  <Text style={styles.closeButtonText}>{t("close")}</Text>
+                  <Text style={styles.cancelButtonText}>{t("cancel")}</Text>
                 </Pressable>
               </View>
             </View>
@@ -1147,156 +1163,74 @@ const avatarSrc = useMemo(() => getAvatar(effectiveGender), [effectiveGender]);
     </KeyboardAvoidingView>
   );
 
-  const renderPrivacyPolicyScreen = () => (
-    <View style={styles.container}>
+  const renderPrivacyScreen = () => (
+    <ScrollView
+      style={[
+        styles.container,
+        { backgroundColor: themeStyles.backgroundColor },
+      ]}
+    >
+      {/* Header */}
       <View style={styles.header}>
         <Pressable onPress={() => setActiveScreen("main")}>
-          <Ionicons
-            name="arrow-back"
-            size={24}
-            color={COLORS.purple1}
-            style={isRTL && { transform: [{ scaleX: -1 }] }}
-          />
+          <Ionicons name="arrow-back" size={24} color={COLORS.purple8} />
         </Pressable>
-        <Text style={styles.headerTitle}>{t("privacy") || "Privacy"}</Text>
+        <Text style={[styles.headerTitle, { color: themeStyles.textColor }]}>
+          {t("Privacy")}
+        </Text>
         <View style={{ width: 24 }} />
       </View>
 
-      {/* Content */}
-      <ScrollView style={styles.privacyContent}>
-        <Text style={styles.privacyTitle}>Privacy Policy for KnightHoot</Text>
-
-        <Text style={styles.privacyParagraph}>Last Updated: [September 2025]</Text>
-
-        <Text style={styles.privacyParagraph}>
-          KnightHoot is committed to protecting your privacy. This Privacy Policy
-          explains how we collect, use, and protect your information when you use
-          our app, KnightHoot, which helps protect users from scams through
-          email, calls, SMS, and URLs.
+      <View
+        style={[
+          styles.settingsContainer,
+          {
+            backgroundColor: themeStyles.cardBackground,
+            borderColor: themeStyles.borderColor,
+          },
+        ]}
+      >
+        <Text style={[styles.sectionTitle, { color: themeStyles.textColor }]}>
+          {t("dataControl")}
         </Text>
 
-        <Text style={styles.privacySubtitle}>1. Information We Collect</Text>
-        <Text style={styles.privacyParagraph}>
-          We may collect the following information: First name, last name, email
-          address, phone number, gender, device type (personal or family member),
-          scam alerts, reports, and keywords detected in calls for scam detection
-          purposes.
-        </Text>
-
-        <Text style={styles.privacySubtitle}>2. How We Use Your Information</Text>
-        <Text style={styles.privacyParagraph}>
-          We use your information to detect and alert you about potential scams,
-          block suspicious URLs (if you enable it), store and display scam alert
-          history, improve the app’s features, and allow you to manage multiple
-          devices and family members.
-        </Text>
-
-        <Text style={styles.privacySubtitle}>3. Permissions and Actions</Text>
-        <Text style={styles.privacyParagraph}>
-          KnightHoot may require permissions to monitor calls for scam keywords
-          and block unsafe URLs. You can choose between Alert Mode (only alerts)
-          and Action Mode (blocking URLs with permission).
-        </Text>
-
-        <Text style={styles.privacySubtitle}>4. Data Storage and Management</Text>
-        <Text style={styles.privacyParagraph}>
-          If you allow data storage, it will be used for scam detection and
-          improving the app. You can delete your data or account anytime in the
-          settings.
-        </Text>
-
-        <Text style={styles.privacySubtitle}>5. Family Member Devices</Text>
-        <Text style={styles.privacyParagraph}>
-          When you add family members, you can manage their devices and receive
-          scam alerts relevant to them.
-        </Text>
-
-        <Text style={styles.privacySubtitle}>6. Your Privacy Choices</Text>
-        <Text style={styles.privacyParagraph}>
-          You can manage or delete your personal data and control permissions
-          such as call monitoring and URL blocking at any time.
-        </Text>
-
-        <Text style={styles.privacySubtitle}>7. Security</Text>
-        <Text style={styles.privacyParagraph}>
-          We apply reasonable security measures to protect your personal data,
-          but no system can be completely secure.
-        </Text>
-
-        <Text style={styles.privacySubtitle}>8. Children’s Privacy</Text>
-        <Text style={styles.privacyParagraph}>
-          KnightHoot is not intended for children under 13. If we learn we
-          collected information from a child, we will delete it.
-        </Text>
-
-        <Text style={styles.privacySubtitle}>9. Changes to This Policy</Text>
-        <Text style={styles.privacyParagraph}>
-          We may update this Privacy Policy from time to time. Any changes will
-          be reflected in the app with the updated date shown above.
-        </Text>
-
-        <Text style={styles.privacySubtitle}>10. Contact Us</Text>
-        <Text style={styles.privacyParagraph}>
-          If you have questions about this Privacy Policy, please contact us.
-        </Text>
-
-        <View style={{ height: 120 }} />
-      </ScrollView>
-    </View>
-  );
-
-  return (
-    <View style={[styles.container, { backgroundColor: themeStyles.backgroundColor }]}>
-      {activeScreen === "main" && renderMainScreen()}
-      {activeScreen === "edit" && renderEditScreen()}
-      {activeScreen === "Privacy" && renderPrivacyPolicyScreen()}
-=======
-  const renderLanguageModal = () => (
-    <Modal visible={showLanguageModal} transparent animationType="slide">
-      <View style={styles.modalContainer}>
-        <View
-          style={[
-            styles.modalContent,
-            { backgroundColor: themeStyles.cardBackground },
-          ]}
+        {/* Delete Account */}
+        <Pressable
+          style={styles.settingItem}
+          onPress={() => navigation.navigate("DeleteAccount")}
         >
-          <Text style={[styles.modalTitle, { color: themeStyles.textColor }]}>
-            {t("selectLanguage")}
-          </Text>
-
-          <Pressable
-            style={styles.option}
-            onPress={() => {
-              setLanguage("en");
-              setShowLanguageModal(false);
-            }}
-          >
-            <Text style={[styles.optionText, { color: themeStyles.textColor }]}>
-              {t("english")}
-            </Text>
-          </Pressable>
-
-          <Pressable
-            style={styles.option}
-            onPress={() => {
-              setLanguage("ar");
-              setShowLanguageModal(false);
-            }}
-          >
-            <Text style={[styles.optionText, { color: themeStyles.textColor }]}>
-              {t("arabic")}
-            </Text>
-          </Pressable>
-
-          <Pressable
-            style={styles.closeButton}
-            onPress={() => setShowLanguageModal(false)}
-          >
-            <Text style={styles.closeButtonText}>{t("close")}</Text>
-          </Pressable>
-        </View>
+          <View style={styles.settingInfo}>
+            <Image
+              source={require("../assets/icons/delete.png")}
+              style={{ width: 58, height: 58 }}
+            />
+            <View style={styles.settingTextContainer}>
+              <Text
+                style={[
+                  styles.settingTitle,
+                  { color: COLORS.red, fontWeight: "bold" },
+                ]}
+              >
+                {t("Delete Account")}
+              </Text>
+              <Text
+                style={[
+                  styles.settingDescription,
+                  { color: theme.colors.subtext },
+                ]}
+              >
+                {t("Delete all data")}
+              </Text>
+            </View>
+          </View>
+          <Ionicons
+            name={isRTL ? "arrow-back" : "arrow-forward"}
+            size={20}
+            color={theme.colors.subtext}
+          />
+        </Pressable>
       </View>
-    </Modal>
+    </ScrollView>
   );
 
   const renderEmailModal = () => (
@@ -1309,12 +1243,34 @@ const avatarSrc = useMemo(() => getAvatar(effectiveGender), [effectiveGender]);
           ]}
         >
           <Text style={[styles.modalTitle, { color: themeStyles.textColor }]}>
-            Connect Email for Scanning
+            {t("Connect Email")}
+          </Text>
+          <Text
+            style={[styles.modalDescription, { color: theme.colors.subtext }]}
+          >
+            {t("enterEmailForScanning")}
           </Text>
 
-          <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>
-            Email Address
-          </Text>
+          {/* Email Input */}
+          <TextInput
+            style={[
+              styles.input,
+              {
+                backgroundColor: themeStyles.inputBackground,
+                color: themeStyles.textColor,
+                marginBottom: 10,
+              },
+            ]}
+            value={emailInput}
+            onChangeText={setEmailInput}
+            textAlign={isRTL ? "right" : "left"}
+            placeholder={t("Email Address")}
+            placeholderTextColor={theme.colors.subtext}
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+
+          {/* App Password Input */}
           <TextInput
             style={[
               styles.input,
@@ -1323,459 +1279,104 @@ const avatarSrc = useMemo(() => getAvatar(effectiveGender), [effectiveGender]);
                 color: themeStyles.textColor,
               },
             ]}
-            value={emailInput}
-            onChangeText={setEmailInput}
-            placeholder="Enter your email"
-            placeholderTextColor={theme.colors.subtext}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-
-          <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>
-            App Password
-          </Text>
-          <TextInput
-            style={[
-              styles.singleInput,
-              {
-                backgroundColor: themeStyles.inputBackground,
-                color: themeStyles.textColor,
-                borderColor:
-                  appPasswordString.length === 16
-                    ? "#4CAF50"
-                    : appPasswordString.length > 0
-                    ? COLORS.purple1
-                    : theme.colors.cardBorder,
-              },
-            ]}
             value={appPasswordString}
-            onChangeText={(text) => {
-              const cleanText = text.replace(/\s+/g, "").toLowerCase().slice(0, 16);
-              setAppPasswordString(cleanText);
-              setPasswordError("");
-            }}
-            placeholder="Enter 16-character app password"
+            onChangeText={setAppPasswordString}
+            textAlign={isRTL ? "right" : "left"}
+            placeholder={t("App Password (or regular password)")}
             placeholderTextColor={theme.colors.subtext}
-            keyboardType="default"
-            autoCapitalize="none"
             secureTextEntry
-            maxLength={16}
           />
 
-          {passwordError ? (
-            <Text style={[styles.errorText, { color: "#F44336" }]}>
+          {!!passwordError && (
+            <Text style={{ color: COLORS.red, marginTop: 10 }}>
               {passwordError}
             </Text>
-          ) : null}
+          )}
 
           <View style={styles.buttonRow}>
             <Pressable
-              style={[styles.cancelButton, { flex: 1 }]}
-              onPress={() => {
-                setShowEmailModal(false);
-                setEmailInput("");
-                setAppPasswordString("");
-                setPasswordError("");
-              }}
+              style={styles.cancelButton}
+              onPress={() => setShowEmailModal(false)}
+              disabled={connecting}
             >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
+              <Text style={styles.cancelButtonText}>{t("cancel")}</Text>
             </Pressable>
             <Pressable
-              style={[
-                styles.saveButton,
-                { flex: 1 },
-                connecting && { opacity: 0.5 },
-                appPasswordString.length === 16 &&
-                  !connecting && {
-                    backgroundColor: "#4CAF50",
-                    shadowColor: "#4CAF50",
-                  },
-              ]}
-              onPress={async () => {
-                const appPassword = appPasswordString;
-
-                if (!emailInput.trim()) {
-                  setPasswordError("Please enter your email address");
-                  return;
-                }
-                if (appPassword.length !== 16) {
-                  setPasswordError(
-                    "Please enter exactly 16 characters for your app password"
-                  );
-                  return;
-                }
-
-                setConnecting(true);
-                setPasswordError("");
-                try {
-                  const { error } = await supabase.functions.invoke(
-                    "register-email",
-                    {
-                      body: { email: emailInput.trim(), appPassword },
-                    }
-                  );
-                  if (error) throw error;
-
-                  alert("Email connected successfully!");
-                  setConnectedEmail(emailInput.trim());
-                  setShowEmailModal(false);
-                  setEmailInput("");
-                  setAppPasswordString("");
-                } catch (error) {
-                  setPasswordError("Failed to connect email: " + error.message);
-                } finally {
-                  setConnecting(false);
-                }
-              }}
+              style={styles.saveButton}
+              onPress={handleConnectEmail}
               disabled={connecting}
             >
               <Text style={styles.saveButtonText}>
-                {connecting ? "Connecting..." : "Connect"}
+                {connecting ? t("connecting") : t("connect")}
               </Text>
             </Pressable>
           </View>
+
+          <Text
+            style={[styles.modalNote, { color: theme.colors.subtext }]}
+            onPress={() =>
+              Alert.alert("App Password Info", t("appPasswordDetails"))
+            }
+          >
+            {t("whatIsAppPassword")}
+          </Text>
         </View>
       </View>
     </Modal>
   );
 
+  const handleConnectEmail = async () => {
+    if (!EMAIL_RE.test(emailInput)) {
+      setPasswordError(t("invalidEmailFormat"));
+      return;
+    }
+    setPasswordError("");
+    setConnecting(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("link-email", {
+        body: { email: emailInput, password: appPasswordString },
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        Alert.alert("Success", t("emailConnectedSuccessfully"));
+        setConnectedEmail(emailInput);
+        setShowEmailModal(false);
+        setEmailInput("");
+        setAppPasswordString("");
+      } else {
+        throw new Error(data.message || t("failedToConnectEmail"));
+      }
+    } catch (error) {
+      setPasswordError(error.message || t("failedToConnectEmail"));
+      Alert.alert("Error", error.message || t("failedToConnectEmail"));
+    } finally {
+      setConnecting(false);
+    }
+  };
+
+  // -------------------------
+
+  const renderCurrentScreen = () => {
+    switch (activeScreen) {
+      case "edit":
+        return renderEditScreen();
+      case "Privacy":
+        return renderPrivacyScreen();
+      case "main":
+      default:
+        return renderMainScreen();
+    }
+  };
+
   return (
-    <View
-      style={[styles.container, { backgroundColor: themeStyles.backgroundColor }]}
-    >
-      <ScrollView
-        style={[styles.container, { backgroundColor: themeStyles.backgroundColor }]}
-      >
-        {/* Header */}
-        <View style={styles.header}>
-          <Pressable onPress={() => navigation.goBack()}>
-            <Ionicons name="arrow-back" size={24} color={COLORS.purple1} />
-          </Pressable>
-          <Text style={[styles.headerTitle, { color: themeStyles.textColor }]}>
-            {t("Profile")}
-          </Text>
-          <View style={{ width: 24 }} />
-        </View>
-
-        {/* Profile Section */}
-        <View
-          style={[
-            styles.profileSection,
-            {
-              backgroundColor: themeStyles.profileBackground,
-              borderColor: themeStyles.borderColor,
-            },
-          ]}
-        >
-          <Image source={avatarSrc} style={styles.profileImage} />
-
-          <View style={styles.profileInfo}>
-            <Text
-              style={[
-                styles.profileName,
-                {
-                  color: themeStyles.profileText,
-                  textAlign: isRTL ? "right" : "left",
-                },
-              ]}
-            >
-              {userData.firstName} {userData.lastName}
-            </Text>
-
-            {!!userData.username && (
-              <Text
-                style={[
-                  styles.profileUsername,
-                  {
-                    color: themeStyles.profileUsername,
-                    textAlign: isRTL ? "right" : "left",
-                  },
-                ]}
-              >
-                {userData.username}
-              </Text>
-            )}
-
-            {!!userData.email && (
-              <Text
-                style={[
-                  styles.profileUsername,
-                  {
-                    color: themeStyles.profileUsername,
-                    textAlign: isRTL ? "right" : "left",
-                  },
-                ]}
-              >
-                {userData.email}
-              </Text>
-            )}
-          </View>
-        </View>
-
-        <View
-          style={[styles.divider, { backgroundColor: themeStyles.borderColor }]}
-        />
-
-        {/* Settings Card */}
-        <View
-          style={[
-            styles.settingsContainer,
-            {
-              backgroundColor: themeStyles.cardBackground,
-              borderColor: themeStyles.borderColor,
-            },
-          ]}
-        >
-          {/* My Account → تذهب إلى EditProfile */}
-          <Pressable
-            style={styles.settingItem}
-            onPress={() => navigation.navigate("EditProfile")}
-          >
-            <View style={styles.settingInfo}>
-              <Image
-                source={require("../assets/icons/account.png")}
-                style={{ width: 58, height: 58 }}
-              />
-              <View style={styles.settingTextContainer}>
-                <Text
-                  style={[styles.settingTitle, { color: themeStyles.textColor }]}
-                >
-                  {t("Account")}
-                </Text>
-                <Text
-                  style={[
-                    styles.settingDescription,
-                    { color: theme.colors.subtext },
-                  ]}
-                >
-                  {t("Edit account")}
-                </Text>
-              </View>
-            </View>
-            <Ionicons
-              name={isRTL ? "arrow-back" : "arrow-forward"}
-              size={20}
-              color={theme.colors.subtext}
-            />
-          </Pressable>
-
-          {/* Language */}
-          <Pressable
-            style={styles.settingItem}
-            onPress={() => setShowLanguageModal(true)}
-          >
-            <View style={styles.settingInfo}>
-              <Image
-                source={require("../assets/icons/language.png")}
-                style={{ width: 58, height: 58 }}
-              />
-              <View style={styles.settingTextContainer}>
-                <Text
-                  style={[styles.settingTitle, { color: themeStyles.textColor }]}
-                >
-                  {t("Language")}
-                </Text>
-                <Text
-                  style={[
-                    styles.settingDescription,
-                    { color: theme.colors.subtext },
-                  ]}
-                >
-                  {t("language")}
-                </Text>
-              </View>
-            </View>
-            <Ionicons
-              name={isRTL ? "arrow-back" : "arrow-forward"}
-              size={20}
-              color={theme.colors.subtext}
-            />
-          </Pressable>
-
-          {/* Dark Mode */}
-          <View style={styles.settingItem}>
-            <View style={styles.settingInfo}>
-              <Image
-                source={require("../assets/icons/dark-mode.png")}
-                style={{ width: 58, height: 58 }}
-              />
-              <View style={styles.settingTextContainer}>
-                <Text
-                  style={[styles.settingTitle, { color: themeStyles.textColor }]}
-                >
-                  {t("Dark Mode")}
-                </Text>
-                <Text
-                  style={[
-                    styles.settingDescription,
-                    { color: theme.colors.subtext },
-                  ]}
-                >
-                  {t("darkMode")}
-                </Text>
-              </View>
-            </View>
-            <Switch
-              value={theme.mode === "dark"}
-              onValueChange={(val) => setThemeMode(val ? "dark" : "light")}
-              trackColor={{ false: COLORS.gray1, true: COLORS.purple1 }}
-              thumbColor={theme.mode === "dark" ? COLORS.purple1 : "#ffffff"}
-            />
-          </View>
-
-          {/* Settings */}
-          <Pressable
-            style={styles.settingItem}
-            onPress={() => navigation.navigate("Settings")}
-          >
-            <View style={styles.settingInfo}>
-              <Image
-                source={require("../assets/icons/settings.png")}
-                style={{ width: 58, height: 58 }}
-              />
-              <View style={styles.settingTextContainer}>
-                <Text
-                  style={[styles.settingTitle, { color: themeStyles.textColor }]}
-                >
-                  {t("settings")}
-                </Text>
-                <Text
-                  style={[
-                    styles.settingDescription,
-                    { color: theme.colors.subtext },
-                  ]}
-                >
-                  {t("settings")}
-                </Text>
-              </View>
-            </View>
-            <Ionicons
-              name={isRTL ? "arrow-back" : "arrow-forward"}
-              size={20}
-              color={theme.colors.subtext}
-            />
-          </Pressable>
-
-          {/* Email Scanning */}
-          <Pressable
-            style={styles.settingItem}
-            onPress={() => {
-              if (connectedEmail) {
-                Alert.alert(
-                  "Disconnect Email",
-                  `Disconnect ${connectedEmail} from scam scanning?`,
-                  [
-                    { text: "Cancel", style: "cancel" },
-                    {
-                      text: "Disconnect",
-                      style: "destructive",
-                      onPress: handleDisconnectEmail,
-                    },
-                  ]
-                );
-              } else {
-                setShowEmailModal(true);
-              }
-            }}
-          >
-            <View style={styles.settingInfo}>
-              <Image
-                source={require("../assets/icons/Email.png")}
-                style={styles.emailIconAligned}
-              />
-              <View style={styles.settingTextContainer}>
-                <Text
-                  style={[styles.settingTitle, { color: themeStyles.textColor }]}
-                >
-                  {connectedEmail ? "Email" : "Email Scanning"}
-                </Text>
-                <Text
-                  style={[
-                    styles.settingDescription,
-                    { color: theme.colors.subtext },
-                  ]}
-                >
-                  {connectedEmail
-                    ? "connected for scanning"
-                    : "connect your email to scan"}
-                </Text>
-              </View>
-            </View>
-            <Ionicons
-              name={
-                connectedEmail
-                  ? "checkmark-circle"
-                  : isRTL
-                  ? "arrow-back"
-                  : "arrow-forward"
-              }
-              size={20}
-              color={connectedEmail ? "#4CAF50" : theme.colors.subtext}
-            />
-          </Pressable>
-
-          {/* Privacy → تذهب إلى PrivacyScreen */}
-          <Pressable
-            style={styles.settingItem}
-            onPress={() => navigation.navigate("Privacy")}
-          >
-            <View style={styles.settingInfo}>
-              <Image
-                source={require("../assets/icons/privacy.png")}
-                style={{ width: 58, height: 58 }}
-              />
-              <View style={styles.settingTextContainer}>
-                <Text
-                  style={[styles.settingTitle, { color: themeStyles.textColor }]}
-                >
-                  {t("Privacy")}
-                </Text>
-                <Text
-                  style={[
-                    styles.settingDescription,
-                    { color: theme.colors.subtext },
-                  ]}
-                >
-                  {t("Review privacy")}
-                </Text>
-              </View>
-            </View>
-            <Ionicons
-              name={isRTL ? "arrow-back" : "arrow-forward"}
-              size={20}
-              color={theme.colors.subtext}
-            />
-          </Pressable>
-        </View>
-
-        <View
-          style={[styles.divider, { backgroundColor: themeStyles.borderColor }]}
-        />
-
-        <View
-          style={[
-            styles.settingsContainer,
-            {
-              backgroundColor: themeStyles.cardBackground,
-              borderColor: themeStyles.borderColor,
-            },
-          ]}
-        >
-          <Text style={[styles.sectionTitle, { color: themeStyles.textColor }]}>
-            More
-          </Text>
-        </View>
-      </ScrollView>
-
->>>>>>> main
-      {renderLanguageModal()}
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      {renderCurrentScreen()}
       {renderEmailModal()}
-    </View>
-  );
-<<<<<<< HEAD
 
-  function renderLanguageModal() {
-    return (
+      {/* Language Modal */}
       <Modal visible={showLanguageModal} transparent animationType="slide">
         <View style={styles.modalContainer}>
           <View
@@ -1787,514 +1388,335 @@ const avatarSrc = useMemo(() => getAvatar(effectiveGender), [effectiveGender]);
             <Text style={[styles.modalTitle, { color: themeStyles.textColor }]}>
               {t("selectLanguage")}
             </Text>
-
             <Pressable
-              style={styles.option}
+              style={styles.genderOption}
               onPress={() => {
                 setLanguage("en");
                 setShowLanguageModal(false);
               }}
             >
-              <Text style={[styles.optionText, { color: themeStyles.textColor }]}>
-                {t("english")}
+              <Text
+                style={[
+                  styles.genderText,
+                  {
+                    color:
+                      language === "en"
+                        ? COLORS.purple1
+                        : themeStyles.textColor,
+                  },
+                ]}
+              >
+                English
               </Text>
+              {language === "en" && (
+                <Ionicons
+                  name="checkmark-circle"
+                  size={20}
+                  color={COLORS.purple1}
+                />
+              )}
             </Pressable>
-
             <Pressable
-              style={styles.option}
+              style={styles.genderOption}
               onPress={() => {
                 setLanguage("ar");
                 setShowLanguageModal(false);
               }}
             >
-              <Text style={[styles.optionText, { color: themeStyles.textColor }]}>
-                {t("arabic")}
+              <Text
+                style={[
+                  styles.genderText,
+                  {
+                    color:
+                      language === "ar"
+                        ? COLORS.purple1
+                        : themeStyles.textColor,
+                  },
+                ]}
+              >
+                العربية
               </Text>
+              {language === "ar" && (
+                <Ionicons
+                  name="checkmark-circle"
+                  size={20}
+                  color={COLORS.purple1}
+                />
+              )}
             </Pressable>
-
             <Pressable
-              style={styles.closeButton}
+              style={[styles.cancelButton, { marginTop: 20 }]}
               onPress={() => setShowLanguageModal(false)}
             >
-              <Text style={styles.closeButtonText}>{t("close")}</Text>
+              <Text style={styles.cancelButtonText}>{t("cancel")}</Text>
             </Pressable>
           </View>
         </View>
       </Modal>
-    );
-  }
-
-  function renderEmailModal() {
-    return (
-      <Modal visible={showEmailModal} transparent animationType="slide">
-        <View style={styles.modalContainer}>
-          <View
-            style={[
-              styles.modalContent,
-              { backgroundColor: themeStyles.cardBackground },
-            ]}
-          >
-            <Text style={[styles.modalTitle, { color: themeStyles.textColor }]}>
-              Connect Email for Scanning
-            </Text>
-
-            <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>
-              Email Address
-            </Text>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  backgroundColor: themeStyles.inputBackground,
-                  color: themeStyles.textColor,
-                },
-              ]}
-              value={emailInput}
-              onChangeText={setEmailInput}
-              placeholder="Enter your email"
-              placeholderTextColor={theme.colors.subtext}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-
-            <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>
-              App Password
-            </Text>
-            <TextInput
-              style={[
-                styles.singleInput,
-                {
-                  backgroundColor: themeStyles.inputBackground,
-                  color: themeStyles.textColor,
-                  borderColor:
-                    appPasswordString.length === 16
-                      ? "#4CAF50"
-                      : appPasswordString.length > 0
-                      ? COLORS.purple1
-                      : theme.colors.cardBorder,
-                },
-              ]}
-              value={appPasswordString}
-              onChangeText={(text) => {
-                const cleanText = text.replace(/\s+/g, "").toLowerCase().slice(0, 16);
-                setAppPasswordString(cleanText);
-                setPasswordError("");
-              }}
-              placeholder="Enter 16-character app password"
-              placeholderTextColor={theme.colors.subtext}
-              keyboardType="default"
-              autoCapitalize="none"
-              secureTextEntry
-              maxLength={16}
-            />
-
-            {passwordError ? (
-              <Text style={[styles.errorText, { color: "#F44336" }]}>
-                {passwordError}
-              </Text>
-            ) : null}
-
-            <View style={styles.buttonRow}>
-              <Pressable
-                style={[styles.cancelButton, { flex: 1 }]}
-                onPress={() => {
-                  setShowEmailModal(false);
-                  setEmailInput("");
-                  setAppPasswordString("");
-                  setPasswordError("");
-                }}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </Pressable>
-              <Pressable
-                style={[
-                  styles.saveButton,
-                  { flex: 1 },
-                  connecting && { opacity: 0.5 },
-                  appPasswordString.length === 16 &&
-                    !connecting && {
-                      backgroundColor: "#4CAF50",
-                      shadowColor: "#4CAF50",
-                    },
-                ]}
-                onPress={async () => {
-                  const appPassword = appPasswordString;
-
-                  if (!emailInput.trim()) {
-                    setPasswordError("Please enter your email address");
-                    return;
-                  }
-                  if (appPassword.length !== 16) {
-                    setPasswordError(
-                      "Please enter exactly 16 characters for your app password"
-                    );
-                    return;
-                  }
-
-                  setConnecting(true);
-                  setPasswordError("");
-                  try {
-                    const { error } = await supabase.functions.invoke("register-email", {
-                      body: { email: emailInput.trim(), appPassword },
-                    });
-                    if (error) throw error;
-
-                    alert("Email connected successfully!");
-                    setConnectedEmail(emailInput.trim());
-                    setShowEmailModal(false);
-                    setEmailInput("");
-                    setAppPasswordString("");
-                  } catch (error) {
-                    setPasswordError("Failed to connect email: " + error.message);
-                  } finally {
-                    setConnecting(false);
-                  }
-                }}
-                disabled={connecting}
-              >
-                <Text style={styles.saveButtonText}>
-                  {connecting ? "Connecting..." : "Connect"}
-                </Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </Modal>
-    );
-  }
-=======
->>>>>>> main
+    </View>
+  );
 }
 
-const createStyles = (theme, themeStyles, isRTL) =>
-  StyleSheet.create({
+function createStyles(theme, themeStyles, isRTL) {
+  return StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.colors.background,
-      paddingHorizontal: 10,
+      backgroundColor: themeStyles.backgroundColor,
     },
     header: {
-      flexDirection: isRTL ? "row-reverse" : "row",
+      flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",
-      paddingTop: 50,
-      paddingBottom: 30,
+      paddingHorizontal: 20,
+      paddingVertical: 10,
     },
     headerTitle: {
-      fontSize: 20,
-      fontWeight: "600",
-      color: theme.colors.text,
+      fontSize: 24,
+      fontWeight: "bold",
     },
     profileSection: {
-      borderRadius: 24,
-      padding: 40,
-      marginBottom: 16,
-      flexDirection: isRTL ? "row-reverse" : "row",
       alignItems: "center",
-      shadowColor: "#797EF6",
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.05,
-      shadowRadius: 2,
-      elevation: 2,
-      borderWidth: 1,
-      borderColor: theme.colors.cardBorder,
+      padding: 20,
+      borderRadius: 10,
+      marginHorizontal: 20,
+      marginTop: 10,
+      marginBottom: 20,
     },
     profileImage: {
-      width: 90,
-      height: 90,
-      borderRadius: 39,
-      marginRight: isRTL ? 0 : 12,
-      marginLeft: isRTL ? 12 : 0,
-      backgroundColor: "#fff",
+      width: 100,
+      height: 100,
+      borderRadius: 50,
+      marginBottom: 10,
+      borderWidth: 2,
+      borderColor: theme.colors.cardBorder,
     },
-    profileInfo: { flex: 1 },
+    profileInfo: {
+      alignItems: isRTL ? "flex-end" : "flex-start",
+      flex: 1,
+    },
     profileName: {
-      fontSize: 16,
-      fontWeight: "700",
-      marginBottom: 2,
-      color: theme.colors.text,
+      fontSize: 22,
+      fontWeight: "bold",
+      marginBottom: 5,
     },
-    profileUsername: { fontSize: 13, color: theme.colors.subtext },
-<<<<<<< HEAD
-    divider: { height: 1, marginVertical: 16, backgroundColor: theme.colors.cardBorder },
-=======
+    profileUsername: {
+      fontSize: 16,
+      color: themeStyles.profileUsername,
+    },
     divider: {
       height: 1,
-      marginVertical: 16,
-      backgroundColor: theme.colors.cardBorder,
+      marginHorizontal: 20,
+      marginVertical: 10,
     },
->>>>>>> main
-
     settingsContainer: {
-      borderRadius: 16,
-      padding: 24,
-      marginBottom: 16,
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.05,
-      shadowRadius: 2,
-      elevation: 2,
+      borderRadius: 10,
+      marginHorizontal: 20,
       borderWidth: 1,
-      borderColor: theme.colors.cardBorder,
-      textAlign: isRTL ? "right" : "left",
-      writingDirection: isRTL ? "rtl" : "ltr",
+      padding: 10,
+      overflow: "hidden",
     },
     sectionTitle: {
       fontSize: 18,
-      fontWeight: "500",
-      marginBottom: 16,
-      color: theme.colors.text,
+      fontWeight: "bold",
+      marginVertical: 10,
+      paddingHorizontal: 10,
     },
     settingItem: {
       flexDirection: isRTL ? "row-reverse" : "row",
       justifyContent: "space-between",
       alignItems: "center",
-      paddingVertical: 12,
+      paddingVertical: 10,
+      paddingHorizontal: 10,
     },
     settingInfo: {
       flexDirection: isRTL ? "row-reverse" : "row",
       alignItems: "center",
       flex: 1,
-      gap: 12,
     },
-    settingTextContainer: { flex: 1 },
+    settingTextContainer: {
+      flex: 1,
+      marginHorizontal: 15,
+      alignItems: isRTL ? "flex-end" : "flex-start",
+    },
     settingTitle: {
-      fontSize: 18,
-      fontWeight: "500",
-      marginBottom: 4,
-      paddingHorizontal: 16,
-      color: theme.colors.text,
-      textAlign: isRTL ? "right" : "left",
-      writingDirection: isRTL ? "rtl" : "ltr",
+      fontSize: 16,
+      fontWeight: "bold",
     },
     settingDescription: {
-      fontSize: 14,
-      paddingHorizontal: 16,
-      color: theme.colors.subtext,
-      textAlign: isRTL ? "right" : "left",
-      writingDirection: isRTL ? "rtl" : "ltr",
+      fontSize: 12,
+    },
+    emailIconAligned: {
+      width: 58,
+      height: 58,
+      marginLeft: isRTL ? 0 : 10,
+      marginRight: isRTL ? 10 : 0,
     },
 
-<<<<<<< HEAD
+    // Edit Screen Styles
     formContainer: {
-      borderRadius: 16,
-      padding: 24,
-      marginHorizontal: 16,
-      marginBottom: 20,
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.05,
-      shadowRadius: 2,
-      elevation: 2,
+      borderRadius: 10,
+      marginHorizontal: 20,
       borderWidth: 1,
-      borderColor: theme.colors.cardBorder,
+      padding: 20,
+      marginTop: 20,
     },
-=======
->>>>>>> main
     formLabel: {
-      fontSize: 16,
-      fontWeight: "600",
-      marginBottom: 8,
-      marginTop: 16,
+      fontSize: 14,
+      marginTop: 15,
+      marginBottom: 5,
       textAlign: isRTL ? "right" : "left",
-      color: theme.colors.text,
     },
     input: {
-      borderWidth: 2,
-      borderColor: COLORS.purple2,
-      borderRadius: 16,
-      padding: 16,
-      fontSize: 18,
-      color: theme.colors.text,
-      backgroundColor: themeStyles.inputBackground,
-      textAlign: isRTL ? "right" : "left",
-      writingDirection: isRTL ? "rtl" : "ltr",
+      height: 50,
+      borderRadius: 8,
+      paddingHorizontal: 15,
+      fontSize: 16,
+      justifyContent: "center",
     },
-<<<<<<< HEAD
-
-    // Phone Row
     phoneRow: {
-      flexDirection: "row",
+      flexDirection: isRTL ? "row-reverse" : "row",
       alignItems: "center",
     },
     ksaBadge: {
-      flexDirection: "row",
-      alignItems: "center",
-      paddingHorizontal: 12,
-      height: 56,
-      borderWidth: 2,
-      borderColor: COLORS.purple2,
-      borderRadius: 16,
-      marginRight: 8,
-      backgroundColor: themeStyles.inputBackground,
-    },
-    ksaFlag: { fontSize: 18, marginRight: 6 },
-    ksaCode: { fontSize: 16, color: theme.colors.text },
-
-    phoneInput: { flex: 1 },
-
-    // Password
-    passwordInput: { paddingRight: 8 },
-    eyeBtn: {
-      position: "absolute",
-      right: 12,
-      height: 60,
-      width: 40,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-
-    helperText: {
-      fontSize: 14,
-      marginBottom: 16,
-      textAlign: isRTL ? "right" : "left",
-    },
-=======
->>>>>>> main
-    singleInput: {
-      borderWidth: 2,
-      borderRadius: 12,
-      padding: 16,
-      fontSize: 18,
-      textAlign: isRTL ? "right" : "left",
-      minHeight: 50,
-    },
-    errorText: {
-      fontSize: 14,
-      textAlign: "center",
-      marginTop: 8,
-      fontWeight: "500",
-    },
-
-    buttonRow: {
       flexDirection: isRTL ? "row-reverse" : "row",
-      justifyContent: "space-between",
-      marginTop: 24,
-    },
-    cancelButton: {
-      flex: 1,
-      borderWidth: 2,
-      borderColor: COLORS.purple2,
-      paddingVertical: 16,
-      borderRadius: 16,
-      marginRight: isRTL ? 0 : 8,
-      marginLeft: isRTL ? 8 : 0,
       alignItems: "center",
       backgroundColor: theme.colors.card,
-    },
-    cancelButtonText: {
-      fontWeight: "500",
-      fontSize: 16,
-      color: theme.colors.text,
-    },
-    saveButton: {
-      flex: 1,
-      paddingVertical: 16,
-      borderRadius: 16,
-      marginLeft: isRTL ? 0 : 8,
-      marginRight: isRTL ? 8 : 0,
-      alignItems: "center",
-      backgroundColor: theme.colors.primary,
-    },
-    saveButtonText: {
-      color: theme.colors.primaryTextOn,
-      fontWeight: "500",
-      fontSize: 16,
-    },
-
-    modalContainer: {
-      flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
-      backgroundColor: "rgba(0, 0, 0, 0.25)",
-    },
-    modalContent: {
-      borderRadius: 16,
-      padding: 24,
-      width: "86%",
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.25,
-      shadowRadius: 4,
-      elevation: 5,
-      backgroundColor: theme.colors.card,
+      padding: 10,
+      borderRadius: 8,
+      marginRight: isRTL ? 0 : 10,
+      marginLeft: isRTL ? 10 : 0,
       borderWidth: 1,
       borderColor: theme.colors.cardBorder,
     },
-    modalTitle: {
+    ksaFlag: {
       fontSize: 18,
-      fontWeight: "600",
-      marginBottom: 16,
+      marginRight: isRTL ? 0 : 5,
+      marginLeft: isRTL ? 5 : 0,
+    },
+    ksaCode: {
+      fontSize: 16,
+      color: themeStyles.textColor,
+    },
+    phoneInput: {
+      flex: 1,
+    },
+    passwordInput: {
+      paddingRight: isRTL ? 15 : 45,
+      paddingLeft: isRTL ? 45 : 15,
+    },
+    eyeBtn: {
+      position: "absolute",
+      top: 0,
+      bottom: 0,
+      [isRTL ? "left" : "right"]: 15,
+      justifyContent: "center",
+    },
+    buttonRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      marginTop: 20,
+    },
+    cancelButton: {
+      flex: 1,
+      backgroundColor: theme.colors.card,
+      padding: 15,
+      borderRadius: 8,
+      marginRight: 10,
+      borderWidth: 1,
+      borderColor: theme.colors.cardBorder,
+    },
+    cancelButtonText: {
       textAlign: "center",
-      color: theme.colors.text,
+      color: themeStyles.textColor,
+      fontWeight: "bold",
+    },
+    saveButton: {
+      flex: 1,
+      backgroundColor: COLORS.purple1,
+      padding: 15,
+      borderRadius: 8,
+      marginLeft: 10,
+    },
+    saveButtonText: {
+      textAlign: "center",
+      color: COLORS.white,
+      fontWeight: "bold",
     },
 
-    option: {
-      padding: 16,
+    // Modal Styles
+    modalContainer: {
+      flex: 1,
+      justifyContent: "flex-end",
+      backgroundColor: "rgba(0, 0, 0, 0.5)",
+    },
+    modalContent: {
+      padding: 20,
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20,
+      width: "100%",
+    },
+    modalTitle: {
+      fontSize: 20,
+      fontWeight: "bold",
+      marginBottom: 15,
+      textAlign: "center",
+    },
+    modalDescription: {
+      fontSize: 14,
+      marginBottom: 15,
+      textAlign: "center",
+    },
+    modalNote: {
+      fontSize: 12,
+      marginTop: 15,
+      textAlign: "center",
+      textDecorationLine: "underline",
+    },
+
+    // Gender/Language Modal
+    genderOption: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingVertical: 15,
+      paddingHorizontal: 10,
       borderBottomWidth: 1,
       borderBottomColor: theme.colors.cardBorder,
     },
-    optionText: {
-      fontSize: 16,
-      textAlign: isRTL ? "right" : "left",
-      color: theme.colors.text,
+    selectedGenderOption: {
+      backgroundColor: theme.mode === "dark" ? "#1A1A2E" : "#F0F0FF",
+      borderRadius: 5,
     },
-    closeButton: { marginTop: 16, padding: 16, alignItems: "center" },
-    closeButtonText: {
+    pressedGenderOption: {
+      opacity: 0.7,
+    },
+    genderText: {
       fontSize: 16,
-      fontWeight: "500",
-      color: theme.colors.primary,
     },
 
-<<<<<<< HEAD
-    datePickerContainer: { flexDirection: "row", height: 200, marginVertical: 16 },
-    pickerColumn: { flex: 1 },
-    pickerOption: { padding: 10, alignItems: "center" },
-    selectedPickerOption: { backgroundColor: COLORS.purple1, borderRadius: 8 },
-    pickerOptionText: { fontSize: 16, color: theme.colors.text },
-    selectedPickerOptionText: { color: "#fff", fontWeight: "bold" },
-    modalButtons: {
-      flexDirection: isRTL ? "row-reverse" : "row",
-      justifyContent: "space-between",
-      marginTop: 16,
+    // Date Picker Modal
+    datePickerContainer: {
+      flexDirection: "row",
+      justifyContent: "space-around",
+      height: 200,
+      marginBottom: 20,
     },
-    modalButton: {
+    pickerColumn: {
       flex: 1,
-      padding: 12,
-      alignItems: "center",
+      marginHorizontal: 5,
+      borderWidth: 1,
+      borderColor: theme.colors.cardBorder,
       borderRadius: 8,
-      marginHorizontal: 8,
-      backgroundColor: theme.colors.subtext,
     },
-    modalButtonPrimary: { backgroundColor: COLORS.purple1 },
-    modalButtonText: { color: "#fff", fontWeight: "bold" },
-    modalButtonPrimaryText: { color: "#fff" },
-
-    optionsScroll: { maxHeight: 300, width: "100%" },
-
-    privacyContent: { padding: 20 },
-    privacyTitle: {
-      fontSize: 24,
-      fontWeight: "bold",
-      marginBottom: 16,
-      color: theme.colors.text,
+    pickerOption: {
+      paddingVertical: 15,
+      alignItems: "center",
     },
-    privacyParagraph: {
+    selectedPickerOption: {
+      backgroundColor: theme.mode === "dark" ? "#1A1A2E" : "#F0F0FF",
+    },
+    pickerText: {
       fontSize: 16,
-      lineHeight: 24,
-      marginBottom: 16,
-      color: theme.colors.text,
-      textAlign: isRTL ? "right" : "left",
-      writingDirection: isRTL ? "rtl" : "ltr",
-    },
-=======
-    privacyContent: { padding: 20 },
->>>>>>> main
-
-    emailIconAligned: {
-      width: 50,
-      height: 50,
-      marginHorizontal: 4,
-      alignSelf: "center",
     },
   });
+}

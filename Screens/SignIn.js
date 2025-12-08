@@ -10,10 +10,7 @@ import {
   StyleSheet,
   Modal,
 } from "react-native";
-<<<<<<< HEAD
-import AsyncStorage from '@react-native-async-storage/async-storage';
-=======
->>>>>>> main
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { COLORS } from "../util/colors";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import CustomButton from "../components/CustomButton";
@@ -61,16 +58,16 @@ export default function SignIn({ navigation }) {
         return;
       }
 
-<<<<<<< HEAD
       // Success: Save user session to AsyncStorage
-      await AsyncStorage.setItem('userSession', JSON.stringify({
-        user: data.user,
-        session: data.session,
-      }));
+      await AsyncStorage.setItem(
+        "userSession",
+        JSON.stringify({
+          user: data.user,
+          session: data.session,
+        })
+      );
 
-=======
       // Success: navigate to Home
->>>>>>> main
       navigation.replace("Home");
     } catch (err) {
       console.log(err);
