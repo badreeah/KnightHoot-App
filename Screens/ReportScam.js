@@ -27,14 +27,14 @@ export default function ReportScam({ navigation }) {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    phone: '',
-    description: '',
-    sender: '',
-    msgContent: '',
-    email: '',
-    emailSubject: '',
-    url: '',
-    webDescription: '',
+    phone: "",
+    description: "",
+    sender: "",
+    msgContent: "",
+    email: "",
+    emailSubject: "",
+    url: "",
+    webDescription: "",
   });
 
   const { theme, isRTL } = useAppSettings(); // [theme][rtl]
@@ -43,7 +43,7 @@ export default function ReportScam({ navigation }) {
   const styles = useMemo(() => createStyles(theme, isRTL), [theme, isRTL]); // dynamic styles
 
   const updateFormData = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   useEffect(() => {
@@ -98,23 +98,35 @@ export default function ReportScam({ navigation }) {
           return false;
         }
         if (!formData.msgContent.trim()) {
-          Alert.alert(t("error", "Error"), t("msgContentRequired", "Message content is required"));
+          Alert.alert(
+            t("error", "Error"),
+            t("msgContentRequired", "Message content is required")
+          );
           return false;
         }
         break;
       case "email":
         if (!formData.email.trim() || !/\S+@\S+\.\S+/.test(formData.email)) {
-          Alert.alert(t("error", "Error"), t("validEmailRequired", "Valid email is required"));
+          Alert.alert(
+            t("error", "Error"),
+            t("validEmailRequired", "Valid email is required")
+          );
           return false;
         }
         break;
       case "web":
         if (!formData.url.trim() || !/^https?:\/\/.+/.test(formData.url)) {
-          Alert.alert(t("error", "Error"), t("validUrlRequired", "Valid URL is required"));
+          Alert.alert(
+            t("error", "Error"),
+            t("validUrlRequired", "Valid URL is required")
+          );
           return false;
         }
         if (!formData.webDescription.trim()) {
-          Alert.alert(t("error", "Error"), t("descriptionRequired", "Description is required"));
+          Alert.alert(
+            t("error", "Error"),
+            t("descriptionRequired", "Description is required")
+          );
           return false;
         }
         break;
@@ -131,11 +143,13 @@ export default function ReportScam({ navigation }) {
       case "messages":
         return `Sender: ${formData.sender}\nMessage: ${formData.msgContent}`;
       case "email":
-        return `Email: ${formData.email}\nSubject: ${formData.emailSubject || 'N/A'}`;
+        return `Email: ${formData.email}\nSubject: ${
+          formData.emailSubject || "N/A"
+        }`;
       case "web":
         return `URL: ${formData.url}\nDescription: ${formData.webDescription}`;
       default:
-        return '';
+        return "";
     }
   };
 
@@ -144,9 +158,11 @@ export default function ReportScam({ navigation }) {
 
     setIsLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
-      if (!user) throw new Error('User not authenticated');
+      if (!user) throw new Error("User not authenticated");
 
       const reportData = {
         user_id: user.id,
@@ -155,14 +171,14 @@ export default function ReportScam({ navigation }) {
       };
 
       const { error } = await supabase
-        .from('scam_reports')
+        .from("scam_reports")
         .insert([reportData]);
 
       if (error) throw error;
 
       setIsSubmitted(true);
     } catch (error) {
-      console.error('Error submitting report:', error);
+      console.error("Error submitting report:", error);
       Alert.alert(
         t("error", "Error"),
         t("submitError", "Failed to submit report. Please try again.")
@@ -190,7 +206,7 @@ export default function ReportScam({ navigation }) {
               placeholderTextColor={theme.colors.subtext}
               textAlign={isRTL ? "right" : "left"}
               value={formData.phone}
-              onChangeText={(value) => updateFormData('phone', value)}
+              onChangeText={(value) => updateFormData("phone", value)}
             />
             <Text style={styles.inputLabel}>
               {t("reportScam.description", "Description")}
@@ -205,7 +221,7 @@ export default function ReportScam({ navigation }) {
               placeholderTextColor={theme.colors.subtext}
               textAlign={isRTL ? "right" : "left"}
               value={formData.description}
-              onChangeText={(value) => updateFormData('description', value)}
+              onChangeText={(value) => updateFormData("description", value)}
             />
           </>
         );
@@ -224,7 +240,7 @@ export default function ReportScam({ navigation }) {
               placeholderTextColor={theme.colors.subtext}
               textAlign={isRTL ? "right" : "left"}
               value={formData.sender}
-              onChangeText={(value) => updateFormData('sender', value)}
+              onChangeText={(value) => updateFormData("sender", value)}
             />
             <Text style={styles.inputLabel}>
               {t("reportScam.msgContent", "Message Content")}
@@ -239,7 +255,7 @@ export default function ReportScam({ navigation }) {
               placeholderTextColor={theme.colors.subtext}
               textAlign={isRTL ? "right" : "left"}
               value={formData.msgContent}
-              onChangeText={(value) => updateFormData('msgContent', value)}
+              onChangeText={(value) => updateFormData("msgContent", value)}
             />
           </>
         );
@@ -260,7 +276,7 @@ export default function ReportScam({ navigation }) {
               textAlign={isRTL ? "right" : "left"}
               autoCapitalize="none"
               value={formData.email}
-              onChangeText={(value) => updateFormData('email', value)}
+              onChangeText={(value) => updateFormData("email", value)}
             />
             <Text style={styles.inputLabel}>
               {t("reportScam.emailSubject", "Email Subject")}
@@ -274,7 +290,7 @@ export default function ReportScam({ navigation }) {
               placeholderTextColor={theme.colors.subtext}
               textAlign={isRTL ? "right" : "left"}
               value={formData.emailSubject}
-              onChangeText={(value) => updateFormData('emailSubject', value)}
+              onChangeText={(value) => updateFormData("emailSubject", value)}
             />
           </>
         );
@@ -292,7 +308,7 @@ export default function ReportScam({ navigation }) {
               textAlign={isRTL ? "right" : "left"}
               autoCapitalize="none"
               value={formData.url}
-              onChangeText={(value) => updateFormData('url', value)}
+              onChangeText={(value) => updateFormData("url", value)}
             />
             <Text style={styles.inputLabel}>
               {t("reportScam.description", "Description")}
@@ -307,7 +323,7 @@ export default function ReportScam({ navigation }) {
               placeholderTextColor={theme.colors.subtext}
               textAlign={isRTL ? "right" : "left"}
               value={formData.webDescription}
-              onChangeText={(value) => updateFormData('webDescription', value)}
+              onChangeText={(value) => updateFormData("webDescription", value)}
             />
           </>
         );
@@ -384,7 +400,10 @@ export default function ReportScam({ navigation }) {
 
       {selectedCategory && (
         <TouchableOpacity
-          style={[styles.submitButton, isLoading && styles.submitButtonDisabled]}
+          style={[
+            styles.submitButton,
+            isLoading && styles.submitButtonDisabled,
+          ]}
           onPress={handleSubmit}
           disabled={isLoading}
         >

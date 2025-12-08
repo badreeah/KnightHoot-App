@@ -17,7 +17,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { COLORS } from "../util/colors";
 import { useAppSettings } from "../src/context/AppSettingProvid";
 import { useTranslation } from "react-i18next";
-import supabase from "../supabase";
+import { supabase } from "../supabase";
 import { saveSafeResult } from "../services/saveWebResult";
 
 // عنوان الـ API على Railway
@@ -44,14 +44,14 @@ const classifyUrlAI = async (inputUrl) => {
 
   const domain =
     data.domain ||
-    (inputUrl || "").replace(/^https?:\/\//, "").split("/")[0].toLowerCase();
+    (inputUrl || "")
+      .replace(/^https?:\/\//, "")
+      .split("/")[0]
+      .toLowerCase();
 
   // احتمال أن الرابط خبيث من الـ API
   const proba =
-    data.probability_malicious ??
-    data.probability ??
-    data.score ??
-    null;
+    data.probability_malicious ?? data.probability ?? data.score ?? null;
 
   // تحديد الـ risk ثلاثي (للوصف)
   let risk = "safe"; // safe | suspicious | malicious
@@ -105,7 +105,7 @@ const normalizeAndValidateUrl = (raw) => {
 
   let candidate = trimmed;
 
-  // لو ما فيه بروتوكول، نضيف https:// تلقائياً
+  // لو ما فيه بروتوكول, نضيف https:// تلقائياً
   if (!/^https?:\/\//i.test(candidate)) {
     candidate = `https://${candidate}`;
   }

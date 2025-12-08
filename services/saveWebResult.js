@@ -23,4 +23,3 @@ export const saveSafeResult = async (
     throw error;
   }
 };
-
