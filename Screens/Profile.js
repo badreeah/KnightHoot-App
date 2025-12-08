@@ -55,6 +55,8 @@ export default function Profile() {
   const [appPasswordString, setAppPasswordString] = useState("");
   const [connecting, setConnecting] = useState(false);
   const [passwordError, setPasswordError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [appPasswordError, setAppPasswordError] = useState("");
   const [connectedEmail, setConnectedEmail] = useState(null);
   const [disconnecting, setDisconnecting] = useState(false);
 
@@ -186,13 +188,14 @@ export default function Profile() {
         if (auth?.user) {
           const { data, error } = await supabase
             .from("email_accounts")
-            .select("email_address")
+            .select("*")
             .eq("user_id", auth.user.id)
             .eq("status", "connected")
             .single();
 
           if (data && !error) {
-            setConnectedEmail(data.email_address);
+            // Just check if there's a connected account, don't try to decrypt the email
+            setConnectedEmail("Connected");
           } else {
             setConnectedEmail(null);
           }
@@ -245,6 +248,36 @@ export default function Profile() {
   const GENDER_OPTIONS = ["male", "female"];
 
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  // Validation functions
+  const validateEmail = (email) => {
+    if (!email || email.trim() === "") {
+      setEmailError("Please enter an email address");
+      return false;
+    }
+    if (!EMAIL_RE.test(email)) {
+      setEmailError("Please enter a valid email address");
+      return false;
+    }
+    setEmailError("");
+    return true;
+  };
+
+  const validateAppPassword = (password) => {
+    if (!password || password.trim() === "") {
+      setAppPasswordError("Please enter your email provider's app password");
+      return false;
+    }
+
+    // App passwords MUST be exactly 16 characters
+    if (password.length !== 16) {
+      setAppPasswordError("App password must be exactly 16 characters");
+      return false;
+    }
+
+    setAppPasswordError("");
+    return true;
+  };
   const PHONE_RE = /^[0-9]{7,15}$/;
   const toISODateOrNull = (v) => {
     if (!v || String(v).trim() === "") return null;
@@ -336,12 +369,16 @@ export default function Profile() {
     if (!connectedEmail) return;
     setDisconnecting(true);
     try {
-      const { error } = await supabase.functions.invoke("unlink-email", {
-        body: { email: connectedEmail },
-      });
-      if (error) throw error;
-      alert("Email disconnected successfully!");
-      setConnectedEmail(null);
+      // Get the user ID and pass it to the unlink function
+      const { data: auth } = await supabase.auth.getUser();
+      if (auth?.user) {
+        const { error } = await supabase.functions.invoke("unlink-email", {
+          body: { user_id: auth.user.id },
+        });
+        if (error) throw error;
+        alert("Email disconnected successfully!");
+        setConnectedEmail(null);
+      }
     } catch (error) {
       alert("Failed to disconnect email: " + error.message);
     } finally {
@@ -595,7 +632,12 @@ export default function Profile() {
           <View style={styles.settingInfo}>
             <Image
               source={require("../assets/icons/Email.png")}
-              style={styles.emailIconAligned}
+              style={{
+                width: 50,
+                height: 50,
+                marginLeft: 4,
+                marginRight: 4
+              }}
             />
             <View style={styles.settingTextContainer}>
               <Text
@@ -610,8 +652,8 @@ export default function Profile() {
                 ]}
               >
                 {connectedEmail
-                  ? "connected for scanning"
-                  : "connect your email to scan"}
+                  ? "Connected for scanning"
+                  : "Connect your email to scan"}
               </Text>
             </View>
           </View>
@@ -1243,52 +1285,75 @@ export default function Profile() {
           ]}
         >
           <Text style={[styles.modalTitle, { color: themeStyles.textColor }]}>
-            {t("Connect Email")}
+            Connect Email for Scanning
           </Text>
           <Text
-            style={[styles.modalDescription, { color: theme.colors.subtext }]}
+            style={[styles.modalDescription, { color: theme.colors.subtext, marginBottom: 20 }]}
           >
-            {t("enterEmailForScanning")}
+            Connect your email account to automatically scan for scam and phishing emails
           </Text>
 
           {/* Email Input */}
+          <Text style={[styles.inputLabel, { color: themeStyles.textColor, marginTop: 10 }]}>
+            Email Address
+          </Text>
           <TextInput
             style={[
               styles.input,
               {
                 backgroundColor: themeStyles.inputBackground,
                 color: themeStyles.textColor,
-                marginBottom: 10,
+                marginBottom: emailError ? 5 : 20,
+                borderColor: emailError ? COLORS.red : theme.colors.cardBorder,
               },
             ]}
             value={emailInput}
-            onChangeText={setEmailInput}
+            onChangeText={(text) => {
+              setEmailInput(text);
+              if (emailError) validateEmail(text);
+            }}
+            onEndEditing={() => validateEmail(emailInput)}
             textAlign={isRTL ? "right" : "left"}
-            placeholder={t("Email Address")}
+            placeholder="Enter your email address"
             placeholderTextColor={theme.colors.subtext}
             keyboardType="email-address"
             autoCapitalize="none"
           />
+          {emailError ? (
+            <Text style={[styles.fieldError, { marginBottom: 15 }]}>{emailError}</Text>
+          ) : null}
 
           {/* App Password Input */}
+          <Text style={[styles.inputLabel, { color: themeStyles.textColor }]}>
+            App Password
+          </Text>
           <TextInput
             style={[
               styles.input,
               {
                 backgroundColor: themeStyles.inputBackground,
                 color: themeStyles.textColor,
+                marginBottom: appPasswordError ? 5 : 10,
+                borderColor: appPasswordError ? COLORS.red : theme.colors.cardBorder,
               },
             ]}
             value={appPasswordString}
-            onChangeText={setAppPasswordString}
+            onChangeText={(text) => {
+              setAppPasswordString(text);
+              if (appPasswordError) validateAppPassword(text);
+            }}
+            onBlur={() => validateAppPassword(appPasswordString)}
             textAlign={isRTL ? "right" : "left"}
-            placeholder={t("App Password (or regular password)")}
+            placeholder="Enter app password"
             placeholderTextColor={theme.colors.subtext}
             secureTextEntry
           />
+          {appPasswordError ? (
+            <Text style={[styles.fieldError, { marginBottom: 10 }]}>{appPasswordError}</Text>
+          ) : null}
 
           {!!passwordError && (
-            <Text style={{ color: COLORS.red, marginTop: 10 }}>
+            <Text style={{ color: COLORS.red, marginTop: 10, marginBottom: 10 }}>
               {passwordError}
             </Text>
           )}
@@ -1299,7 +1364,7 @@ export default function Profile() {
               onPress={() => setShowEmailModal(false)}
               disabled={connecting}
             >
-              <Text style={styles.cancelButtonText}>{t("cancel")}</Text>
+              <Text style={styles.cancelButtonText}>Cancel</Text>
             </Pressable>
             <Pressable
               style={styles.saveButton}
@@ -1307,51 +1372,77 @@ export default function Profile() {
               disabled={connecting}
             >
               <Text style={styles.saveButtonText}>
-                {connecting ? t("connecting") : t("connect")}
+                {connecting ? "Connecting..." : "Connect"}
               </Text>
             </Pressable>
           </View>
 
-          <Text
-            style={[styles.modalNote, { color: theme.colors.subtext }]}
-            onPress={() =>
-              Alert.alert("App Password Info", t("appPasswordDetails"))
-            }
-          >
-            {t("whatIsAppPassword")}
-          </Text>
+          <View style={{ marginTop: 20 }}>
+            <Text
+              style={[styles.modalNote, { color: theme.colors.primary, marginBottom: 10 }]}
+              onPress={() =>
+                Alert.alert(
+                  "What is an App Password?",
+                  "An app password is a unique passcode that lets apps access your email account securely.\n\n" +
+                  "You need to enable 2FA in your email provider's security settings first, then generate an app password from there."
+                )
+              }
+            >
+              What is an App Password?
+            </Text>
+          </View>
         </View>
       </View>
     </Modal>
   );
 
   const handleConnectEmail = async () => {
-    if (!EMAIL_RE.test(emailInput)) {
-      setPasswordError(t("invalidEmailFormat"));
+    // Clear previous errors
+    setEmailError("");
+    setAppPasswordError("");
+    setPasswordError("");
+
+    // Validate inputs
+    const isEmailValid = validateEmail(emailInput);
+    const isPasswordValid = validateAppPassword(appPasswordString);
+
+    if (!isEmailValid || !isPasswordValid) {
       return;
     }
-    setPasswordError("");
+
     setConnecting(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke("link-email", {
-        body: { email: emailInput, password: appPasswordString },
+      const { data, error } = await supabase.functions.invoke("register-email", {
+        body: { email: emailInput, appPassword: appPasswordString },
       });
 
       if (error) throw error;
 
       if (data.success) {
-        Alert.alert("Success", t("emailConnectedSuccessfully"));
+        Alert.alert("Success", "Email connected successfully!");
         setConnectedEmail(emailInput);
         setShowEmailModal(false);
         setEmailInput("");
         setAppPasswordString("");
+        setEmailError("");
+        setAppPasswordError("");
       } else {
         throw new Error(data.message || t("failedToConnectEmail"));
       }
     } catch (error) {
-      setPasswordError(error.message || t("failedToConnectEmail"));
-      Alert.alert("Error", error.message || t("failedToConnectEmail"));
+      let errorMessage = error.message || t("failedToConnectEmail");
+
+      // Provide more specific error messages
+      if (errorMessage.includes("IMAP") || errorMessage.includes("authentication")) {
+        setPasswordError("Invalid credentials. Check your email and app password, then ensure 2FA is enabled.");
+      } else if (errorMessage.includes("Unsupported")) {
+        setPasswordError("This email provider is not supported. Please use Gmail, Outlook, or Hotmail.");
+      } else {
+        setPasswordError(errorMessage);
+      }
+
+      Alert.alert("Error", errorMessage);
     } finally {
       setConnecting(false);
     }
@@ -1545,13 +1636,7 @@ function createStyles(theme, themeStyles, isRTL) {
     settingDescription: {
       fontSize: 12,
     },
-    emailIconAligned: {
-      width: 58,
-      height: 58,
-      marginLeft: isRTL ? 0 : 10,
-      marginRight: isRTL ? 10 : 0,
-    },
-
+  
     // Edit Screen Styles
     formContainer: {
       borderRadius: 10,
@@ -1565,6 +1650,17 @@ function createStyles(theme, themeStyles, isRTL) {
       marginTop: 15,
       marginBottom: 5,
       textAlign: isRTL ? "right" : "left",
+    },
+    inputLabel: {
+      fontSize: 16,
+      fontWeight: "600",
+      marginBottom: 8,
+      color: themeStyles.textColor,
+    },
+    fieldError: {
+      fontSize: 12,
+      color: COLORS.red,
+      marginTop: -5,
     },
     input: {
       height: 50,
