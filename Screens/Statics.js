@@ -13,6 +13,7 @@ import { BarChart } from "react-native-chart-kit";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { supabase } from "../supabase";
 import { useAppSettings } from "../src/context/AppSettingProvid";
+import { useTranslation } from "react-i18next";
 
 const initialData = {
   sources: [
@@ -41,6 +42,7 @@ const allowedActive = ["SMS", "Email", "URL"];
 const AlertsScreen = () => {
   const { theme } = useAppSettings();
   const styles = makeStyles(theme);
+  const { t } = useTranslation();
 
   const screenWidth = Dimensions.get("window").width - 40;
   const boxWidth = (screenWidth - 16) / 2;
@@ -91,15 +93,15 @@ const AlertsScreen = () => {
 
     Animated.stagger(
       100,
-      values.map((val, index) =>
+      values.map((val, idx) =>
         Animated.timing(val, {
-          toValue: chartData.data[index],
+          toValue: chartData.data[idx],
           duration: 800,
           useNativeDriver: false,
         })
       )
     ).start();
-  }, [activeTab]);
+  }, [activeTab, chartData]);
 
   return (
     <ScrollView style={styles.container}>
@@ -136,7 +138,7 @@ const AlertsScreen = () => {
               style={styles.shieldIcon}
             />
           </View>
-          <Text style={styles.headerTitle}>Alert by source</Text>
+          <Text style={styles.headerTitle}>{t("statistics.title")}</Text>
         </View>
         <View
           style={[
@@ -159,7 +161,9 @@ const AlertsScreen = () => {
                   activeTab === tab && { color: theme.colors.text },
                 ]}
               >
-                {tab}
+                {tab === "Today"
+                  ? t("statistics.today")
+                  : t("statistics.week")}
               </Text>
             </TouchableOpacity>
           ))}
@@ -171,6 +175,12 @@ const AlertsScreen = () => {
         {sources.map((item, index) => {
           const isActive = item.active && allowedActive.includes(item.name);
           const isSelectable = allowedActive.includes(item.name);
+
+          const translatedName = t(
+            `statistics.sources.${item.name.toLowerCase()}`,
+            item.name
+          );
+
           return (
             <TouchableOpacity
               key={index}
@@ -202,7 +212,7 @@ const AlertsScreen = () => {
                     : styles.sourceNameGrey
                 }
               >
-                {item.name}
+                {translatedName}
               </Text>
               <Text
                 style={
@@ -225,7 +235,9 @@ const AlertsScreen = () => {
 
       {/* Severity Section */}
       <View style={styles.severitySection}>
-        <Text style={styles.sectionTitle}>Severity score</Text>
+        <Text style={styles.sectionTitle}>
+          {t("statistics.severityTitle")}
+        </Text>
         <View style={styles.severityContainer}>
           {severity.map((item, index) => {
             const colorDot =
@@ -234,6 +246,9 @@ const AlertsScreen = () => {
                 : index === 1
                 ? theme.badges.warn
                 : theme.badges.danger;
+
+            const levelKey = item.level.toLowerCase();
+
             return (
               <View
                 key={index}
@@ -246,10 +261,14 @@ const AlertsScreen = () => {
                   <View
                     style={[styles.colorDot, { backgroundColor: colorDot }]}
                   />
-                  <Text style={styles.severityLabel}>{item.level}</Text>
+                  <Text style={styles.severityLabel}>
+                    {t(`statistics.severity.${levelKey}`, item.level)}
+                  </Text>
                 </View>
                 <Text style={styles.severityCount}>{item.count}</Text>
-                <Text style={styles.severityDetail}>Score</Text>
+                <Text style={styles.severityDetail}>
+                  {t("statistics.severity.score")}
+                </Text>
               </View>
             );
           })}
@@ -263,7 +282,9 @@ const AlertsScreen = () => {
           { backgroundColor: theme.colors.card },
         ]}
       >
-        <Text style={styles.riskActivityTitle}>Risk Activity</Text>
+        <Text style={styles.riskActivityTitle}>
+          {t("statistics.riskActivity")}
+        </Text>
         <BarChart
           data={{
             labels: chartData.labels,
@@ -280,10 +301,10 @@ const AlertsScreen = () => {
             backgroundGradientFrom: theme.colors.card,
             backgroundGradientTo: theme.colors.card,
             decimalPlaces: 0,
-            color: () => theme.colors.primary, // لون الأعمدة
-            labelColor: () => theme.colors.text, // لون عناوين المحور
+            color: () => theme.colors.primary,
+            labelColor: () => theme.colors.text,
             barPercentage: 0.8,
-            fillShadowGradient: theme.colors.primary, // تعبئة العمود
+            fillShadowGradient: theme.colors.primary,
             fillShadowGradientOpacity: 0.75,
             propsForLabels: { fontWeight: "bold" },
           }}
@@ -344,7 +365,11 @@ const makeStyles = (theme) =>
       marginLeft: 10,
     },
     tabsContainer: { flexDirection: "row", borderRadius: 20 },
-    tabButton: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 20 },
+    tabButton: {
+      paddingVertical: 6,
+      paddingHorizontal: 12,
+      borderRadius: 20,
+    },
     tabText: { color: theme.colors.tint, fontWeight: "600" },
     sourcesContainer: {
       flexDirection: "row",
@@ -361,7 +386,10 @@ const makeStyles = (theme) =>
     },
     sourceNamePurple: { fontWeight: "600" },
     sourceNameGrey: { color: theme.colors.subtext, fontWeight: "600" },
-    sourceNameActive: { color: theme.colors.primaryTextOn, fontWeight: "600" },
+    sourceNameActive: {
+      color: theme.colors.primaryTextOn,
+      fontWeight: "600",
+    },
     sourceCountPurple: { fontWeight: "bold", marginTop: 6 },
     sourceCountGrey: {
       color: theme.colors.subtext,
@@ -411,7 +439,11 @@ const makeStyles = (theme) =>
       marginTop: 8,
       color: theme.colors.text,
     },
-    severityDetail: { fontSize: 12, color: theme.colors.subtext, marginTop: 2 },
+    severityDetail: {
+      fontSize: 12,
+      color: theme.colors.subtext,
+      marginTop: 2,
+    },
     riskActivityContainer: {
       borderRadius: 20,
       padding: 20,

@@ -356,13 +356,13 @@ export default function ReportScam({ navigation }) {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={COLORS.purple8} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Report a Scam</Text>
+<Text style={styles.headerTitle}>{t("reportScam.title")}</Text>
         <View style={{ width: 24 }} />
       </View>
 
       <Text style={styles.sectionTitle}>
-        What type of scam did you encounter?
-      </Text>
+  {t("reportScam.question")}
+</Text>
       <View style={styles.categoryContainer}>
         {scamTypes.map((type) => {
           const label = t(`reportScam.types.${type.id}`, type.id);
@@ -408,7 +408,9 @@ export default function ReportScam({ navigation }) {
           disabled={isLoading}
         >
           <Text style={styles.submitButtonText}>
-            {isLoading ? t("submitting", "Submitting...") : "Submit Report"}
+            {isLoading
+  ? t("reportScam.submitting", "Submitting...")
+  : t("reportScam.submit", "Submit Report")}
           </Text>
         </TouchableOpacity>
       )}

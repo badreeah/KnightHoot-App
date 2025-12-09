@@ -16,12 +16,14 @@ import { supabase } from "../supabase";
 import { useFocusEffect, CommonActions } from "@react-navigation/native";
 import { getAvatar } from "../util/avatar";
 import { useAppSettings } from "../src/context/AppSettingProvid";
+import { useTranslation } from "react-i18next";
 
 export default function Home({ navigation }) {
   const { profile, user } = useAppSettings();
   const [gender, setGender] = useState(
     profile?.gender ?? user?.user_metadata?.gender ?? null
   );
+  const { t } = useTranslation();
 
   useFocusEffect(
     useCallback(() => {
@@ -56,8 +58,10 @@ export default function Home({ navigation }) {
     profile?.full_name?.trim() ||
     profile?.username?.trim() ||
     user?.email?.split("@")[0] ||
-    "Friend"
+    ""
   ).split(" ")[0];
+
+  const greetingLine = t("home.hello", { name: firstName });
 
   return (
     <View style={styles.container}>
@@ -72,9 +76,10 @@ export default function Home({ navigation }) {
               color: COLORS.purple3,
             }}
           >
-            {`Hello, ${firstName}`}
+            {greetingLine}
           </WordStyling>
-          {"\n"}Glad to see you!
+          {"\n"}
+          {t("home.glad")}
         </Text>
       </View>
 
@@ -90,13 +95,13 @@ export default function Home({ navigation }) {
           style={{ width: 64, height: 64, marginBottom: 16 }}
         />
         <Text style={[styles.greetngText, { color: "#118AD0", fontSize: 14 }]}>
-          We’ve got you covered
+          {t("home.covered")}
         </Text>
       </View>
 
       {/* Tips Scroll */}
       <View>
-        <Text style={styles.tipsHeader}>Today’s Smart Tips</Text>
+        <Text style={styles.tipsHeader}>{t("home.tipsHeader")}</Text>
 
         <ScrollView
           horizontal
@@ -111,11 +116,11 @@ export default function Home({ navigation }) {
 
       {/* Actions Buttons */}
       <View style={{ marginTop: 16 }}>
-        <Text style={[styles.tipsHeader]}>Your Safety Kit</Text>
+        <Text style={[styles.tipsHeader]}>{t("home.safetyKit")}</Text>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <ActionButton
-            title="Analyze Call"
+            title={t("home.analyzeCall")}
             icon={require("../assets/icons/Volume.png")}
             imageSource={require("../assets/images/Actions.png")}
             iconWidth={72}
@@ -124,7 +129,7 @@ export default function Home({ navigation }) {
             onPress={() => navigation.navigate("AnalyzeCall")}
           />
           <ActionButton
-            title="Safe Browsing"
+            title={t("home.safeBrowsing")}
             icon={require("../assets/icons/net.png")}
             imageSource={require("../assets/images/Actions.png")}
             iconWidth={62}
@@ -134,7 +139,7 @@ export default function Home({ navigation }) {
           />
           {/* 
           <ActionButton
-            title="Scan URL"
+            title={t("home.scanUrl")}
             icon={require("../assets/icons/Search.png")}
             imageSource={require("../assets/images/Actions.png")}
             iconWidth={120}
@@ -144,7 +149,7 @@ export default function Home({ navigation }) {
           />
           */}
           <ActionButton
-            title="Report Scam"
+            title={t("home.reportScam")}
             icon={require("../assets/icons/alarm.png")}
             imageSource={require("../assets/images/Actions.png")}
             iconWidth={114}
@@ -153,7 +158,7 @@ export default function Home({ navigation }) {
             onPress={() => navigation.navigate("ReportScam")}
           />
           <ActionButton
-            title="SMS Scam"
+            title={t("home.smsScam")}
             icon={require("../assets/icons/sms_scam.png")}
             imageSource={require("../assets/images/Actions.png")}
             iconWidth={114}

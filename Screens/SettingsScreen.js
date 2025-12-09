@@ -1,4 +1,4 @@
-// screens/SettingsScreen.js
+// SettingsScreen.js
 import React, { useState } from "react";
 import {
   View,
@@ -96,7 +96,10 @@ export default function SettingsScreen() {
     const { error } = await supabase.auth.signOut();
 
     if (error) {
-      Alert.alert("Error", error.message);
+      Alert.alert(
+        t("settings.errors.title"),
+        t("settings.errors.logoutFail", { message: error.message })
+      );
       return;
     }
 
@@ -107,35 +110,44 @@ export default function SettingsScreen() {
   };
 
   const handleDeleteAccount = async () => {
-    Alert.alert("Delete Account", "Are you sure? This action is permanent.", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            const { data } = await supabase.auth.getUser();
-            const user = data?.user;
+    Alert.alert(
+      t("settings.delete.title"),
+      t("settings.delete.message"),
+      [
+        { text: t("settings.delete.cancel"), style: "cancel" },
+        {
+          text: t("settings.delete.confirm"),
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const { data } = await supabase.auth.getUser();
+              const user = data?.user;
 
-            if (!user) {
-              Alert.alert("Error", "User not found");
-              return;
+              if (!user) {
+                Alert.alert(
+                  t("settings.errors.title"),
+                  t("settings.errors.userNotFound")
+                );
+                return;
+              }
+
+              await supabase.from("profiles").delete().eq("id", user.id);
+              await supabase.auth.signOut();
+
+              nav.reset({
+                index: 0,
+                routes: [{ name: "SignIn" }],
+              });
+            } catch (err) {
+              Alert.alert(
+                t("settings.errors.title"),
+                t("settings.errors.generic", { message: err.message })
+              );
             }
-
-            await supabase.from("profiles").delete().eq("id", user.id);
-
-            await supabase.auth.signOut();
-
-            nav.reset({
-              index: 0,
-              routes: [{ name: "SignIn" }],
-            });
-          } catch (err) {
-            Alert.alert("Error", err.message);
-          }
+          },
         },
-      },
-    ]);
+      ]
+    );
   };
 
   const handleContactSupport = () => {
@@ -144,14 +156,21 @@ export default function SettingsScreen() {
     const email = "support@knighthoot.app"; // ايميل التواصل
 
     Linking.openURL(`mailto:${email}?subject=${subject}&body=${body}`).catch(
-      () => Alert.alert("Error", "Unable to open email app.")
+      () =>
+        Alert.alert(
+          t("settings.errors.title"),
+          t("settings.errors.emailApp")
+        )
     );
   };
 
   const handleRateApp = () => {
     const url = "https://knighthoot.app"; // رابط في حال نشرناه
     Linking.openURL(url).catch(() =>
-      Alert.alert("Error", "Unable to open the link.")
+      Alert.alert(
+        t("settings.errors.title"),
+        t("settings.errors.openLink")
+      )
     );
   };
 
@@ -163,34 +182,32 @@ export default function SettingsScreen() {
       <View
         style={[
           styles.header,
-          { flexDirection: isRTL ? "row-reverse" : "row" },
+          { flexDirection: "row" },
         ]}
       >
         <Pressable onPress={() => nav.goBack()}>
           <Ionicons
-            name={isRTL ? "arrow-forward" : "arrow-back"}
+            name={"arrow-back"}
             size={24}
             color={theme.colors.text}
           />
         </Pressable>
 
         <Text style={[styles.headerTitle, titleStyle]}>
-          {t("settings", "Settings")}
+          {t("settings.title")}
         </Text>
 
         <View style={{ width: 24 }} />
       </View>
 
-      
-
       {/* Account & Security */}
       <View style={[styles.card, cardStyle]}>
         <Text style={[styles.sectionTitle, titleStyle]}>
-          {t("accountSecurity", "Account & Security")}
+          {t("settings.accountSecurity")}
         </Text>
 
         <Row
-          left={t("changePassword", "Change Password")}
+          left={t("settings.changePassword")}
           right={
             <Ionicons name={arrow} size={18} color={theme.colors.subtext} />
           }
@@ -198,26 +215,22 @@ export default function SettingsScreen() {
         />
 
         <Row
-          left={t("changeEmail", "Change Email")}
+          left={t("settings.changeEmail")}
           right={
             <Ionicons name={arrow} size={18} color={theme.colors.subtext} />
           }
           onPress={() => nav.navigate("ChangeEmail")}
         />
-
-     
       </View>
-
-    
 
       {/* Account Actions */}
       <View style={[styles.card, cardStyle]}>
         <Text style={[styles.sectionTitle, titleStyle]}>
-          {t("accountActions", "Account Actions")}
+          {t("settings.accountActions")}
         </Text>
 
         <Row
-          left={t("logout", "Log Out")}
+          left={t("settings.logout")}
           right={
             <Ionicons
               name="log-out-outline"
@@ -229,7 +242,7 @@ export default function SettingsScreen() {
         />
 
         <Row
-          left={t("deleteAccount", "Delete Account")}
+          left={t("settings.deleteAccount")}
           right={<Ionicons name="trash-outline" size={18} color="red" />}
           onPress={handleDeleteAccount}
         />
@@ -238,20 +251,19 @@ export default function SettingsScreen() {
       {/* About */}
       <View style={[styles.card, cardStyle]}>
         <Text style={[styles.sectionTitle, titleStyle]}>
-          {t("about", "About")}
+          {t("settings.about")}
         </Text>
 
         <Row
-          left={t("privacy", "Privacy Policy")}
+          left={t("settings.privacy")}
           right={
             <Ionicons name={arrow} size={18} color={theme.colors.subtext} />
           }
           onPress={() => nav.navigate("Privacy")}
         />
-        
 
         <Row
-          left={t("contactSupport", "Contact Support")}
+          left={t("settings.contactSupport")}
           right={
             <Ionicons
               name="mail-outline"
@@ -263,7 +275,7 @@ export default function SettingsScreen() {
         />
 
         <Row
-          left={t("rateApp", "Rate KnightHoot")}
+          left={t("settings.rateApp")}
           right={
             <Ionicons
               name="star-outline"
@@ -275,7 +287,7 @@ export default function SettingsScreen() {
         />
 
         <Row
-          left={`${t("version", "Version")} 1.0.0`}
+          left={`${t("settings.versionLabel")} 1.0.0`}
           right={
             <Ionicons
               name="information-circle-outline"

@@ -1,549 +1,935 @@
-// Screens/SmsScam.js
-import React, { useState, useEffect, useMemo } from "react";
+// Screens/EditProfile.js
+import React, {
+  useState,
+  useMemo,
+  useEffect,
+  useRef,
+} from "react";
 import {
   View,
   Text,
   StyleSheet,
-  Pressable,
   ScrollView,
+  Pressable,
+  TextInput,
+  Modal,
+  Image,
   Alert,
-  ActivityIndicator,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "../util/colors";
+import { useTranslation } from "react-i18next";
 import { useAppSettings } from "../src/context/AppSettingProvid";
-import { supabase } from "../supabase";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  ensureProfile,
+  getMyProfile,
+  updateMyProfile,
+} from "../src/api/profile";
+import supabase from "../supabase";
+import { getAvatar } from "../util/avatar";
 
-// عدلي هذا الرابط حسب API حقتك
-const API_BASE_URL = "http://192.168.88.1:8000";
+export default function EditProfile() {
+  const navigation = useNavigation();
+  const { t } = useTranslation();
+  const scrollRef = useRef(null);
+  const insets = useSafeAreaInsets();
 
-// Random SMS messages for testing (mix of spam and legitimate)
-const RANDOM_SMS_MESSAGES = [
-  {
-    sender: "+966501234567",
-    text: "تحقق من رصيدك الآن! اضغط على الرابط للحصول على جائزة 1000 ريال",
-  },
-  {
-    sender: "+966507654321",
-    text: "موعد اجتماعك غداً الساعة العاشرة صباحاً في المكتب",
-  },
-  {
-    sender: "+966555555555",
-    text: "لقد ربحت جائزة كبرى! ارسل معلوماتك البنكية للحصول عليها",
-  },
-  {
-    sender: "+966509876543",
-    text: "تم تأجيل المحاضرة إلى الأسبوع القادم. شكراً لتفهمكم",
-  },
-  {
-    sender: "BANK-ALERT",
-    text: "عزيزي العميل، تم سحب 5000 ريال من حسابك. للاعتراض اتصل فوراً",
-  },
-  {
-    sender: "+966502345678",
-    text: "مرحباً، هل أنت متاح للقاء غداً لمناقشة المشروع؟",
-  },
-  {
-    sender: "STC-OFFERS",
-    text: "عرض خاص! احصل على 100 جيجا مجاناً. ارسل بياناتك الشخصية الآن",
-  },
-  {
-    sender: "+966508765432",
-    text: "لا تنسى شراء الحليب والخبز في طريق العودة للمنزل",
-  },
-  {
-    sender: "+966501111111",
-    text: "مبروك! تم اختيارك للفوز بسيارة فاخرة. اضغط الرابط للمطالبة بالجائزة",
-  },
-  {
-    sender: "+966503456789",
-    text: "اجتماع الفريق اليوم الساعة الثالثة عصراً عبر زووم",
-  },
-];
+  const { theme, isRTL, profile, user } = useAppSettings();
 
-export default function SmsScam({ navigation }) {
-  const [isScanning, setIsScanning] = useState(false);
-  const [scanResults, setScanResults] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [apiStatus, setApiStatus] = useState("checking"); // connected | disconnected | checking
-  const [scanInterval, setScanInterval] = useState(null);
-  const [processedMessages, setProcessedMessages] = useState([]);
+  const [showGenderModal, setShowGenderModal] = useState(false);
+  const [showDatePickerModal, setShowDatePickerModal] = useState(false);
 
-  const { theme, isRTL } = useAppSettings();
-  const styles = useMemo(() => createStyles(theme, isRTL), [theme, isRTL]);
+  const [selectedDay, setSelectedDay] = useState(1);
+  const [selectedMonth, setSelectedMonth] = useState(0); // 0-11
+  const [selectedYear, setSelectedYear] = useState(2000);
 
-  // Check API status on mount
+  const [userData, setUserData] = useState({
+    firstName: "Name",
+    lastName: "",
+    username: "",
+    gender: "",
+    dateOfBirth: "",
+    phoneNumber: "",
+    email: "",
+  });
+
+  const [tempData, setTempData] = useState({ ...userData });
+
+  const [saving, setSaving] = useState(false);
+
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const PHONE_RE = /^[0-9]{7,15}$/;
+
+  const toISODateOrNull = (v) => {
+    if (!v || String(v).trim() === "") return null;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+    const d = new Date(v);
+    return isNaN(d) ? null : d.toISOString().slice(0, 10);
+  };
+
+  // رقم السعودية
+  const KSA_PREFIX = "+966";
+  function toE164Ksa(local) {
+    if (!local) return null;
+    const digits = String(local).replace(/\D/g, "");
+    const withoutLeadingZero = digits.replace(/^0+/, "");
+    if (!withoutLeadingZero) return null;
+    return KSA_PREFIX + withoutLeadingZero;
+  }
+  function toLocalKsa(full) {
+    if (!full) return "";
+    const digits = String(full).replace(/\D/g, "");
+    if (digits.startsWith("966")) {
+      return digits.slice(3);
+    }
+    return digits;
+  }
+
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  const days = Array.from({ length: 31 }, (_, i) => i + 1);
+  const years = Array.from(
+    { length: 100 },
+    (_, i) => new Date().getFullYear() - i
+  );
+  const GENDER_OPTIONS = ["male", "female"];
+
+  // تحميل بيانات البروفايل
   useEffect(() => {
-    checkApiStatus();
-  }, []);
+    (async () => {
+      try {
+        await ensureProfile();
+        const p = await getMyProfile();
+        const localFromFull = toLocalKsa(p.phone || "");
+        const authGender = user?.user_metadata?.gender ?? "";
 
-  const checkApiStatus = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/`);
-      const data = await response.json();
-      if (data.status === "running") {
-        setApiStatus("connected");
-      } else {
-        setApiStatus("disconnected");
+        const base = {
+          firstName: p.first_name ?? "",
+          lastName: p.last_name ?? "",
+          gender: p.gender ?? authGender,
+          dateOfBirth: p.date_of_birth ?? "",
+          phoneNumber: localFromFull ?? "",
+          email: p.email ?? user?.email ?? "",
+          username: p.username ?? "",
+        };
+
+        setTempData(base);
+        setUserData(base);
+
+        // إعداد التاريخ للـ picker
+        if (base.dateOfBirth) {
+          const [y, m, d] = base.dateOfBirth.split("-").map(Number);
+          if (y && m && d) {
+            setSelectedYear(y);
+            setSelectedMonth(m - 1);
+            setSelectedDay(d);
+          }
+        }
+      } catch (e) {
+        console.log("failed to load profile in EditProfile:", e);
       }
-    } catch (error) {
-      console.error("API status check failed:", error);
-      setApiStatus("disconnected");
-    }
-  };
+    })();
+  }, [user]);
 
-  const handleStartScanning = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(`${API_BASE_URL}/scan-control/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ action: "start" }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to start scanning");
-      }
-
-      const data = await response.json();
-      setIsScanning(true);
-      setProcessedMessages([]);
-      setScanResults([
-        {
-          time: new Date().toLocaleTimeString(),
-          message: "🔍 " + data.message,
-          type: "info",
-        },
-      ]);
-
-      // Start scanning random messages every 5 seconds
-      const intervalId = setInterval(() => {
-        scanRandomMessage();
-      }, 5000);
-      setScanInterval(intervalId);
-
-      // Scan the first message immediately
-      setTimeout(() => {
-        scanRandomMessage();
-      }, 1000);
-
-      Alert.alert("Success", "SMS scanning started successfully");
-    } catch (error) {
-      console.error("Error starting scan:", error);
-      Alert.alert(
-        "Connection Error",
-        `Unable to connect to the API server. Please ensure:\n1. The Python API is running\n2. Update API_BASE_URL in SmsScam.js with your IP address\n\nError: ${error.message}`
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleStopScanning = async () => {
-    setIsLoading(true);
-    try {
-      if (scanInterval) {
-        clearInterval(scanInterval);
-        setScanInterval(null);
-      }
-
-      const response = await fetch(`${API_BASE_URL}/scan-control/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ action: "stop" }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to stop scanning");
-      }
-
-      const data = await response.json();
-      setIsScanning(false);
-      setScanResults((prev) => [
-        ...prev,
-        {
-          time: new Date().toLocaleTimeString(),
-          message: "⏹️ " + data.message,
-          type: "info",
-        },
-      ]);
-      Alert.alert("Success", "SMS scanning stopped");
-    } catch (error) {
-      console.error("Error stopping scan:", error);
-      Alert.alert("Error", "Failed to stop scanning");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const scanRandomMessage = async () => {
-    const availableIndexes = RANDOM_SMS_MESSAGES.map((_, idx) => idx).filter(
-      (idx) => !processedMessages.includes(idx)
-    );
-
-    if (availableIndexes.length === 0) {
-      // كل الرسائل انمسحت، نعيد من البداية
-      setProcessedMessages([]);
-      setScanResults((prev) => [
-        ...prev,
-        {
-          time: new Date().toLocaleTimeString(),
-          message: "🔄 All messages scanned. Restarting from beginning...",
-          type: "info",
-        },
-      ]);
-      return;
-    }
-
-    const randomIndex =
-      availableIndexes[Math.floor(Math.random() * availableIndexes.length)];
-    const selectedMessage = RANDOM_SMS_MESSAGES[randomIndex];
-
-    setProcessedMessages((prev) => [...prev, randomIndex]);
-
-    setScanResults((prev) => [
-      ...prev,
-      {
-        time: new Date().toLocaleTimeString(),
-        message: `📱 New SMS from ${selectedMessage.sender}:\n"${selectedMessage.text}"`,
-        type: "info",
-      },
-    ]);
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/predict/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ text: selectedMessage.text }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Classification failed");
-      }
-
-      const data = await response.json();
-
-      // نتوقع من الـ API يرجع classification و confidence (0–100 مثلاً)
-      const classification = data.classification; // "spam" أو "ham" حسب API
-      const confidence = data.confidence ?? data.score ?? 0;
-
-      await saveToDatabase(
-        selectedMessage.sender,
-        selectedMessage.text,
-        classification,
-        confidence / 100
-      );
-
-      setScanResults((prev) => [
-        ...prev,
-        {
-          time: new Date().toLocaleTimeString(),
-          message: `${data.message ?? "Classification result"}\nConfidence: ${
-            confidence
-          }%`,
-          type: classification === "spam" ? "spam" : "safe",
-        },
-        {
-          time: new Date().toLocaleTimeString(),
-          message: "─────────────────────────",
-          type: "divider",
-        },
-      ]);
-    } catch (error) {
-      console.error("Error classifying message:", error);
-      setScanResults((prev) => [
-        ...prev,
-        {
-          time: new Date().toLocaleTimeString(),
-          message: "❌ Classification error. Check API connection.",
-          type: "error",
-        },
-      ]);
-    }
-  };
-
-  const saveToDatabase = async (sender, message, classification, confidence) => {
-    try {
-      const { data, error } = await supabase.from("sms_scans").insert([
-        {
-          sender_id: sender,
-          message_content: message,
-          classification_response: classification,
-          confidence_score: confidence,
-          created_at: new Date().toISOString(),
-        },
-      ]);
-
-      if (error) {
-        console.error("Error saving to database:", error);
-      } else {
-        console.log("Saved to database successfully");
-      }
-    } catch (err) {
-      console.error("Database save error:", err);
-    }
-  };
-
-  // تنظيف الـ interval عند الخروج من الشاشة
-  useEffect(() => {
-    return () => {
-      if (scanInterval) {
-        clearInterval(scanInterval);
-      }
+  const themeStyles = useMemo(() => {
+    return {
+      backgroundColor: theme.colors.background,
+      textColor: theme.colors.text,
+      cardBackground: theme.colors.card,
+      borderColor: theme.colors.cardBorder,
+      inputBackground: theme.mode === "dark" ? "#161b25" : "#fff",
+      profileBackground:
+        theme.mode === "dark" ? theme.colors.card : "#797EF6",
+      profileText: theme.colors.text,
+      profileUsername:
+        theme.mode === "dark" ? theme.colors.subtext : "#b8b8b8ff",
     };
-  }, [scanInterval]);
+  }, [theme]);
+
+  const styles = createStyles(theme, themeStyles, isRTL);
+
+  const effectiveGender =
+    tempData?.gender || profile?.gender || user?.user_metadata?.gender || null;
+
+  const avatarSrc = useMemo(() => getAvatar(effectiveGender), [effectiveGender]);
+
+  const handleSave = async () => {
+    if (saving) return;
+    setSaving(true);
+
+    try {
+      await ensureProfile();
+
+      const dob = toISODateOrNull(tempData.dateOfBirth);
+      const fullPhone = toE164Ksa(tempData.phoneNumber);
+      const cleanedEmail = (tempData.email || "").trim();
+
+      if (cleanedEmail && !EMAIL_RE.test(cleanedEmail)) {
+        Alert.alert(
+          t("errors.invalidEmailTitle", "Invalid email"),
+          t("errors.invalidEmailBody", "ايميل غير صحيح")
+        );
+        setSaving(false);
+        return;
+      }
+      if (
+        tempData.phoneNumber &&
+        !PHONE_RE.test(tempData.phoneNumber.replace(/^0+/, ""))
+      ) {
+        Alert.alert(
+          t("errors.invalidPhoneTitle", "Invalid phone"),
+          t("errors.invalidPhoneBody", "اكتب رقم جوال صحيح بدون مسافات")
+        );
+        setSaving(false);
+        return;
+      }
+
+      // تحديث جدول البروفايل فقط
+      await updateMyProfile({
+        first_name: tempData.firstName,
+        last_name: tempData.lastName,
+        username: tempData.username || null,
+        gender: tempData.gender || null,
+        date_of_birth: dob,
+        phone: fullPhone,
+        email: cleanedEmail || null, // إيميل البروفايل فقط (ليس auth)
+      });
+
+      // تحديث ميتاداتا الجنس في auth (اختياري)
+      await supabase.auth.updateUser({
+        data: { gender: tempData.gender || null },
+      });
+
+      Alert.alert(
+        t("profile.savedTitle", "Saved"),
+        t("profile.savedBody", "Profile updated successfully!")
+      );
+      setUserData({ ...tempData, email: cleanedEmail });
+      navigation.goBack();
+    } catch (e) {
+      Alert.alert(
+        t("errors.genericTitle", "Error"),
+        e?.message ?? String(e)
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setTempData({ ...userData });
+    navigation.goBack();
+  };
+
+  const handleDateSelect = () => {
+    const iso = new Date(selectedYear, selectedMonth, selectedDay)
+      .toISOString()
+      .slice(0, 10);
+    setTempData({ ...tempData, dateOfBirth: iso });
+    setShowDatePickerModal(false);
+  };
+
+  const handleGenderSelect = (key) => {
+    setTempData((prev) => ({ ...prev, gender: key }));
+    setShowGenderModal(false);
+  };
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.contentContainer}
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: themeStyles.backgroundColor }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
     >
-      {/* Header */}
-      <View style={styles.header}>
-        <Pressable onPress={() => navigation.goBack()}>
-          <Ionicons
-            name={isRTL ? "arrow-forward" : "arrow-back"}
-            size={24}
-            color={theme.colors.text}
-          />
-        </Pressable>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View style={{ flex: 1 }}>
+          {/* Header */}
+          <View style={styles.header}>
+            <Pressable onPress={() => navigation.goBack()}>
+              <Ionicons name="arrow-back" size={24} color={COLORS.purple8} />
+            </Pressable>
+            <View style={{ width: 24 }} />
+          </View>
 
-        <Text style={styles.headerTitle}>SMS Scam Detector</Text>
-
-        <View style={styles.statusWrapper}>
-          <View
-            style={[
-              styles.statusDot,
-              apiStatus === "connected"
-                ? styles.statusConnected
-                : styles.statusDisconnected,
-            ]}
-          />
-          <Text style={styles.statusText}>
-            {apiStatus === "connected"
-              ? "Online"
-              : apiStatus === "checking"
-              ? "Checking..."
-              : "Offline"}
-          </Text>
-        </View>
-      </View>
-
-      {/* Main Card */}
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>Live SMS Monitoring</Text>
-        <Text style={styles.sectionSubtitle}>
-          Simulated SMS messages are analyzed in real time to detect potential
-          scams.
-        </Text>
-
-        <View style={styles.resultsContainer}>
-          {scanResults.length === 0 ? (
-            <Text style={styles.placeholderText}>
-              {apiStatus === "disconnected"
-                ? "⚠️ API Server not connected.\nPlease start the Python API server and check the API_BASE_URL."
-                : "Press START to begin monitoring SMS messages for scam detection."}
-            </Text>
-          ) : (
-            scanResults.map((result, index) => (
-              <View key={index} style={styles.resultItem}>
-                <Text style={styles.resultTime}>[{result.time}]</Text>
+          <ScrollView
+            ref={scrollRef}
+            style={{ flex: 1 }}
+            contentContainerStyle={{
+              paddingBottom: (insets?.bottom ?? 0) + 220,
+            }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode={
+              Platform.OS === "ios" ? "interactive" : "on-drag"
+            }
+            scrollEventThrottle={16}
+            contentInsetAdjustmentBehavior="automatic"
+            automaticallyAdjustKeyboardInsets
+            nestedScrollEnabled
+          >
+            {/* Profile Info */}
+            <View
+              style={[
+                styles.profileSection,
+                {
+                  backgroundColor: themeStyles.profileBackground,
+                  borderColor: themeStyles.borderColor,
+                },
+              ]}
+            >
+              <Image source={avatarSrc} style={styles.profileImage} />
+              <View style={styles.profileInfo}>
                 <Text
                   style={[
-                    styles.resultMessage,
-                    result.type === "spam" && styles.spamText,
-                    result.type === "safe" && styles.safeText,
+                    styles.profileName,
+                    { color: themeStyles.profileText },
                   ]}
                 >
-                  {result.message}
+                  {tempData.firstName} {tempData.lastName}
                 </Text>
+                {!!tempData.username && (
+                  <Text
+                    style={[
+                      styles.profileUsername,
+                      { color: themeStyles.profileUsername },
+                    ]}
+                  >
+                    {tempData.username}
+                  </Text>
+                )}
+                {!!tempData.email && (
+                  <Text
+                    style={[
+                      styles.profileUsername,
+                      { color: themeStyles.profileUsername },
+                    ]}
+                  >
+                    {tempData.email}
+                  </Text>
+                )}
               </View>
-            ))
-          )}
+            </View>
+
+            {/* Form */}
+            <View
+              style={[
+                styles.formContainer,
+                {
+                  backgroundColor: themeStyles.cardBackground,
+                  borderColor: themeStyles.borderColor,
+                },
+              ]}
+            >
+              {/* First name */}
+              <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>
+                {t("First Name")}
+              </Text>
+              <TextInput
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: themeStyles.inputBackground,
+                    color: themeStyles.textColor,
+                  },
+                ]}
+                value={tempData.firstName}
+                onChangeText={(text) =>
+                  setTempData({ ...tempData, firstName: text })
+                }
+                textAlign={isRTL ? "right" : "left"}
+                placeholder={t("First Name")}
+                placeholderTextColor={theme.colors.subtext}
+                returnKeyType="next"
+                blurOnSubmit={false}
+              />
+
+              {/* Last name */}
+              <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>
+                {t("Last Name")}
+              </Text>
+              <TextInput
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: themeStyles.inputBackground,
+                    color: themeStyles.textColor,
+                  },
+                ]}
+                value={tempData.lastName}
+                onChangeText={(text) =>
+                  setTempData({ ...tempData, lastName: text })
+                }
+                textAlign={isRTL ? "right" : "left"}
+                placeholder={t("Last Name")}
+                placeholderTextColor={theme.colors.subtext}
+                returnKeyType="next"
+                blurOnSubmit={false}
+              />
+
+              {/* Gender */}
+              <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>
+                {t("Gender")}
+              </Text>
+              <Pressable
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: themeStyles.inputBackground,
+                    justifyContent: "center",
+                  },
+                ]}
+                onPress={() => setShowGenderModal(true)}
+              >
+                <Text
+                  style={[
+                    tempData.gender
+                      ? { color: themeStyles.textColor }
+                      : { color: theme.colors.subtext },
+                    { textAlign: isRTL ? "right" : "left" },
+                  ]}
+                >
+                  {tempData.gender ? t(tempData.gender) : t("selectGender")}
+                </Text>
+              </Pressable>
+
+              {/* Date of Birth */}
+              <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>
+                {t("Date Of Birth")}
+              </Text>
+              <Pressable
+                style={[
+                  styles.input,
+                  { backgroundColor: themeStyles.inputBackground },
+                ]}
+                onPress={() => setShowDatePickerModal(true)}
+              >
+                <Text
+                  style={[
+                    tempData.dateOfBirth
+                      ? { color: themeStyles.textColor }
+                      : { color: theme.colors.subtext },
+                    { textAlign: isRTL ? "right" : "left" },
+                  ]}
+                >
+                  {tempData.dateOfBirth || t("selectDate")}
+                </Text>
+              </Pressable>
+
+              {/* Phone (KSA only) */}
+              <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>
+                {t("Phone Number")}
+              </Text>
+              <View style={styles.phoneRow}>
+                <View style={styles.ksaBadge}>
+                  <Text style={styles.ksaFlag}>🇸🇦</Text>
+                  <Text style={styles.ksaCode}>+966</Text>
+                </View>
+                <TextInput
+                  style={[
+                    styles.input,
+                    styles.phoneInput,
+                    {
+                      backgroundColor: themeStyles.inputBackground,
+                      color: themeStyles.textColor,
+                    },
+                  ]}
+                  value={tempData.phoneNumber}
+                  onChangeText={(text) => {
+                    const onlyDigits = text.replace(/\D/g, "");
+                    setTempData({ ...tempData, phoneNumber: onlyDigits });
+                  }}
+                  textAlign={isRTL ? "right" : "left"}
+                  placeholder={t("ksaPhonePlaceholder", "5XXXXXXXX")}
+                  placeholderTextColor={theme.colors.subtext}
+                  keyboardType="phone-pad"
+                  maxLength={10}
+                  returnKeyType="next"
+                  blurOnSubmit={false}
+                />
+              </View>
+
+              {/* Email (read-only) */}
+              <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>
+                {t("Email")}
+              </Text>
+              <TextInput
+                editable={false}
+                selectTextOnFocus={false}
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: themeStyles.inputBackground,
+                    color: themeStyles.textColor,
+                    opacity: 0.7,
+                  },
+                ]}
+                value={tempData.email}
+                textAlign={isRTL ? "right" : "left"}
+                placeholder={t("Email")}
+                placeholderTextColor={theme.colors.subtext}
+              />
+
+              {/* تغيير الإيميل والباسورد */}
+              <View style={styles.securitySection}>
+                <Pressable
+                  style={[
+                    styles.secondaryButton,
+                    { borderColor: COLORS.purple2 },
+                  ]}
+                  onPress={() => navigation.navigate("ChangeEmail")}
+                >
+                  <Text
+                    style={[
+                      styles.secondaryButtonText,
+                      { color: theme.colors.text },
+                    ]}
+                  >
+                    {t("Change Email") || "Change Email"}
+                  </Text>
+                </Pressable>
+
+                <Pressable
+                  style={[
+                    styles.secondaryButton,
+                    { marginTop: 10, borderColor: COLORS.purple2 },
+                  ]}
+                  onPress={() => navigation.navigate("ChangePassword")}
+                >
+                  <Text
+                    style={[
+                      styles.secondaryButtonText,
+                      { color: theme.colors.text },
+                    ]}
+                  >
+                    {t("Change Password") || "Change Password"}
+                  </Text>
+                </Pressable>
+              </View>
+
+              {/* Buttons */}
+              <View style={styles.buttonRow}>
+                <Pressable style={styles.cancelButton} onPress={handleCancel}>
+                  <Text style={styles.cancelButtonText}>{t("cancel")}</Text>
+                </Pressable>
+                <Pressable
+                  style={[styles.saveButton, saving && { opacity: 0.7 }]}
+                  onPress={handleSave}
+                  disabled={saving}
+                >
+                  <Text style={styles.saveButtonText}>
+                    {saving ? t("saving", "Saving...") : t("save")}
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
+          </ScrollView>
+
+          {/* Date Picker Modal */}
+          <Modal visible={showDatePickerModal} transparent animationType="slide">
+            <View style={styles.modalContainer}>
+              <View
+                style={[
+                  styles.modalContent,
+                  { backgroundColor: themeStyles.cardBackground },
+                ]}
+              >
+                <Text
+                  style={[styles.modalTitle, { color: themeStyles.textColor }]}
+                >
+                  {t("select birthday")}
+                </Text>
+
+                <View style={styles.datePickerContainer}>
+                  <ScrollView
+                    style={styles.pickerColumn}
+                    keyboardShouldPersistTaps="handled"
+                  >
+                    {days.map((day) => (
+                      <Pressable
+                        key={day}
+                        style={[
+                          styles.pickerOption,
+                          selectedDay === day && styles.selectedPickerOption,
+                        ]}
+                        onPress={() => setSelectedDay(day)}
+                      >
+                        <Text
+                          style={[
+                            styles.pickerOptionText,
+                            selectedDay === day &&
+                              styles.selectedPickerOptionText,
+                          ]}
+                        >
+                          {day}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </ScrollView>
+
+                  <ScrollView
+                    style={styles.pickerColumn}
+                    keyboardShouldPersistTaps="handled"
+                  >
+                    {months.map((month, index) => (
+                      <Pressable
+                        key={month}
+                        style={[
+                          styles.pickerOption,
+                          selectedMonth === index &&
+                            styles.selectedPickerOption,
+                        ]}
+                        onPress={() => setSelectedMonth(index)}
+                      >
+                        <Text
+                          style={[
+                            styles.pickerOptionText,
+                            selectedMonth === index &&
+                              styles.selectedPickerOptionText,
+                          ]}
+                        >
+                          {month}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </ScrollView>
+
+                  <ScrollView
+                    style={styles.pickerColumn}
+                    keyboardShouldPersistTaps="handled"
+                  >
+                    {years.map((year) => (
+                      <Pressable
+                        key={year}
+                        style={[
+                          styles.pickerOption,
+                          selectedYear === year &&
+                            styles.selectedPickerOption,
+                        ]}
+                        onPress={() => setSelectedYear(year)}
+                      >
+                        <Text
+                          style={[
+                            styles.pickerOptionText,
+                            selectedYear === year &&
+                              styles.selectedPickerOptionText,
+                          ]}
+                        >
+                          {year}
+                        </Text>
+                      </Pressable>
+                    ))}
+                  </ScrollView>
+                </View>
+
+                <View style={styles.modalButtons}>
+                  <Pressable
+                    style={styles.modalButton}
+                    onPress={() => setShowDatePickerModal(false)}
+                  >
+                    <Text style={styles.modalButtonText}>{t("cancel")}</Text>
+                  </Pressable>
+                  <Pressable
+                    style={[styles.modalButton, styles.modalButtonPrimary]}
+                    onPress={handleDateSelect}
+                  >
+                    <Text
+                      style={[
+                        styles.modalButtonText,
+                        styles.modalButtonPrimaryText,
+                      ]}
+                    >
+                      {t("selectDate")}
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+            </View>
+          </Modal>
+
+          {/* Gender Selection Modal */}
+          <Modal visible={showGenderModal} transparent animationType="slide">
+            <View style={styles.modalContainer}>
+              <View
+                style={[
+                  styles.modalContent,
+                  { backgroundColor: themeStyles.cardBackground },
+                ]}
+              >
+                <Text
+                  style={[styles.modalTitle, { color: themeStyles.textColor }]}
+                >
+                  {t("selectGender")}
+                </Text>
+
+                {GENDER_OPTIONS.map((key) => (
+                  <Pressable
+                    key={key}
+                    style={styles.option}
+                    onPress={() => handleGenderSelect(key)}
+                  >
+                    <Text
+                      style={[
+                        styles.optionText,
+                        { color: themeStyles.textColor },
+                      ]}
+                    >
+                      {t(key)}
+                    </Text>
+                  </Pressable>
+                ))}
+
+                <Pressable
+                  style={styles.closeButton}
+                  onPress={() => setShowGenderModal(false)}
+                >
+                  <Text style={styles.closeButtonText}>{t("close")}</Text>
+                </Pressable>
+              </View>
+            </View>
+          </Modal>
         </View>
-      </View>
-
-      {/* Action Buttons */}
-      <View style={styles.buttonRow}>
-        {/* START */}
-        <Pressable
-          onPress={handleStartScanning}
-          disabled={isScanning || isLoading || apiStatus === "disconnected"}
-          style={[
-            styles.button,
-            styles.startButton,
-            (isScanning || isLoading || apiStatus === "disconnected") &&
-              styles.buttonDisabled,
-          ]}
-        >
-          {isLoading && !isScanning ? (
-            <ActivityIndicator color={theme.colors.primaryTextOn} />
-          ) : (
-            <Text style={styles.buttonText}>START</Text>
-          )}
-        </Pressable>
-
-        {/* STOP */}
-        <Pressable
-          onPress={handleStopScanning}
-          disabled={!isScanning || isLoading}
-          style={[
-            styles.button,
-            styles.stopButton,
-            (!isScanning || isLoading) && styles.buttonDisabled,
-          ]}
-        >
-          {isLoading && isScanning ? (
-            <ActivityIndicator color="#FFFFFF" />
-          ) : (
-            <Text style={styles.buttonText}>STOP</Text>
-          )}
-        </Pressable>
-      </View>
-    </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }
 
-// نفس أسلوب SafeBrowsing / ReportScam: ثيم ديناميكي
-const createStyles = (theme, isRTL) =>
+const createStyles = (theme, themeStyles, isRTL) =>
   StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: theme.colors.background,
-    },
-    contentContainer: {
-      paddingHorizontal: 16,
-      paddingBottom: 32,
-    },
     header: {
       flexDirection: isRTL ? "row-reverse" : "row",
       justifyContent: "space-between",
       alignItems: "center",
-      paddingTop: 60,
-      paddingBottom: 20,
+      paddingTop: 50,
+      paddingBottom: 30,
+      paddingHorizontal: 10,
     },
-    headerTitle: {
-      fontFamily: "Poppins-600",
-      fontSize: 20,
-      color: theme.colors.text,
-      textAlign: "center",
-    },
-    statusWrapper: {
+    profileSection: {
+      borderRadius: 24,
+      padding: 40,
+      marginBottom: 16,
+      marginHorizontal: 16,
       flexDirection: isRTL ? "row-reverse" : "row",
       alignItems: "center",
-      gap: 6,
-    },
-    statusDot: {
-      width: 10,
-      height: 10,
-      borderRadius: 5,
-    },
-    statusConnected: {
-      backgroundColor: "#10B981",
-    },
-    statusDisconnected: {
-      backgroundColor: "#EF4444",
-    },
-    statusText: {
-      fontFamily: "Poppins-400",
-      fontSize: 12,
-      color: theme.colors.subtext,
-    },
-
-    card: {
-      backgroundColor: theme.colors.card,
-      padding: 16,
-      borderRadius: 16,
+      shadowColor: "#797EF6",
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 2,
+      elevation: 2,
       borderWidth: 1,
       borderColor: theme.colors.cardBorder,
-      marginBottom: 16,
     },
-    sectionTitle: {
-      fontFamily: "Poppins-500",
-      fontSize: 18,
+    profileImage: {
+      width: 90,
+      height: 90,
+      borderRadius: 39,
+      marginRight: isRTL ? 0 : 12,
+      marginLeft: isRTL ? 12 : 0,
+      backgroundColor: "#fff",
+    },
+    profileInfo: { flex: 1 },
+    profileName: {
+      fontSize: 16,
+      fontWeight: "700",
+      marginBottom: 2,
       color: theme.colors.text,
-      marginBottom: 8,
-      textAlign: isRTL ? "right" : "left",
     },
-    sectionSubtitle: {
-      fontFamily: "Poppins-400",
-      fontSize: 13,
-      color: theme.colors.subtext,
-      marginBottom: 12,
+    profileUsername: { fontSize: 13, color: theme.colors.subtext },
+
+    formContainer: {
+      borderRadius: 16,
+      padding: 24,
+      marginHorizontal: 16,
+      marginBottom: 20,
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 2,
+      elevation: 2,
+      borderWidth: 1,
+      borderColor: theme.colors.cardBorder,
+    },
+    formLabel: {
+      fontSize: 16,
+      fontWeight: "600",
+      marginBottom: 8,
+      marginTop: 16,
       textAlign: isRTL ? "right" : "left",
+      color: theme.colors.text,
+    },
+    input: {
+      borderWidth: 2,
+      borderColor: COLORS.purple2,
+      borderRadius: 16,
+      padding: 16,
+      fontSize: 16,
+      color: theme.colors.text,
+      backgroundColor: themeStyles.inputBackground,
+      textAlign: isRTL ? "right" : "left",
+      writingDirection: isRTL ? "rtl" : "ltr",
     },
 
-    resultsContainer: {
-      maxHeight: 380,
+    phoneRow: {
+      flexDirection: "row",
+      alignItems: "center",
     },
-    placeholderText: {
-      fontFamily: "Poppins-400",
-      fontSize: 14,
-      color: theme.colors.subtext,
-      textAlign: isRTL ? "right" : "left",
-      lineHeight: 22,
+    ksaBadge: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: 12,
+      height: 56,
+      borderWidth: 2,
+      borderColor: COLORS.purple2,
+      borderRadius: 16,
+      marginRight: 8,
+      backgroundColor: themeStyles.inputBackground,
     },
-    resultItem: {
+    ksaFlag: { fontSize: 18, marginRight: 6 },
+    ksaCode: { fontSize: 16, color: theme.colors.text },
+    phoneInput: { flex: 1 },
+
+    securitySection: {
+      marginTop: 24,
+    },
+    securityTitle: {
+      fontSize: 16,
+      fontWeight: "600",
       marginBottom: 10,
-      paddingBottom: 10,
-      borderBottomWidth: 1,
-      borderBottomColor: theme.colors.cardBorder,
-    },
-    resultTime: {
-      fontFamily: "Poppins-400",
-      fontSize: 11,
-      color: theme.colors.subtext,
-      marginBottom: 4,
       textAlign: isRTL ? "right" : "left",
     },
-    resultMessage: {
-      fontFamily: "Poppins-400",
-      fontSize: 13,
-      color: theme.colors.text,
-      lineHeight: 20,
-      textAlign: isRTL ? "right" : "left",
+    secondaryButton: {
+      paddingVertical: 12,
+      borderRadius: 14,
+      borderWidth: 2,
+      alignItems: "center",
+      justifyContent: "center",
     },
-    spamText: {
-      color: COLORS.purple7,
-      fontFamily: "Poppins-600",
-    },
-    safeText: {
-      color: COLORS.brightTiffany,
-      fontFamily: "Poppins-600",
+    secondaryButtonText: {
+      fontSize: 15,
+      fontWeight: "500",
     },
 
     buttonRow: {
       flexDirection: isRTL ? "row-reverse" : "row",
       justifyContent: "space-between",
-      gap: 12,
-      marginTop: 8,
+      marginTop: 24,
     },
-    button: {
+    cancelButton: {
       flex: 1,
-      paddingVertical: 14,
+      borderWidth: 2,
+      borderColor: COLORS.purple2,
+      paddingVertical: 16,
       borderRadius: 16,
+      marginRight: isRTL ? 0 : 8,
+      marginLeft: isRTL ? 8 : 0,
       alignItems: "center",
-      justifyContent: "center",
+      backgroundColor: theme.colors.card,
     },
-    startButton: {
+    cancelButtonText: {
+      fontWeight: "500",
+      fontSize: 16,
+      color: theme.colors.text,
+    },
+    saveButton: {
+      flex: 1,
+      paddingVertical: 16,
+      borderRadius: 16,
+      marginLeft: isRTL ? 0 : 8,
+      marginRight: isRTL ? 8 : 0,
+      alignItems: "center",
       backgroundColor: theme.colors.primary,
     },
-    stopButton: {
-      backgroundColor: COLORS.purple7,
-    },
-    buttonDisabled: {
-      opacity: 0.6,
-    },
-    buttonText: {
-      fontFamily: "Poppins-600",
-      fontSize: 16,
+    saveButtonText: {
       color: theme.colors.primaryTextOn,
-      letterSpacing: 1,
+      fontWeight: "500",
+      fontSize: 16,
     },
+
+    modalContainer: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: "rgba(0, 0, 0, 0.25)",
+    },
+    modalContent: {
+      borderRadius: 16,
+      padding: 24,
+      width: "86%",
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      elevation: 5,
+      backgroundColor: theme.colors.card,
+      borderWidth: 1,
+      borderColor: theme.colors.cardBorder,
+    },
+    modalTitle: {
+      fontSize: 18,
+      fontWeight: "600",
+      marginBottom: 16,
+      textAlign: "center",
+      color: theme.colors.text,
+    },
+
+    option: {
+      padding: 16,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.cardBorder,
+    },
+    optionText: {
+      fontSize: 16,
+      textAlign: isRTL ? "right" : "left",
+      color: theme.colors.text,
+    },
+    closeButton: { marginTop: 16, padding: 16, alignItems: "center" },
+    closeButtonText: {
+      fontSize: 16,
+      fontWeight: "500",
+      color: theme.colors.primary,
+    },
+
+    datePickerContainer: {
+      flexDirection: "row",
+      height: 200,
+      marginVertical: 16,
+    },
+    pickerColumn: { flex: 1 },
+    pickerOption: { padding: 10, alignItems: "center" },
+    selectedPickerOption: { backgroundColor: COLORS.purple1, borderRadius: 8 },
+    pickerOptionText: { fontSize: 16, color: theme.colors.text },
+    selectedPickerOptionText: { color: "#fff", fontWeight: "bold" },
+    modalButtons: {
+      flexDirection: isRTL ? "row-reverse" : "row",
+      justifyContent: "space-between",
+      marginTop: 16,
+    },
+    modalButton: {
+      flex: 1,
+      padding: 12,
+      alignItems: "center",
+      borderRadius: 8,
+      marginHorizontal: 8,
+      backgroundColor: theme.colors.subtext,
+    },
+    modalButtonPrimary: { backgroundColor: COLORS.purple1 },
+    modalButtonText: { color: "#fff", fontWeight: "bold" },
+    modalButtonPrimaryText: { color: "#fff" },
   });

@@ -5,9 +5,21 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cbd3953f-9e27-42cd-b3ab-494e50d9e22f" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/services/saveSmsResult.js" beforeDir="false" afterPath="$PROJECT_DIR$/services/saveSmsResult.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Screens/AddDevice.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/AddDevice.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Screens/AnalyzeCall.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/AnalyzeCall.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Screens/ChangeEmailScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/ChangeEmailScreen.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Screens/ChangePasswordScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/ChangePasswordScreen.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Screens/EditProfile.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/EditProfile.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Screens/Home.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/Home.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Screens/ManageAlerts.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/ManageAlerts.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Screens/PrivacyScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/PrivacyScreen.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Screens/Profile.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/Profile.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Screens/ReportScam.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/ReportScam.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Screens/SettingsScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/SettingsScreen.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Screens/SmsScam.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/SmsScam.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Screens/Statics.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/Statics.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/i18n.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/i18n.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -20,18 +32,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "AlreemAlothman"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;AlreemAlothman&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/badreeah/KnightHoot-App.git",
-    "accountId": "780b5d32-2f5e-4df5-a78d-eb81de315473"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/badreeah/KnightHoot-App.git&quot;,
+    &quot;accountId&quot;: &quot;780b5d32-2f5e-4df5-a78d-eb81de315473&quot;
   }
-}]]></component>
+}</component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 7
@@ -41,25 +53,25 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "com.google.services.firebase.aqiPopupShown": "true",
-    "git-widget-placeholder": "test3",
-    "kotlin-language-version-configured": "true",
-    "project.structure.last.edited": "Project",
-    "project.structure.proportion": "0.0",
-    "project.structure.side.proportion": "0.0",
-    "settings.editor.selected.configurable": "configurable.group.appearance"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;com.google.services.firebase.aqiPopupShown&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;test3&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;configurable.group.appearance&quot;
   }
-}]]></component>
+}</component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="cbd3953f-9e27-42cd-b3ab-494e50d9e22f" name="Changes" comment="" />

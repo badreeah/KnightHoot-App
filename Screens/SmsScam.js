@@ -13,6 +13,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "../util/colors";
 import { supabase } from "../supabase";
 import { useAppSettings } from "../src/context/AppSettingProvid";
+import { useTranslation } from "react-i18next";
 
 const API_BASE_URL = "http://192.168.88.1:8000";
 
@@ -60,7 +61,6 @@ const RANDOM_SMS_MESSAGES = [
   },
 ];
 
-
 export default function SmsScam({ navigation }) {
   const [isScanning, setIsScanning] = useState(false);
   const [scanResults, setScanResults] = useState([]);
@@ -69,9 +69,9 @@ export default function SmsScam({ navigation }) {
   const [scanInterval, setScanInterval] = useState(null);
   const [processedMessages, setProcessedMessages] = useState([]);
 
-  // الثيم + RTL من الكونتكست
   const { theme, isRTL } = useAppSettings();
-  // مهم: تغيير الاسم إلى createStyles عشان ما يصير تعارض
+  const { t } = useTranslation();
+
   const styles = useMemo(() => createStyles(theme, isRTL), [theme, isRTL]);
 
   // Check API status on mount
@@ -131,12 +131,15 @@ export default function SmsScam({ navigation }) {
         scanRandomMessage();
       }, 1000);
 
-      Alert.alert("Success", "SMS scanning started successfully");
+      Alert.alert(
+        t("smsScam.successTitle", "Success"),
+        t("smsScam.startSuccess")
+      );
     } catch (error) {
       console.error("Error starting scan:", error);
       Alert.alert(
-        "Connection Error",
-        `Unable to connect to the API server. Please ensure:\n1. The Python API is running\n2. Update API_BASE_URL in SmsScam.js with your IP address\n\nError: ${error.message}`
+        t("smsScam.connectionErrorTitle"),
+        `${t("smsScam.connectionErrorBody")}\n\nError: ${error.message}`
       );
     } finally {
       setIsLoading(false);
@@ -173,10 +176,16 @@ export default function SmsScam({ navigation }) {
           type: "info",
         },
       ]);
-      Alert.alert("Success", "SMS scanning stopped");
+      Alert.alert(
+        t("smsScam.successTitle", "Success"),
+        t("smsScam.stopSuccess")
+      );
     } catch (error) {
       console.error("Error stopping scan:", error);
-      Alert.alert("Error", "Failed to stop scanning");
+      Alert.alert(
+        t("smsScam.errorGeneric", "Error"),
+        t("smsScam.failStop")
+      );
     } finally {
       setIsLoading(false);
     }
@@ -194,7 +203,7 @@ export default function SmsScam({ navigation }) {
         ...prev,
         {
           time: new Date().toLocaleTimeString(),
-          message: "🔄 All messages scanned. Restarting from beginning...",
+          message: t("smsScam.allScanned"),
           type: "info",
         },
       ]);
@@ -214,7 +223,9 @@ export default function SmsScam({ navigation }) {
       ...prev,
       {
         time: new Date().toLocaleTimeString(),
-        message: `📱 New SMS from ${selectedMessage.sender}:\n"${selectedMessage.text}"`,
+        message: `📱 ${t("smsScam.newSMS")} ${
+          selectedMessage.sender
+        }:\n"${selectedMessage.text}"`,
         type: "info",
       },
     ]);
@@ -260,7 +271,7 @@ export default function SmsScam({ navigation }) {
         ...prev,
         {
           time: new Date().toLocaleTimeString(),
-          message: "❌ Classification error. Check API connection.",
+          message: t("smsScam.classificationError"),
           type: "error",
         },
       ]);
@@ -303,18 +314,18 @@ export default function SmsScam({ navigation }) {
       {/* Back Arrow */}
       <Pressable onPress={() => navigation.goBack()} style={styles.backButton}>
         <Ionicons
-          name={isRTL ? "arrow-forward" : "arrow-back"}
+          name={ "arrow-back"}
           size={24}
           color={theme.colors.text}
         />
       </Pressable>
 
       {/* Header */}
-      <Text style={styles.header}>KnightHoo</Text>
+      <Text style={styles.header}>{t("smsScam.header")}</Text>
 
       {/* Section Title */}
       <View style={styles.titleContainer}>
-        <Text style={styles.title}>SMS Scam</Text>
+        <Text style={styles.title}>{t("smsScam.title")}</Text>
         <View
           style={[
             styles.statusDot,
@@ -331,10 +342,10 @@ export default function SmsScam({ navigation }) {
           {scanResults.length === 0 ? (
             <Text style={styles.responseText}>
               {isScanning
-                ? "Monitoring incoming messages... Awaiting classification of new SMS content."
+                ? t("smsScam.monitoring")
                 : apiStatus === "disconnected"
-                ? "⚠️ API Server not connected. Please start the Python API server.\n\nTo start the server:\n1. Navigate to the python folder\n2. Run: python api.py\n3. Update API_BASE_URL with your IP"
-                : "Press START to begin monitoring SMS messages for scam detection."}
+                ? t("smsScam.apiNotConnected")
+                : t("smsScam.waitingScan")}
             </Text>
           ) : (
             scanResults.map((result, index) => (
@@ -371,7 +382,7 @@ export default function SmsScam({ navigation }) {
           {isLoading && !isScanning ? (
             <ActivityIndicator color={theme.colors.primaryTextOn} />
           ) : (
-            <Text style={styles.buttonText}>START</Text>
+            <Text style={styles.buttonText}>{t("smsScam.start")}</Text>
           )}
         </Pressable>
 
@@ -388,7 +399,7 @@ export default function SmsScam({ navigation }) {
           {isLoading && isScanning ? (
             <ActivityIndicator color="#FFFFFF" />
           ) : (
-            <Text style={styles.buttonText}>STOP</Text>
+            <Text style={styles.buttonText}>{t("smsScam.stop")}</Text>
           )}
         </Pressable>
       </View>
@@ -409,8 +420,8 @@ const createStyles = (theme, isRTL) =>
     backButton: {
       position: "absolute",
       top: 60,
-      left: isRTL ? undefined : 24,
-      right: isRTL ? 24 : undefined,
+      left:  24,
+      right: undefined,
       zIndex: 10,
       padding: 8,
     },
@@ -420,7 +431,6 @@ const createStyles = (theme, isRTL) =>
       textAlign: "center",
       color: theme.colors.text,
       marginBottom: 40,
-      
     },
     titleContainer: {
       flexDirection: isRTL ? "row-reverse" : "row",
