@@ -1,17 +1,20 @@
-export default [
-  {
-    title: "Think Before You Share",
-    description:
-      "Avoid giving out passwords or ID numbers over the phone, even if the caller appears to be trustworthy.",
-  },
-  {
-    title: "Pause Before You Click",
-    description:
-      "Always check links, scam links may look genuine but can direct you to harmful websites.",
-  },
-  {
-    title: "Don’t Trust Urgency",
-    description:
-      "Scammers use pressure tactics like ‘Act now!’ — pause and think before you respond.",
-  },
-];
+import { useTranslation } from "react-i18next";
+
+export default function TipsInfo() {
+  const { t } = useTranslation();
+
+  return [
+    {
+      title: t("home.tips.thinkTitle"),
+      description: t("home.tips.thinkBody"),
+    },
+    {
+      title: t("home.tips.pauseTitle"),
+      description: t("home.tips.pauseBody"),
+    },
+    {
+      title: t("home.tips.urgencyTitle"),
+      description: t("home.tips.urgencyBody"),
+    },
+  ];
+}
