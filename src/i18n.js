@@ -301,6 +301,7 @@ smsScam: {
   accountSecurity: "Account & Security",
   changePassword: "Change Password",
   changeEmail: "Change Email",
+  BrowserProtection:"Browser Protection (Chrome Extension)",
 
   accountActions: "Account Actions",
   logout: "Log Out",
@@ -575,6 +576,8 @@ settings: {
   accountSecurity: "الحساب والأمان",
   changePassword: "تغيير كلمة المرور",
   changeEmail: "تغيير البريد الإلكتروني",
+  BrowserProtection:"حماية المتصفح",
+
 
   accountActions: "إجراءات الحساب",
   logout: "تسجيل الخروج",

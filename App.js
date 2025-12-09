@@ -33,6 +33,8 @@ import EditProfile from "./Screens/EditProfile";
 import PrivacyScreen from "./Screens/PrivacyScreen";
 import ChangePasswordScreen from "./Screens/ChangePasswordScreen";
 import ChangeEmailScreen from "./Screens/ChangeEmailScreen";
+import BrowserProtectionScreen from "./Screens/BrowserProtection";
+
 
 // Context & i18n
 import "./src/i18n";
@@ -180,11 +182,9 @@ export default function App() {
             />
             <Stack.Screen name="EditProfile" component={EditProfile} />
             <Stack.Screen name="Privacy" component={PrivacyScreen} />
-            <Stack.Screen
-              name="ChangePassword"
-              component={ChangePasswordScreen}
-            />
+            <Stack.Screen name="ChangePassword" component={ChangePasswordScreen}/>
             <Stack.Screen name="ChangeEmail" component={ChangeEmailScreen} />
+            <Stack.Screen name="BrowserProtection" component={BrowserProtectionScreen} />
           </Stack.Navigator>
         </NavigationContainer>
       </>

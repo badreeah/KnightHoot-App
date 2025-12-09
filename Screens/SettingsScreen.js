@@ -200,28 +200,31 @@ export default function SettingsScreen() {
         <View style={{ width: 24 }} />
       </View>
 
-      {/* Account & Security */}
-      <View style={[styles.card, cardStyle]}>
-        <Text style={[styles.sectionTitle, titleStyle]}>
-          {t("settings.accountSecurity")}
-        </Text>
+     {/* Account & Security */}
+<View style={[styles.card, cardStyle]}>
+  <Text style={[styles.sectionTitle, titleStyle]}>
+    {t("settings.accountSecurity")}
+  </Text>
 
-        <Row
-          left={t("settings.changePassword")}
-          right={
-            <Ionicons name={arrow} size={18} color={theme.colors.subtext} />
-          }
-          onPress={() => nav.navigate("ChangePassword")}
-        />
+  <Row
+    left={t("settings.changePassword")}
+    right={<Ionicons name={arrow} size={18} color={theme.colors.subtext} />}
+    onPress={() => nav.navigate("ChangePassword")}
+  />
 
-        <Row
-          left={t("settings.changeEmail")}
-          right={
-            <Ionicons name={arrow} size={18} color={theme.colors.subtext} />
-          }
-          onPress={() => nav.navigate("ChangeEmail")}
-        />
-      </View>
+  <Row
+    left={t("settings.changeEmail")}
+    right={<Ionicons name={arrow} size={18} color={theme.colors.subtext} />}
+    onPress={() => nav.navigate("ChangeEmail")}
+  />
+
+  {/* Browser Protection row */}
+  <Row
+  left={t("settings.BrowserProtection")}
+  right={<Ionicons name={arrow} size={18} color={theme.colors.subtext} />}
+  onPress={() => nav.navigate("BrowserProtection")}
+/>
+</View>
 
       {/* Account Actions */}
       <View style={[styles.card, cardStyle]}>
