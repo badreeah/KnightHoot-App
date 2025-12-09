@@ -141,7 +141,7 @@ export default function Profile() {
             .single();
 
           if (data && !error) {
-            setConnectedEmail("Connected");
+            setConnectedEmail(data.email || "Connected");
           } else {
             setConnectedEmail(null);
           }
@@ -177,11 +177,11 @@ export default function Profile() {
 
   const validateEmail = (email) => {
     if (!email || email.trim() === "") {
-      setEmailError("Please enter an email address");
+      setEmailError(t("profile.emailError"));
       return false;
     }
     if (!EMAIL_RE.test(email)) {
-      setEmailError("Please enter a valid email address");
+      setEmailError(t("email.errors.invalid", "Please enter a valid email"));
       return false;
     }
     setEmailError("");
@@ -190,11 +190,21 @@ export default function Profile() {
 
   const validateAppPassword = (password) => {
     if (!password || password.trim() === "") {
-      setAppPasswordError("Please enter your email provider's app password");
+      setAppPasswordError(
+        t(
+          "profile.passwordError16",
+          "Please enter exactly 16 characters for your app password"
+        )
+      );
       return false;
     }
     if (password.length !== 16) {
-      setAppPasswordError("App password must be exactly 16 characters");
+      setAppPasswordError(
+        t(
+          "profile.passwordError16",
+          "Please enter exactly 16 characters for your app password"
+        )
+      );
       return false;
     }
     setAppPasswordError("");
@@ -218,11 +228,19 @@ export default function Profile() {
           body: { user_id: auth.user.id },
         });
         if (error) throw error;
-        alert("Email disconnected successfully!");
+        Alert.alert(
+          t("profile.emailDisconnectedSuccess"),
+          undefined,
+          [{ text: "OK" }],
+          { cancelable: true }
+        );
         setConnectedEmail(null);
       }
     } catch (error) {
-      alert("Failed to disconnect email: " + error.message);
+      Alert.alert(
+        t("profile.emailDisconnectedFail"),
+        error.message ?? String(error)
+      );
     }
   };
 
@@ -237,25 +255,41 @@ export default function Profile() {
 
     setConnecting(true);
     try {
-      const { data, error } = await supabase.functions.invoke("register-email", {
-        body: { email: emailInput, appPassword: appPasswordString },
-      });
+      const { data, error } = await supabase.functions.invoke(
+        "register-email",
+        {
+          body: { email: emailInput, appPassword: appPasswordString },
+        }
+      );
 
       if (error) throw error;
 
       if (data.success) {
-        Alert.alert("Success", "Email connected successfully!");
+        Alert.alert(
+          t("profile.emailConnectedSuccess"),
+          undefined,
+          [{ text: "OK" }],
+          { cancelable: true }
+        );
         setConnectedEmail(emailInput);
         setShowEmailModal(false);
         setEmailInput("");
         setAppPasswordString("");
       } else {
-        throw new Error(data.message || t("failedToConnectEmail"));
+        throw new Error(
+          data.message ||
+            t("profile.emailConnectedFail", "Failed to connect email")
+        );
       }
     } catch (error) {
-      let errorMessage = error.message || t("failedToConnectEmail");
+      let errorMessage =
+        error.message ||
+        t("profile.emailConnectedFail", "Failed to connect email");
 
-      if (errorMessage.includes("IMAP") || errorMessage.includes("authentication")) {
+      if (
+        errorMessage.includes("IMAP") ||
+        errorMessage.includes("authentication")
+      ) {
         setPasswordError(
           "Invalid credentials. Check your email and app password, then ensure 2FA is enabled."
         );
@@ -267,7 +301,7 @@ export default function Profile() {
         setPasswordError(errorMessage);
       }
 
-      Alert.alert("Error", errorMessage);
+      Alert.alert(t("settings.errors.title", "Error"), errorMessage);
     } finally {
       setConnecting(false);
     }
@@ -283,7 +317,7 @@ export default function Profile() {
           ]}
         >
           <Text style={[styles.modalTitle, { color: themeStyles.textColor }]}>
-            Connect Email for Scanning
+            {t("profile.connectEmailForScanning")}
           </Text>
           <Text
             style={[
@@ -291,8 +325,10 @@ export default function Profile() {
               { color: theme.colors.subtext, marginBottom: 20 },
             ]}
           >
-            Connect your email account to automatically scan for scam and
-            phishing emails
+            {t(
+              "profile.connectYourEmailToScan",
+              "Connect your email to scan for scam emails"
+            )}
           </Text>
 
           {/* Email Input */}
@@ -302,7 +338,7 @@ export default function Profile() {
               { color: themeStyles.textColor, marginTop: 10 },
             ]}
           >
-            Email Address
+            {t("profile.emailAddress")}
           </Text>
           <TextInput
             style={[
@@ -321,7 +357,7 @@ export default function Profile() {
             }}
             onEndEditing={() => validateEmail(emailInput)}
             textAlign={isRTL ? "right" : "left"}
-            placeholder="Enter your email address"
+            placeholder={t("profile.emailPlaceholder")}
             placeholderTextColor={theme.colors.subtext}
             keyboardType="email-address"
             autoCapitalize="none"
@@ -334,7 +370,7 @@ export default function Profile() {
 
           {/* App Password Input */}
           <Text style={[styles.inputLabel, { color: themeStyles.textColor }]}>
-            App Password
+            {t("profile.appPassword")}
           </Text>
           <TextInput
             style={[
@@ -355,7 +391,7 @@ export default function Profile() {
             }}
             onBlur={() => validateAppPassword(appPasswordString)}
             textAlign={isRTL ? "right" : "left"}
-            placeholder="Enter app password"
+            placeholder={t("profile.passwordPlaceholderApp")}
             placeholderTextColor={theme.colors.subtext}
             secureTextEntry
           />
@@ -383,7 +419,9 @@ export default function Profile() {
               onPress={() => setShowEmailModal(false)}
               disabled={connecting}
             >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
+              <Text style={styles.cancelButtonText}>
+                {t("common.cancel")}
+              </Text>
             </Pressable>
             <Pressable
               style={styles.saveButton}
@@ -391,7 +429,9 @@ export default function Profile() {
               disabled={connecting}
             >
               <Text style={styles.saveButtonText}>
-                {connecting ? "Connecting..." : "Connect"}
+                {connecting
+                  ? t("profile.connecting")
+                  : t("profile.connect")}
               </Text>
             </Pressable>
           </View>
@@ -433,11 +473,10 @@ export default function Profile() {
             <Ionicons name="arrow-back" size={24} color={COLORS.purple1} />
           </Pressable>
           <Text style={[styles.headerTitle, { color: themeStyles.textColor }]}>
-            {t("Profile")}
+            {t("profile.title")}
           </Text>
           <View style={{ width: 24 }} />
         </View>
-        
 
         {/* Profile Section */}
         <View
@@ -518,7 +557,7 @@ export default function Profile() {
                     { color: themeStyles.textColor },
                   ]}
                 >
-                  {t("Account")}
+                  {t("profile.account")}
                 </Text>
                 <Text
                   style={[
@@ -526,7 +565,7 @@ export default function Profile() {
                     { color: theme.colors.subtext },
                   ]}
                 >
-                  {t("Edit account")}
+                  {t("profile.editAccount")}
                 </Text>
               </View>
             </View>
@@ -554,7 +593,7 @@ export default function Profile() {
                     { color: themeStyles.textColor },
                   ]}
                 >
-                  {t("Language")}
+                  {t("profile.language")}
                 </Text>
                 <Text
                   style={[
@@ -562,7 +601,7 @@ export default function Profile() {
                     { color: theme.colors.subtext },
                   ]}
                 >
-                  {t("language")}
+                  {t("profile.languageSmall")}
                 </Text>
               </View>
             </View>
@@ -587,7 +626,7 @@ export default function Profile() {
                     { color: themeStyles.textColor },
                   ]}
                 >
-                  {t("Dark Mode")}
+                  {t("profile.darkMode")}
                 </Text>
                 <Text
                   style={[
@@ -595,7 +634,7 @@ export default function Profile() {
                     { color: theme.colors.subtext },
                   ]}
                 >
-                  {t("darkMode")}
+                  {t("profile.darkModeSmall")}
                 </Text>
               </View>
             </View>
@@ -619,19 +658,21 @@ export default function Profile() {
               />
               <View style={styles.settingTextContainer}>
                 <Text
-  style={[styles.settingTitle, { color: themeStyles.textColor }]}
->
-  {t("profile.settings")}
-</Text>
-<Text
-  style={[
-    styles.settingDescription,
-    { color: theme.colors.subtext },
-  ]}
->
-  {t("profile.settings")}
-</Text>
-
+                  style={[
+                    styles.settingTitle,
+                    { color: themeStyles.textColor },
+                  ]}
+                >
+                  {t("profile.settings")}
+                </Text>
+                <Text
+                  style={[
+                    styles.settingDescription,
+                    { color: theme.colors.subtext },
+                  ]}
+                >
+                  {t("profile.settings")}
+                </Text>
               </View>
             </View>
             <Ionicons
@@ -647,12 +688,14 @@ export default function Profile() {
             onPress={() => {
               if (connectedEmail) {
                 Alert.alert(
-                  "Disconnect Email",
-                  `Disconnect ${connectedEmail} from scam scanning?`,
+                  t("profile.disconnectEmailTitle"),
+                  t("profile.disconnectEmailMessage", {
+                    email: connectedEmail,
+                  }),
                   [
-                    { text: "Cancel", style: "cancel" },
+                    { text: t("common.cancel"), style: "cancel" },
                     {
-                      text: "Disconnect",
+                      text: t("profile.disconnect"),
                       style: "destructive",
                       onPress: handleDisconnectEmail,
                     },
@@ -673,26 +716,26 @@ export default function Profile() {
                   marginRight: 4,
                 }}
               />
-            <View style={styles.settingTextContainer}>
-              <Text
-                style={[
-                  styles.settingTitle,
-                  { color: themeStyles.textColor },
-                ]}
-              >
-                {connectedEmail ? "Email" : "Email Scanning"}
-              </Text>
-              <Text
-                style={[
-                  styles.settingDescription,
-                  { color: theme.colors.subtext },
-                ]}
-              >
-                {connectedEmail
-                  ? "Connected for scanning"
-                  : "Connect your email to scan"}
-              </Text>
-            </View>
+              <View style={styles.settingTextContainer}>
+                <Text
+                  style={[
+                    styles.settingTitle,
+                    { color: themeStyles.textColor },
+                  ]}
+                >
+                  {t("profile.emailScanning")}
+                </Text>
+                <Text
+                  style={[
+                    styles.settingDescription,
+                    { color: theme.colors.subtext },
+                  ]}
+                >
+                  {connectedEmail
+                    ? t("profile.connectedForScanning")
+                    : t("profile.connectYourEmailToScan")}
+                </Text>
+              </View>
             </View>
             <Ionicons
               name={
@@ -710,7 +753,7 @@ export default function Profile() {
           {/* Privacy → PrivacyScreen */}
           <Pressable
             style={styles.settingItem}
-onPress={() => navigation.navigate("Privacy")}
+            onPress={() => navigation.navigate("Privacy")}
           >
             <View style={styles.settingInfo}>
               <Image
@@ -724,7 +767,7 @@ onPress={() => navigation.navigate("Privacy")}
                     { color: themeStyles.textColor },
                   ]}
                 >
-                  {t("Privacy")}
+                  {t("profile.privacy")}
                 </Text>
                 <Text
                   style={[
@@ -732,7 +775,7 @@ onPress={() => navigation.navigate("Privacy")}
                     { color: theme.colors.subtext },
                   ]}
                 >
-                  {t("Review privacy")}
+                  {t("profile.reviewPrivacy")}
                 </Text>
               </View>
             </View>
@@ -758,7 +801,7 @@ onPress={() => navigation.navigate("Privacy")}
           ]}
         >
           <Text style={[styles.sectionTitle, { color: themeStyles.textColor }]}>
-            More
+            {t("profile.more")}
           </Text>
         </View>
       </ScrollView>
@@ -797,7 +840,7 @@ onPress={() => navigation.navigate("Privacy")}
                   },
                 ]}
               >
-                English
+                {t("english")}
               </Text>
               {language === "en" && (
                 <Ionicons
@@ -825,7 +868,7 @@ onPress={() => navigation.navigate("Privacy")}
                   },
                 ]}
               >
-                العربية
+                {t("arabic")}
               </Text>
               {language === "ar" && (
                 <Ionicons
@@ -836,27 +879,27 @@ onPress={() => navigation.navigate("Privacy")}
               )}
             </Pressable>
             <Pressable
-  onPress={() => setShowLanguageModal(false)}
-  style={{
-    marginTop: 20,
-    backgroundColor: "#F3F1FF",   // خلفية بنفسجية فاتحة وواضحة
-    paddingVertical: 12,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: COLORS.purple1,
-  }}
->
-  <Text
-    style={{
-      textAlign: "center",
-      color: COLORS.purple1,
-      fontWeight: "600",
-      fontSize: 16,
-    }}
-  >
-    {t("cancel")}
-  </Text>
-</Pressable>
+              onPress={() => setShowLanguageModal(false)}
+              style={{
+                marginTop: 20,
+                backgroundColor: "#F3F1FF",
+                paddingVertical: 12,
+                borderRadius: 10,
+                borderWidth: 1,
+                borderColor: COLORS.purple1,
+              }}
+            >
+              <Text
+                style={{
+                  textAlign: "center",
+                  color: COLORS.purple1,
+                  fontWeight: "600",
+                  fontSize: 16,
+                }}
+              >
+                {t("common.cancel")}
+              </Text>
+            </Pressable>
           </View>
         </View>
       </Modal>

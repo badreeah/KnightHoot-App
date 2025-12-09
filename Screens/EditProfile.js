@@ -262,7 +262,7 @@ export default function EditProfile() {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
         <View style={{ flex: 1 }}>
           {/* Header */}
-          <View style={styles.header}>
+          <View className="header" style={styles.header}>
             <Pressable onPress={() => navigation.goBack()}>
               <Ionicons name="arrow-back" size={24} color={COLORS.purple8} />
             </Pressable>
@@ -339,8 +339,10 @@ export default function EditProfile() {
               ]}
             >
               {/* First name */}
-              <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>
-                {t("First Name")}
+              <Text
+                style={[styles.formLabel, { color: themeStyles.textColor }]}
+              >
+                {t("profile.firstName")}
               </Text>
               <TextInput
                 style={[
@@ -355,15 +357,17 @@ export default function EditProfile() {
                   setTempData({ ...tempData, firstName: text })
                 }
                 textAlign={isRTL ? "right" : "left"}
-                placeholder={t("First Name")}
+                placeholder={t("profile.firstName")}
                 placeholderTextColor={theme.colors.subtext}
                 returnKeyType="next"
                 blurOnSubmit={false}
               />
 
               {/* Last name */}
-              <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>
-                {t("Last Name")}
+              <Text
+                style={[styles.formLabel, { color: themeStyles.textColor }]}
+              >
+                {t("profile.lastName")}
               </Text>
               <TextInput
                 style={[
@@ -378,15 +382,17 @@ export default function EditProfile() {
                   setTempData({ ...tempData, lastName: text })
                 }
                 textAlign={isRTL ? "right" : "left"}
-                placeholder={t("Last Name")}
+                placeholder={t("profile.lastName")}
                 placeholderTextColor={theme.colors.subtext}
                 returnKeyType="next"
                 blurOnSubmit={false}
               />
 
               {/* Gender */}
-              <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>
-                {t("Gender")}
+              <Text
+                style={[styles.formLabel, { color: themeStyles.textColor }]}
+              >
+                {t("profile.gender")}
               </Text>
               <Pressable
                 style={[
@@ -406,13 +412,17 @@ export default function EditProfile() {
                     { textAlign: isRTL ? "right" : "left" },
                   ]}
                 >
-                  {tempData.gender ? t(tempData.gender) : t("selectGender")}
+                  {tempData.gender
+                    ? t(`profile.${tempData.gender}`)
+                    : t("profile.selectGender")}
                 </Text>
               </Pressable>
 
               {/* Date of Birth */}
-              <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>
-                {t("Date Of Birth")}
+              <Text
+                style={[styles.formLabel, { color: themeStyles.textColor }]}
+              >
+                {t("profile.dateOfBirth")}
               </Text>
               <Pressable
                 style={[
@@ -429,13 +439,15 @@ export default function EditProfile() {
                     { textAlign: isRTL ? "right" : "left" },
                   ]}
                 >
-                  {tempData.dateOfBirth || t("selectDate")}
+                  {tempData.dateOfBirth || t("profile.selectDob")}
                 </Text>
               </Pressable>
 
               {/* Phone (KSA only) */}
-              <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>
-                {t("Phone Number")}
+              <Text
+                style={[styles.formLabel, { color: themeStyles.textColor }]}
+              >
+                {t("profile.phoneNumber")}
               </Text>
               <View style={styles.phoneRow}>
                 <View style={styles.ksaBadge}>
@@ -467,8 +479,10 @@ export default function EditProfile() {
               </View>
 
               {/* Email (read-only) */}
-              <Text style={[styles.formLabel, { color: themeStyles.textColor }]}>
-                {t("Email")}
+              <Text
+                style={[styles.formLabel, { color: themeStyles.textColor }]}
+              >
+                {t("profile.email")}
               </Text>
               <TextInput
                 editable={false}
@@ -483,7 +497,7 @@ export default function EditProfile() {
                 ]}
                 value={tempData.email}
                 textAlign={isRTL ? "right" : "left"}
-                placeholder={t("Email")}
+                placeholder={t("profile.email")}
                 placeholderTextColor={theme.colors.subtext}
               />
 
@@ -502,7 +516,7 @@ export default function EditProfile() {
                       { color: theme.colors.text },
                     ]}
                   >
-                    {t("Change Email") || "Change Email"}
+                    {t("settings.changeEmail")}
                   </Text>
                 </Pressable>
 
@@ -519,7 +533,7 @@ export default function EditProfile() {
                       { color: theme.colors.text },
                     ]}
                   >
-                    {t("Change Password") || "Change Password"}
+                    {t("settings.changePassword")}
                   </Text>
                 </Pressable>
               </View>
@@ -527,15 +541,19 @@ export default function EditProfile() {
               {/* Buttons */}
               <View style={styles.buttonRow}>
                 <Pressable style={styles.cancelButton} onPress={handleCancel}>
-                  <Text style={styles.cancelButtonText}>{t("cancel")}</Text>
+                  <Text style={styles.cancelButtonText}>
+                    {t("common.cancel")}
+                  </Text>
                 </Pressable>
                 <Pressable
                   style={[styles.saveButton, saving && { opacity: 0.7 }]}
                   onPress={handleSave}
                   disabled={saving}
                 >
-                  <Text style={styles.saveButtonText}>
-                    {saving ? t("saving", "Saving...") : t("save")}
+                  <Text className="saveText" style={styles.saveButtonText}>
+                    {saving
+                      ? t("saving", "Saving...")
+                      : t("profile.save")}
                   </Text>
                 </Pressable>
               </View>
@@ -554,7 +572,7 @@ export default function EditProfile() {
                 <Text
                   style={[styles.modalTitle, { color: themeStyles.textColor }]}
                 >
-                  {t("select birthday")}
+                  {t("profile.selectDob")}
                 </Text>
 
                 <View style={styles.datePickerContainer}>
@@ -644,7 +662,9 @@ export default function EditProfile() {
                     style={styles.modalButton}
                     onPress={() => setShowDatePickerModal(false)}
                   >
-                    <Text style={styles.modalButtonText}>{t("cancel")}</Text>
+                    <Text style={styles.modalButtonText}>
+                      {t("common.cancel")}
+                    </Text>
                   </Pressable>
                   <Pressable
                     style={[styles.modalButton, styles.modalButtonPrimary]}
@@ -656,7 +676,7 @@ export default function EditProfile() {
                         styles.modalButtonPrimaryText,
                       ]}
                     >
-                      {t("selectDate")}
+                      {t("profile.selectDate")}
                     </Text>
                   </Pressable>
                 </View>
@@ -676,7 +696,7 @@ export default function EditProfile() {
                 <Text
                   style={[styles.modalTitle, { color: themeStyles.textColor }]}
                 >
-                  {t("selectGender")}
+                  {t("profile.selectGender")}
                 </Text>
 
                 {GENDER_OPTIONS.map((key) => (
@@ -691,7 +711,7 @@ export default function EditProfile() {
                         { color: themeStyles.textColor },
                       ]}
                     >
-                      {t(key)}
+                      {t(`profile.${key}`)}
                     </Text>
                   </Pressable>
                 ))}
@@ -714,7 +734,7 @@ export default function EditProfile() {
 const createStyles = (theme, themeStyles, isRTL) =>
   StyleSheet.create({
     header: {
-      flexDirection: isRTL ? "row-reverse" : "row",
+      flexDirection:  "row",
       justifyContent: "space-between",
       alignItems: "center",
       paddingTop: 50,
