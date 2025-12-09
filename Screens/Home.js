@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { COLORS } from "../util/colors";
 import WordStyling from "../components/WordStyling";
-import TipsInfo from "../util/TipsInfo"; // Array of tips
+import TipsInfo from "../util/TipsInfo";
 import CustomButton from "../components/CustomButton";
 import { supabase } from "../supabase";
 import { useFocusEffect, CommonActions } from "@react-navigation/native";
@@ -108,9 +108,14 @@ export default function Home({ navigation }) {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ paddingHorizontal: 0 }}
         >
-          {TipsInfo.map((tip, index) => (
-            <Card key={index} title={tip.title} description={tip.description} />
-          ))}
+          {TipsInfo().map((tip, index) => (
+  <Card
+    key={index}
+    title={tip.title}
+    description={tip.description}
+  />
+))}
+
         </ScrollView>
       </View>
 

@@ -284,6 +284,17 @@ smsScam: {
   safeBrowsing: "Safe Browsing",
   reportScam: "Report Scam",
   smsScam: "SMS Scam",
+   tips: {
+    thinkTitle: "Think Before You Share",
+    thinkBody:
+      "Avoid giving out passwords or ID numbers over the phone, even if the caller appears to be trustworthy.",
+    pauseTitle: "Pause Before You Click",
+    pauseBody:
+      "Always check links, scam links may look genuine but can direct you to harmful websites.",
+    urgencyTitle: "Don’t Trust Urgency",
+    urgencyBody:
+      "Scammers use pressure tactics like 'Act now!' — pause and think before you respond.",
+  },
 },settings: {
   title: "Settings",
 
@@ -1030,6 +1041,18 @@ smsScam: {
   safeBrowsing: "التصفح الآمن",
   reportScam: "الإبلاغ عن احتيال",
   smsScam: "رسائل الاحتيال",
+       tips: {
+    thinkTitle: "فكر قبل أن تشارك",
+    thinkBody:
+      "تجنب مشاركة كلمات المرور أو أرقام الهوية عبر الهاتف، حتى لو بدا المتصل موثوقًا.",
+    pauseTitle: "تمهّل قبل أن تضغط",
+    pauseBody:
+      "تحقّق دائمًا من الروابط؛ فقد تبدو روابط الاحتيال حقيقية لكنها قد توجهك إلى مواقع ضارة.",
+    urgencyTitle: "لا تثق في الاستعجال",
+    urgencyBody:
+      "يستخدم المحتالون أساليب ضغط مثل «تصرف الآن!»؛ خذ وقتك وفكر قبل أن تستجيب.",
+  },
+
 },
 statistics: {
   title: "التنبيهات حسب المصدر",
