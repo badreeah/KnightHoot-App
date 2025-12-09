@@ -9,7 +9,7 @@ export const saveSafeResult = async (
   score,
   reasons
 ) => {
-  const { error } = await supabase.from("safe_scans").insert({
+  const { error } = await supabase.from("safe_url_scans").insert({
     user_id: userId,
     url,
     domain,

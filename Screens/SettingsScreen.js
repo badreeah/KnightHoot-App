@@ -1,4 +1,4 @@
-// screens/SettingsScreen.js
+// SettingsScreen.js
 import React, { useState } from "react";
 import {
   View,
@@ -96,7 +96,10 @@ export default function SettingsScreen() {
     const { error } = await supabase.auth.signOut();
 
     if (error) {
-      Alert.alert("Error", error.message);
+      Alert.alert(
+        t("settings.errors.title"),
+        t("settings.errors.logoutFail", { message: error.message })
+      );
       return;
     }
 
@@ -107,35 +110,44 @@ export default function SettingsScreen() {
   };
 
   const handleDeleteAccount = async () => {
-    Alert.alert("Delete Account", "Are you sure? This action is permanent.", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            const { data } = await supabase.auth.getUser();
-            const user = data?.user;
+    Alert.alert(
+      t("settings.delete.title"),
+      t("settings.delete.message"),
+      [
+        { text: t("settings.delete.cancel"), style: "cancel" },
+        {
+          text: t("settings.delete.confirm"),
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const { data } = await supabase.auth.getUser();
+              const user = data?.user;
 
-            if (!user) {
-              Alert.alert("Error", "User not found");
-              return;
+              if (!user) {
+                Alert.alert(
+                  t("settings.errors.title"),
+                  t("settings.errors.userNotFound")
+                );
+                return;
+              }
+
+              await supabase.from("profiles").delete().eq("id", user.id);
+              await supabase.auth.signOut();
+
+              nav.reset({
+                index: 0,
+                routes: [{ name: "SignIn" }],
+              });
+            } catch (err) {
+              Alert.alert(
+                t("settings.errors.title"),
+                t("settings.errors.generic", { message: err.message })
+              );
             }
-
-            await supabase.from("profiles").delete().eq("id", user.id);
-
-            await supabase.auth.signOut();
-
-            nav.reset({
-              index: 0,
-              routes: [{ name: "SignIn" }],
-            });
-          } catch (err) {
-            Alert.alert("Error", err.message);
-          }
+          },
         },
-      },
-    ]);
+      ]
+    );
   };
 
   const handleContactSupport = () => {
@@ -144,14 +156,21 @@ export default function SettingsScreen() {
     const email = "support@knighthoot.app"; // ايميل التواصل
 
     Linking.openURL(`mailto:${email}?subject=${subject}&body=${body}`).catch(
-      () => Alert.alert("Error", "Unable to open email app.")
+      () =>
+        Alert.alert(
+          t("settings.errors.title"),
+          t("settings.errors.emailApp")
+        )
     );
   };
 
   const handleRateApp = () => {
     const url = "https://knighthoot.app"; // رابط في حال نشرناه
     Linking.openURL(url).catch(() =>
-      Alert.alert("Error", "Unable to open the link.")
+      Alert.alert(
+        t("settings.errors.title"),
+        t("settings.errors.openLink")
+      )
     );
   };
 
@@ -163,138 +182,32 @@ export default function SettingsScreen() {
       <View
         style={[
           styles.header,
-          { flexDirection: isRTL ? "row-reverse" : "row" },
+          { flexDirection: "row" },
         ]}
       >
         <Pressable onPress={() => nav.goBack()}>
           <Ionicons
-            name={isRTL ? "arrow-forward" : "arrow-back"}
+            name={"arrow-back"}
             size={24}
             color={theme.colors.text}
           />
         </Pressable>
 
         <Text style={[styles.headerTitle, titleStyle]}>
-          {t("settings", "Settings")}
+          {t("settings.title")}
         </Text>
 
         <View style={{ width: 24 }} />
       </View>
 
-      {/* Protection */}
-      <View style={[styles.card, cardStyle]}>
-        <Text style={[styles.sectionTitle, titleStyle]}>
-          {t("protection", "Protection")}
-        </Text>
-
-        <Row
-          left={t("realTime", "Real-time Protection")}
-          sub={t("realTimeSub", "Scan URLs, calls, and SMS in the background")}
-          right={
-            <Switch
-              value={realTime}
-              onValueChange={setRealTime}
-              trackColor={{
-                false: theme.colors.cardBorder,
-                true: COLORS.purple1,
-              }}
-              thumbColor={"#fff"}
-            />
-          }
-        />
-
-        <Row
-          left={t("safeBrowsing", "Safe Browsing")}
-          sub={t("safeBrowsingSub", "Check URLs before opening")}
-          right={
-            <Ionicons name={arrow} size={18} color={theme.colors.subtext} />
-          }
-          onPress={() => nav.navigate("SafeBrowsing")}
-        />
-
-        <Row
-          left={t("downloadProt", "Download Protection")}
-          sub={t("downloadProtSub", "Warn or block suspicious files")}
-          right={
-            <Switch
-              value={downloadProt}
-              onValueChange={setDownloadProt}
-              trackColor={{
-                false: theme.colors.cardBorder,
-                true: COLORS.purple1,
-              }}
-              thumbColor={"#fff"}
-            />
-          }
-        />
-      </View>
-
-      {/* Notifications */}
-      <View style={[styles.card, cardStyle]}>
-        <Text style={[styles.sectionTitle, titleStyle]}>
-          {t("notifications", "Notifications")}
-        </Text>
-
-        <Row
-          left={t("callsAlert", "Calls Alerts")}
-          right={
-            <Switch
-              value={alertCalls}
-              onValueChange={setAlertCalls}
-              trackColor={{
-                false: theme.colors.cardBorder,
-                true: COLORS.purple1,
-              }}
-              thumbColor={"#fff"}
-            />
-          }
-        />
-        <Row
-          left={t("smsAlert", "SMS Alerts")}
-          right={
-            <Switch
-              value={alertSMS}
-              onValueChange={setAlertSMS}
-              trackColor={{
-                false: theme.colors.cardBorder,
-                true: COLORS.purple1,
-              }}
-              thumbColor={"#fff"}
-            />
-          }
-        />
-        <Row
-          left={t("emailAlert", "Email Alerts")}
-          right={
-            <Switch
-              value={alertEmail}
-              onValueChange={setAlertEmail}
-              trackColor={{
-                false: theme.colors.cardBorder,
-                true: COLORS.purple1,
-              }}
-              thumbColor={"#fff"}
-            />
-          }
-        />
-        <Row
-          left={t("quietHours", "Quiet Hours")}
-          sub={t("quietHoursSub", "Silence alerts during selected time")}
-          right={
-            <Ionicons name={arrow} size={18} color={theme.colors.subtext} />
-          }
-          onPress={() => nav.navigate("QuietHours")}
-        />
-      </View>
-
       {/* Account & Security */}
       <View style={[styles.card, cardStyle]}>
         <Text style={[styles.sectionTitle, titleStyle]}>
-          {t("accountSecurity", "Account & Security")}
+          {t("settings.accountSecurity")}
         </Text>
 
         <Row
-          left={t("changePassword", "Change Password")}
+          left={t("settings.changePassword")}
           right={
             <Ionicons name={arrow} size={18} color={theme.colors.subtext} />
           }
@@ -302,74 +215,22 @@ export default function SettingsScreen() {
         />
 
         <Row
-          left={t("changeEmail", "Change Email")}
+          left={t("settings.changeEmail")}
           right={
             <Ionicons name={arrow} size={18} color={theme.colors.subtext} />
           }
           onPress={() => nav.navigate("ChangeEmail")}
-        />
-
-        <Row
-          left={t("twoFA", "Two-Factor Authentication")}
-          right={
-            <Switch
-              value={twoFA}
-              onValueChange={setTwoFA}
-              trackColor={{
-                false: theme.colors.cardBorder,
-                true: COLORS.purple1,
-              }}
-              thumbColor={"#fff"}
-            />
-          }
-        />
-        <Row
-          left={t("sessions", "Sessions / Devices")}
-          right={
-            <Ionicons name={arrow} size={18} color={theme.colors.subtext} />
-          }
-          onPress={() => nav.navigate("AddDevice")}
-        />
-        <Row
-          left={t("exportDelete", "Export / Delete Data")}
-          right={
-            <Ionicons name={arrow} size={18} color={theme.colors.subtext} />
-          }
-          onPress={() => nav.navigate("DataCenter")}
-        />
-      </View>
-
-      {/* Appearance & Language */}
-      <View style={[styles.card, cardStyle]}>
-        <Text style={[styles.sectionTitle, titleStyle]}>
-          {t("appearanceLang", "Appearance & Language")}
-        </Text>
-
-        <Row
-          left={t("theme", "Theme")}
-          sub={t("themeSub", "System / Light / Dark")}
-          right={
-            <Ionicons name={arrow} size={18} color={theme.colors.subtext} />
-          }
-          onPress={() => nav.navigate("ThemePicker")}
-        />
-        <Row
-          left={t("language", "Language")}
-          right={
-            <Ionicons name={arrow} size={18} color={theme.colors.subtext} />
-          }
-          onPress={() => nav.navigate("LanguagePicker")}
         />
       </View>
 
       {/* Account Actions */}
       <View style={[styles.card, cardStyle]}>
         <Text style={[styles.sectionTitle, titleStyle]}>
-          {t("accountActions", "Account Actions")}
+          {t("settings.accountActions")}
         </Text>
 
         <Row
-          left={t("logout", "Log Out")}
+          left={t("settings.logout")}
           right={
             <Ionicons
               name="log-out-outline"
@@ -381,7 +242,7 @@ export default function SettingsScreen() {
         />
 
         <Row
-          left={t("deleteAccount", "Delete Account")}
+          left={t("settings.deleteAccount")}
           right={<Ionicons name="trash-outline" size={18} color="red" />}
           onPress={handleDeleteAccount}
         />
@@ -390,26 +251,19 @@ export default function SettingsScreen() {
       {/* About */}
       <View style={[styles.card, cardStyle]}>
         <Text style={[styles.sectionTitle, titleStyle]}>
-          {t("about", "About")}
+          {t("settings.about")}
         </Text>
 
         <Row
-          left={t("privacy", "Privacy Policy")}
+          left={t("settings.privacy")}
           right={
             <Ionicons name={arrow} size={18} color={theme.colors.subtext} />
           }
           onPress={() => nav.navigate("Privacy")}
         />
-        <Row
-          left={t("terms", "Terms of Use")}
-          right={
-            <Ionicons name={arrow} size={18} color={theme.colors.subtext} />
-          }
-          onPress={() => nav.navigate("Terms")}
-        />
 
         <Row
-          left={t("contactSupport", "Contact Support")}
+          left={t("settings.contactSupport")}
           right={
             <Ionicons
               name="mail-outline"
@@ -421,7 +275,7 @@ export default function SettingsScreen() {
         />
 
         <Row
-          left={t("rateApp", "Rate KnightHoot")}
+          left={t("settings.rateApp")}
           right={
             <Ionicons
               name="star-outline"
@@ -433,7 +287,7 @@ export default function SettingsScreen() {
         />
 
         <Row
-          left={`${t("version", "Version")} 1.0.0`}
+          left={`${t("settings.versionLabel")} 1.0.0`}
           right={
             <Ionicons
               name="information-circle-outline"

@@ -42,12 +42,12 @@ export default function AddDevice({ navigation, route }) {
         source={require("../assets/images/not_found.png")}
         style={styles.emptyImage}
       />
-      <Text style={styles.emptyTitle}>No devices found</Text>
-      <Text style={styles.emptySubtitle}>
-        You haven't added any devices yet. Start by adding your first device.
-      </Text>
+      <Text style={styles.emptyTitle}>{t("addDevice.emptyTitle")}</Text>
+      <Text style={styles.emptySubtitle}>{t("addDevice.emptySubtitle")}</Text>
       <TouchableOpacity style={styles.scanButton} onPress={onAddPress}>
-        <Text style={styles.scanButtonText}>Add Device</Text>
+        <Text style={styles.scanButtonText}>
+          {t("addDevice.emptyButton")}
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -71,13 +71,13 @@ export default function AddDevice({ navigation, route }) {
 
   const handleDeviceAdded = async () => {
     if (!newDeviceType) {
-      alert("Please select a device type.");
+      alert(t("addDevice.alerts.selectType"));
       return;
     }
     const { data: user, error: userError } = await supabase.auth.getUser();
     console.log("User:", user, "Error:", userError);
     if (userError || !user) {
-      alert("User not authenticated. Please log in.");
+      alert(t("addDevice.alerts.notAuthenticated"));
       return;
     }
     console.log("user.user.id:", user.user.id);
@@ -117,9 +117,9 @@ export default function AddDevice({ navigation, route }) {
     if (error) {
       console.error("Supabase DB Error:", error.message);
       alert(
-        `Failed to ${
-          editingDevice ? "update" : "add"
-        } device. Check RLS policies.`
+        editingDevice
+          ? t("addDevice.alerts.saveFailUpdate")
+          : t("addDevice.alerts.saveFailAdd")
       );
     } else {
       await fetchDevices();
@@ -138,7 +138,7 @@ export default function AddDevice({ navigation, route }) {
 
     if (error) {
       console.error("Toggle Error:", error.message);
-      alert("Failed to update device status.");
+      alert(t("addDevice.alerts.toggleFail"));
     } else {
       setDevices((prev) =>
         prev.map((d) =>
@@ -155,7 +155,7 @@ export default function AddDevice({ navigation, route }) {
       .eq("id", deviceId);
     if (error) {
       console.error("Delete Error:", error.message);
-      alert("Failed to delete device.");
+      alert(t("addDevice.alerts.deleteFail"));
     } else {
       await fetchDevices();
     }
@@ -171,7 +171,7 @@ export default function AddDevice({ navigation, route }) {
         if (isNew) {
           setEditingDevice(null);
           // Prefill form for new device
-          setNewDeviceName(device.name || "");
+          setNewDeviceName(device.name || t("addDevice.defaultName"));
           setNewDeviceType(device.type || "");
           setNewDeviceCategory(device.category || "My Devices");
           setAddEnabled(true);
@@ -179,14 +179,14 @@ export default function AddDevice({ navigation, route }) {
         } else {
           // Edit existing
           setEditingDevice(device);
-          setNewDeviceName(device.name || "");
+          setNewDeviceName(device.name || t("addDevice.defaultName"));
           setNewDeviceType(device.type || "");
           setNewDeviceCategory(device.category || "My Devices");
           setAddEnabled(device.enabled ?? true);
           setShowAddForm(true);
         }
       } else {
-        setNewDeviceName("New Device");
+        setNewDeviceName(t("addDevice.defaultName"));
         setNewDeviceType("");
         setNewDeviceCategory("My Devices");
         setAddEnabled(true);
@@ -195,7 +195,7 @@ export default function AddDevice({ navigation, route }) {
 
     console.log("route.params:", route.params);
     initializeComponent();
-  }, [route.params]);
+  }, [route.params, fetchDevices, t]);
 
   const filteredDevices = devices.filter((device) => {
     const matchesSearch = device.name
@@ -261,13 +261,18 @@ export default function AddDevice({ navigation, route }) {
     return (
       <View style={[styles.container, styles.loadingContainer]}>
         <ActivityIndicator size="large" color={COLORS.purple1} />
-        <Text style={styles.headerTitle}>Loading Devices...</Text>
+        <Text style={styles.headerTitle}>
+          {t("addDevice.loading")}
+        </Text>
       </View>
     );
   }
 
   if (showAddForm) {
-    const formTitle = editingDevice ? "Edit Device" : "Add Device";
+    const formTitle = editingDevice
+      ? t("addDevice.form.editTitle")
+      : t("addDevice.form.addTitle");
+
     return (
       <KeyboardAvoidingView
         style={styles.absoluteContainer}
@@ -319,7 +324,9 @@ export default function AddDevice({ navigation, route }) {
                   addEnabled ? styles.connectedText : styles.disconnectedText
                 }
               >
-                {addEnabled ? "• Connected" : "• Disconnected"}
+                {addEnabled
+                  ? t("addDevice.form.connected")
+                  : t("addDevice.form.disconnected")}
               </Text>
               <TouchableOpacity
                 onPress={(event) => {
@@ -332,11 +339,11 @@ export default function AddDevice({ navigation, route }) {
                 <Text style={styles.selectTypeText}>
                   {newDeviceType
                     ? newDeviceType === "phone"
-                      ? "iPhone"
+                      ? t("addDevice.types.iphone")
                       : newDeviceType === "laptop"
-                      ? "Laptop"
-                      : "Tablet"
-                    : "Select Type"}
+                      ? t("addDevice.types.laptop")
+                      : t("addDevice.types.tablet")
+                    : t("addDevice.form.selectType")}
                 </Text>
                 <Ionicons
                   name="chevron-down"
@@ -348,7 +355,9 @@ export default function AddDevice({ navigation, route }) {
           </View>
 
           <View style={styles.card}>
-            <Text style={styles.categoryTitle}>Category</Text>
+            <Text style={styles.categoryTitle}>
+              {t("addDevice.form.categoryTitle")}
+            </Text>
             <View style={styles.row}>
               <TouchableOpacity
                 style={
@@ -365,7 +374,7 @@ export default function AddDevice({ navigation, route }) {
                       : styles.categoryTextInactive
                   }
                 >
-                  My Devices
+                  {t("addDevice.form.myDevices")}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -383,7 +392,7 @@ export default function AddDevice({ navigation, route }) {
                       : styles.categoryTextInactive
                   }
                 >
-                  Family
+                  {t("addDevice.form.family")}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -394,7 +403,9 @@ export default function AddDevice({ navigation, route }) {
             onPress={handleDeviceAdded}
           >
             <Text style={styles.primaryButtonText}>
-              {editingDevice ? "Save Changes" : "Add Now"}
+              {editingDevice
+                ? t("addDevice.form.saveChanges")
+                : t("addDevice.form.addNow")}
             </Text>
           </TouchableOpacity>
         </ScrollView>
@@ -409,7 +420,9 @@ export default function AddDevice({ navigation, route }) {
                 setShowTypeSelector(false);
               }}
             >
-              <Text style={styles.dropdownText}>iPhone</Text>
+              <Text style={styles.dropdownText}>
+                {t("addDevice.types.iphone")}
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.dropdownItem}
@@ -418,7 +431,9 @@ export default function AddDevice({ navigation, route }) {
                 setShowTypeSelector(false);
               }}
             >
-              <Text style={styles.dropdownText}>Laptop</Text>
+              <Text style={styles.dropdownText}>
+                {t("addDevice.types.laptop")}
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.dropdownItem}
@@ -427,7 +442,9 @@ export default function AddDevice({ navigation, route }) {
                 setShowTypeSelector(false);
               }}
             >
-              <Text style={styles.dropdownText}>Tablet</Text>
+              <Text style={styles.dropdownText}>
+                {t("addDevice.types.tablet")}
+              </Text>
             </TouchableOpacity>
           </View>
         )}
@@ -454,7 +471,9 @@ export default function AddDevice({ navigation, route }) {
           <TouchableOpacity onPress={handleBackPress}>
             <Ionicons name="arrow-back" size={24} color={COLORS.purple1} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Add Device</Text>
+          <Text style={styles.headerTitle}>
+            {t("addDevice.headerTitle")}
+          </Text>
           <TouchableOpacity onPress={navigateToRadar}>
             <Image
               source={require("../assets/icons/scan.png")}
@@ -465,7 +484,7 @@ export default function AddDevice({ navigation, route }) {
 
         <View style={styles.searchContainer}>
           <TextInput
-            placeholder="Search Device"
+            placeholder={t("addDevice.searchPlaceholder")}
             value={searchQuery}
             onChangeText={setSearchQuery}
             style={styles.searchInput}
@@ -497,7 +516,11 @@ export default function AddDevice({ navigation, route }) {
                     : styles.categoryTextInactive
                 }
               >
-                {category}
+                {category === "All"
+                  ? t("addDevice.filters.all")
+                  : category === "My Device"
+                  ? t("addDevice.filters.myDevice")
+                  : t("addDevice.filters.family")}
               </Text>
             </TouchableOpacity>
           ))}
@@ -508,52 +531,63 @@ export default function AddDevice({ navigation, route }) {
         ) : (
           <View>
             <View style={{ marginTop: 20 }}>
-              {filteredDevices.map((device) => (
-                <View key={device.id} style={styles.card}>
-                  <TouchableOpacity
-                    onPress={() => handleDeleteDevice(device.id)}
-                    style={styles.deleteButton}
-                  >
-                    <Ionicons name="close" size={16} color="#A0A0A0" />
-                  </TouchableOpacity>
-                  <View style={[styles.row, { marginBottom: 16 }]}>
-                    <View style={styles.deviceInfo}>
-                      {getDeviceIcon(device.type)}
-                      <Text style={styles.deviceName}>{device.name}</Text>
-                    </View>
-                    <Switch
-                      value={device.enabled}
-                      onValueChange={() =>
-                        toggleDevice(device.id, device.enabled)
-                      }
-                      trackColor={{ false: COLORS.gray1, true: COLORS.purple1 }}
-                      thumbColor={"#ffffff"}
-                    />
-                  </View>
-                  <View style={styles.divider} />
-                  <View
-                    style={[
-                      styles.row,
-                      {
-                        marginTop: 16,
-                        justifyContent: "space-between",
-                        paddingHorizontal: 8,
-                      },
-                    ]}
-                  >
-                    <Text
-                      style={
-                        device.enabled
-                          ? styles.connectedText
-                          : styles.disconnectedText
-                      }
+              {filteredDevices.map((device) => {
+                const categoryLabel =
+                  device.category === "My Devices"
+                    ? t("addDevice.form.myDevices")
+                    : device.category === "Family"
+                    ? t("addDevice.form.family")
+                    : device.category;
+
+                return (
+                  <View key={device.id} style={styles.card}>
+                    <TouchableOpacity
+                      onPress={() => handleDeleteDevice(device.id)}
+                      style={styles.deleteButton}
                     >
-                      {device.connected ? "• Connected" : "• Disconnected"}
-                    </Text>
-                    <Text style={styles.categoryText}>{device.category}</Text>
+                      <Ionicons name="close" size={16} color="#A0A0A0" />
+                    </TouchableOpacity>
+                    <View style={[styles.row, { marginBottom: 16 }]}>
+                      <View style={styles.deviceInfo}>
+                        {getDeviceIcon(device.type)}
+                        <Text style={styles.deviceName}>{device.name}</Text>
+                      </View>
+                      <Switch
+                        value={device.enabled}
+                        onValueChange={() =>
+                          toggleDevice(device.id, device.enabled)
+                        }
+                        trackColor={{ false: COLORS.gray1, true: COLORS.purple1 }}
+                        thumbColor={"#ffffff"}
+                      />
+                    </View>
+                    <View style={styles.divider} />
+                    <View
+                      style={[
+                        styles.row,
+                        {
+                          marginTop: 16,
+                          justifyContent: "space-between",
+                          paddingHorizontal: 8,
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={
+                          device.enabled
+                            ? styles.connectedText
+                            : styles.disconnectedText
+                        }
+                      >
+                        {device.connected
+                          ? t("addDevice.form.connected")
+                          : t("addDevice.form.disconnected")}
+                      </Text>
+                      <Text style={styles.categoryText}>{categoryLabel}</Text>
+                    </View>
                   </View>
-                </View>
-              ))}
+                );
+              })}
             </View>
           </View>
         )}
@@ -565,7 +599,9 @@ export default function AddDevice({ navigation, route }) {
             style={[styles.primaryButton, styles.bottomPrimaryButton]}
             onPress={() => setShowAddForm(true)}
           >
-            <Text style={styles.primaryButtonText}>Add New Device</Text>
+            <Text style={styles.primaryButtonText}>
+              {t("addDevice.form.addNewDevice")}
+            </Text>
           </TouchableOpacity>
         </View>
       )}
@@ -590,7 +626,7 @@ const createStyles = (theme, isRTL) =>
     scrollContent: {
       flex: 1,
       paddingHorizontal: 16,
-      paddingBottom: 200, // Increased for taller button container
+      paddingBottom: 200, 
     },
     scrollContainer: {
       flex: 1,
@@ -617,7 +653,7 @@ const createStyles = (theme, isRTL) =>
       minHeight: 140,
     },
     header: {
-      flexDirection: isRTL ? "row-reverse" : "row",
+      flexDirection: "row",
       justifyContent: "space-between",
       alignItems: "center",
       paddingTop: 50,

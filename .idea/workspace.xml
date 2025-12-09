@@ -5,17 +5,21 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cbd3953f-9e27-42cd-b3ab-494e50d9e22f" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/eas.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/App.js" beforeDir="false" afterPath="$PROJECT_DIR$/App.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Screens/AddDevice.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/AddDevice.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Screens/AnalyzeCall.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/AnalyzeCall.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Screens/ChangeEmailScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/ChangeEmailScreen.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Screens/ChangePasswordScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/ChangePasswordScreen.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Screens/EditProfile.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/EditProfile.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Screens/Home.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/Home.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Screens/ManageAlerts.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/ManageAlerts.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Screens/SignIn.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/SignIn.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Screens/SplshScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/SplshScreen.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Screens/PrivacyScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/PrivacyScreen.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Screens/Profile.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/Profile.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Screens/ReportScam.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/ReportScam.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Screens/SettingsScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/SettingsScreen.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Screens/SmsScam.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/SmsScam.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Screens/Statics.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/Statics.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app.json" beforeDir="false" afterPath="$PROJECT_DIR$/app.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/i18n.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/i18n.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -28,6 +32,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;AlreemAlothman&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/badreeah/KnightHoot-App.git&quot;,
+    &quot;accountId&quot;: &quot;780b5d32-2f5e-4df5-a78d-eb81de315473&quot;
+  }
+}</component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 7
@@ -48,7 +64,7 @@
     &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
     &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
     &quot;com.google.services.firebase.aqiPopupShown&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;test3&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
     &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
     &quot;project.structure.proportion&quot;: &quot;0.0&quot;,

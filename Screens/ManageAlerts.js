@@ -14,6 +14,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { supabase } from "../supabase";
 import { useAppSettings } from "../src/context/AppSettingProvid";
+import { useTranslation } from "react-i18next";
 
 // Enable LayoutAnimation on Android
 if (
@@ -37,10 +38,31 @@ const initialAlertsData = {
 const ManageAlertsScreen = ({ navigation }) => {
   const { theme } = useAppSettings();
   const styles = makeStyles(theme);
+  const { t } = useTranslation();
 
   const [alertsData, setAlertsData] = useState(initialAlertsData);
   const [activeCardId, setActiveCardId] = useState(null);
   const [userId, setUserId] = useState(null);
+
+  // دالة التاريخ النسبي (مترجمة)
+  const getRelativeDate = (dateString) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    const diffTime = Math.abs(today - date);
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return t("manageAlerts.time.today");
+    if (diffDays === 1) return t("manageAlerts.time.yesterday");
+    if (diffDays < 7) return t("manageAlerts.time.days", { count: diffDays });
+
+    if (diffDays < 30) {
+      const weeks = Math.floor(diffDays / 7);
+      return t("manageAlerts.time.weeks", { count: weeks });
+    }
+
+    const months = Math.floor(diffDays / 30);
+    return t("manageAlerts.time.months", { count: months });
+  };
 
   // Fetch SMS scans
   const fetchSMSScans = async () => {
@@ -60,18 +82,24 @@ const ManageAlertsScreen = ({ navigation }) => {
         const isSpam = scan.classification_response?.toLowerCase() === "spam";
         const confidence = scan.confidence_score || 0;
 
+        const timeStr = new Date(scan.created_at).toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
         const alert = {
           id: scan.id,
-          title: isSpam ? "Suspicious SMS Detected!" : "SMS Scanned",
-          from: scan.sender_id || "Unknown Sender",
+          title: isSpam
+            ? t("manageAlerts.titles.suspiciousSms")
+            : t("manageAlerts.titles.smsScanned"),
+          from: scan.sender_id || t("manageAlerts.sms.unknownSender"),
           description:
-            scan.message_content?.substring(0, 100) +
+            (scan.message_content?.substring(0, 100) || "") +
             (scan.message_content?.length > 100 ? "..." : ""),
-          action: isSpam ? "SMS sender blocked" : "SMS scanned and safe",
-          time: `Detected at ${new Date(scan.created_at).toLocaleTimeString(
-            "en-US",
-            { hour: "2-digit", minute: "2-digit" }
-          )}`,
+          action: isSpam
+            ? t("manageAlerts.sms.senderBlocked")
+            : t("manageAlerts.sms.safe"),
+          time: t("manageAlerts.sms.detectedAt", { time: timeStr }),
           date: getRelativeDate(scan.created_at),
           iconColor: isSpam ? "#FE6D72" : "#FDFEBB",
           confidence,
@@ -93,7 +121,10 @@ const ManageAlertsScreen = ({ navigation }) => {
       }));
     } catch (err) {
       console.error("Error fetching SMS scans:", err);
-      Alert.alert("Error", "Failed to fetch SMS scans.");
+      Alert.alert(
+        t("manageAlerts.alerts.errorTitle"),
+        t("manageAlerts.alerts.fetchSmsError")
+      );
     }
   };
 
@@ -114,13 +145,15 @@ const ManageAlertsScreen = ({ navigation }) => {
       scans.forEach((scan) => {
         const alert = {
           id: `email-${scan.id}`,
-          title: scan.is_scam ? "Suspicious Email Detected!" : "Email Scanned",
+          title: scan.is_scam
+            ? t("manageAlerts.titles.suspiciousEmail")
+            : t("manageAlerts.titles.emailScanned"),
           from: scan.from_address,
           description:
             scan.subject + (scan.snippet ? ` - ${scan.snippet}` : ""),
           action: scan.is_scam
-            ? "Flagged as potential scam"
-            : "Scanned and safe",
+            ? t("manageAlerts.email.flagged")
+            : t("manageAlerts.email.safe"),
           time: new Date(scan.scanned_at).toLocaleTimeString(),
           date: new Date(scan.scanned_at).toLocaleDateString(),
           iconColor: scan.is_scam ? theme.badges.danger : theme.badges.safe,
@@ -136,25 +169,6 @@ const ManageAlertsScreen = ({ navigation }) => {
     } catch (err) {
       console.error("Error fetching email scans:", err);
     }
-  };
-
-  // Get relative date
-  const getRelativeDate = (dateString) => {
-    const date = new Date(dateString);
-    const today = new Date();
-    const diffTime = Math.abs(today - date);
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 0) return "Today";
-    if (diffDays === 1) return "Yesterday";
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (diffDays < 30)
-      return `${Math.floor(diffDays / 7)} week${
-        Math.floor(diffDays / 7) > 1 ? "s" : ""
-      } ago`;
-    return `${Math.floor(diffDays / 30)} month${
-      Math.floor(diffDays / 30) > 1 ? "s" : ""
-    } ago`;
   };
 
   // Get user and fetch data
@@ -219,6 +233,8 @@ const ManageAlertsScreen = ({ navigation }) => {
     const alert = alertsData[channel][subType].find((a) => a.id === id);
     if (!alert) return;
 
+    // ملاحظة: النص الداخلي في الوصف تركناه إنجليزي كما هو
+    // حتى لا تتأثر مطابقة السجلات في قاعدة البيانات.
     const description =
       channel === "email"
         ? `Email: ${alert.from}\nSubject: ${
@@ -246,10 +262,18 @@ const ManageAlertsScreen = ({ navigation }) => {
           ),
         },
       }));
-      Alert.alert("Success", `${channel.toUpperCase()} reported successfully.`);
+      Alert.alert(
+        t("manageAlerts.alerts.successTitle"),
+        t("manageAlerts.alerts.reportSuccess", {
+          channel: channel.toUpperCase(),
+        })
+      );
     } catch (err) {
       console.error("Error reporting alert:", err);
-      Alert.alert("Error", "Failed to report alert.");
+      Alert.alert(
+        t("manageAlerts.alerts.errorTitle"),
+        t("manageAlerts.alerts.reportError")
+      );
     }
   };
 
@@ -291,12 +315,17 @@ const ManageAlertsScreen = ({ navigation }) => {
         },
       }));
       Alert.alert(
-        "Success",
-        `${channel.toUpperCase()} unreported successfully.`
+        t("manageAlerts.alerts.successTitle"),
+        t("manageAlerts.alerts.unreportSuccess", {
+          channel: channel.toUpperCase(),
+        })
       );
     } catch (err) {
       console.error("Error unreporting alert:", err);
-      Alert.alert("Error", "Failed to unreport alert.");
+      Alert.alert(
+        t("manageAlerts.alerts.errorTitle"),
+        t("manageAlerts.alerts.unreportError")
+      );
     }
   };
 
@@ -310,7 +339,10 @@ const ManageAlertsScreen = ({ navigation }) => {
         [subType]: prev[channel][subType].filter((a) => a.id !== id),
       },
     }));
-    Alert.alert("Success", "Alert dismissed successfully.");
+    Alert.alert(
+      t("manageAlerts.alerts.successTitle"),
+      t("manageAlerts.alerts.restoreSuccess")
+    );
   };
 
   const renderAlertCard = (alert, type) => {
@@ -334,12 +366,18 @@ const ManageAlertsScreen = ({ navigation }) => {
           <Text style={styles.alertTitle}>{alert.title}</Text>
           <View style={styles.divider} />
           <Text style={styles.alertText}>
-            <Text style={styles.alertLabel}>From:</Text> {alert.from}
+            <Text style={styles.alertLabel}>
+              {t("manageAlerts.labels.from")}:
+            </Text>{" "}
+            {alert.from}
           </Text>
           <Text style={styles.alertText}>
-            <Text style={styles.alertLabel}>Description:</Text>{" "}
+            <Text style={styles.alertLabel}>
+              {t("manageAlerts.labels.description")}:
+            </Text>{" "}
             {alert.description}
           </Text>
+
           {isActive && (
             <View style={styles.buttonContainer}>
               <TouchableOpacity
@@ -365,7 +403,9 @@ const ManageAlertsScreen = ({ navigation }) => {
                     { color: theme.colors.primaryTextOn },
                   ]}
                 >
-                  {alert.reported ? "Unreport" : "Report"}
+                  {alert.reported
+                    ? t("manageAlerts.actions.unreport")
+                    : t("manageAlerts.actions.report")}
                 </Text>
               </TouchableOpacity>
 
@@ -389,7 +429,7 @@ const ManageAlertsScreen = ({ navigation }) => {
                       { color: theme.colors.primaryTextOn },
                     ]}
                   >
-                    Restore
+                    {t("manageAlerts.actions.restore")}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -406,22 +446,30 @@ const ManageAlertsScreen = ({ navigation }) => {
         {Object.keys(alertsData).map((channel) => (
           <View key={channel}>
             <Text style={styles.channelTitle}>
-              {channel.toUpperCase()} ALERTS
+              {channel === "sms"
+                ? t("manageAlerts.headers.sms")
+                : t("manageAlerts.headers.email")}
             </Text>
             {["uncertain", "certain"].map((type) => (
               <View key={`${channel}-${type}`} style={styles.section}>
                 <Text style={styles.sectionTitle}>
                   {channel === "sms"
                     ? type === "uncertain"
-                      ? "Uncertain SMS Alerts"
-                      : "Certain SMS Alerts"
+                      ? t("manageAlerts.sections.sms.uncertain")
+                      : t("manageAlerts.sections.sms.certain")
                     : type === "uncertain"
-                    ? "Scanned Emails"
-                    : "Suspicious Emails"}
+                    ? t("manageAlerts.sections.email.uncertain")
+                    : t("manageAlerts.sections.email.certain")}
                 </Text>
                 {alertsData[channel][type].length === 0 ? (
                   <Text style={styles.placeholderText}>
-                    No {type} {channel} alerts
+                    {channel === "sms"
+                      ? type === "uncertain"
+                        ? t("manageAlerts.empty.sms.uncertain")
+                        : t("manageAlerts.empty.sms.certain")
+                      : type === "uncertain"
+                      ? t("manageAlerts.empty.email.uncertain")
+                      : t("manageAlerts.empty.email.certain")}
                   </Text>
                 ) : (
                   alertsData[channel][type].map((alert) =>

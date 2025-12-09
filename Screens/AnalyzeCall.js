@@ -15,9 +15,12 @@ import supabase from "../supabase";
 import { saveCallResult } from "../services/saveCallResult";
 const { height } = Dimensions.get("window");
 import { useAppSettings } from "../src/context/AppSettingProvid";
+import { useTranslation } from "react-i18next";
 
 export default function AnalyzeCall({ navigation }) {
   const { theme } = useAppSettings();
+  const { t } = useTranslation();
+
   const [recording, setRecording] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState("");
@@ -27,7 +30,7 @@ export default function AnalyzeCall({ navigation }) {
   // Start recording
   const startRecording = async () => {
     const { granted } = await Audio.requestPermissionsAsync();
-    if (!granted) return alert("Microphone permission required");
+    if (!granted) return alert(t("analyzeCall.micPermissionRequired"));
 
     await Audio.setAudioModeAsync({ allowsRecordingIOS: true });
     const rec = new Audio.Recording();
@@ -62,52 +65,7 @@ export default function AnalyzeCall({ navigation }) {
       });
 
       const data = await res.json();
-      const text = data.text || "No transcription";
-      setTranscript(text);
-
-      // Send transcription to scam API
-      const scamRes = await fetch(
-        "https://detect-scam-calls-api-production.up.railway.app/predict",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: text }),
-        }
-      );
-      const scamData = await scamRes.json();
-      setAnalysis(scamData);
-      const user = supabase.auth.getUser();
-      const userId = (await user).data.user?.id;
-      if (userId) {
-        await await saveCallResult(
-          userId,
-          scamData.final_prediction,
-          scamData.confidence
-        );
-      }
-
-      // Show alert if scam
-      if (scamData.prediction === "scam") {
-        Alert.alert(
-          "Warning",
-          "This call is detected as a scam. Advise user to hang up!"
-        );
-      }
-    } catch (err) {
-      console.error(err);
-      setTranscript("Error uploading audio");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Fetch test transcription
-  const fetchTestTranscription = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("http://192.168.100.109:3000/transcribe-test");
-      const data = await res.json();
-      const text = data.text || "No transcription";
+      const text = data.text || t("analyzeCall.noTranscription");
       setTranscript(text);
 
       // Send transcription to scam API
@@ -134,13 +92,58 @@ export default function AnalyzeCall({ navigation }) {
       // Show alert if scam
       if (scamData.prediction === "scam") {
         Alert.alert(
-          "Warning",
-          "This call is detected as a scam. Advise user to hang up!"
+          t("analyzeCall.warningTitle"),
+          t("analyzeCall.warningBody")
         );
       }
     } catch (err) {
       console.error(err);
-      setTranscript("Error fetching transcription");
+      setTranscript(t("analyzeCall.uploadError"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch test transcription
+  const fetchTestTranscription = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("http://192.168.100.109:3000/transcribe-test");
+      const data = await res.json();
+      const text = data.text || t("analyzeCall.noTranscription");
+      setTranscript(text);
+
+      // Send transcription to scam API
+      const scamRes = await fetch(
+        "https://detect-scam-calls-api-production.up.railway.app/predict",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: text }),
+        }
+      );
+      const scamData = await scamRes.json();
+      setAnalysis(scamData);
+      const user = supabase.auth.getUser();
+      const userId = (await user).data.user?.id;
+      if (userId) {
+        await saveCallResult(
+          userId,
+          scamData.final_prediction,
+          scamData.confidence
+        );
+      }
+
+      // Show alert if scam
+      if (scamData.prediction === "scam") {
+        Alert.alert(
+          t("analyzeCall.warningTitle"),
+          t("analyzeCall.warningBody")
+        );
+      }
+    } catch (err) {
+      console.error(err);
+      setTranscript(t("analyzeCall.fetchError"));
     } finally {
       setLoading(false);
     }
@@ -176,7 +179,7 @@ export default function AnalyzeCall({ navigation }) {
             color: theme.colors.text,
           }}
         >
-          Analyze Call
+          {t("analyzeCall.title")}
         </Text>
         <View style={{ width: 28 }} />
       </View>
@@ -198,7 +201,7 @@ export default function AnalyzeCall({ navigation }) {
           editable={false}
           multiline
           style={{ fontSize: 16, color: theme.colors.text }}
-          placeholder="Transcription will appear here..."
+          placeholder={t("analyzeCall.transcriptPlaceholder")}
           placeholderTextColor={theme.colors.subtext}
         />
       </View>
@@ -272,7 +275,9 @@ export default function AnalyzeCall({ navigation }) {
               fontFamily: theme.fonts.medium,
             }}
           >
-            {isRecording ? "Stop" : "Record"}
+            {isRecording
+              ? t("analyzeCall.stop")
+              : t("analyzeCall.record")}
           </Text>
         </Pressable>
 
@@ -292,7 +297,7 @@ export default function AnalyzeCall({ navigation }) {
               fontFamily: theme.fonts.semibold,
             }}
           >
-            Transcribe
+            {t("analyzeCall.transcribe")}
           </Text>
         </Pressable>
       </View>

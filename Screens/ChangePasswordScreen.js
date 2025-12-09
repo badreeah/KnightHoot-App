@@ -1,4 +1,4 @@
-// Screens/ChangePasswordScreen.js
+// ChangePasswordScreen.js
 import React, { useState, useMemo } from "react";
 import {
   View,
@@ -53,62 +53,57 @@ export default function ChangePasswordScreen() {
 
   const handleChangePassword = async () => {
     if (!currentPassword || !newPassword || !confirmNewPassword) {
-      Alert.alert("Error", "Please fill in all fields");
+      Alert.alert(t("errors.title"), t("password.errors.fillAll"));
       return;
     }
 
     if (newPassword.length < 6) {
-      Alert.alert("Error", "New password must be at least 6 characters");
+      Alert.alert(t("errors.title"), t("password.errors.minLength"));
       return;
     }
 
     if (newPassword !== confirmNewPassword) {
-      Alert.alert("Error", "Passwords do not match");
+      Alert.alert(t("errors.title"), t("password.errors.notMatch"));
       return;
     }
 
     setLoading(true);
     try {
-      // 1) تأكيد الباسورد الحالي عن طريق تسجيل الدخول
       const email = user?.email;
-      if (!email) {
-        throw new Error("Cannot find current user email");
-      }
+      if (!email) throw new Error(t("password.errors.noEmail"));
 
+      // تحقق من الباسورد الحالي
       const { error: signinError } = await supabase.auth.signInWithPassword({
         email,
         password: currentPassword,
       });
 
       if (signinError) {
-        Alert.alert("Error", "Current password is incorrect");
+        Alert.alert(t("errors.title"), t("password.errors.wrongCurrent"));
         setLoading(false);
         return;
       }
 
-      // 2) تحديث الباسورد في Supabase Auth
+      // تحديث الباسورد
       const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword,
       });
 
       if (updateError) {
-        Alert.alert("Error", updateError.message);
+        Alert.alert(t("errors.title"), updateError.message);
         setLoading(false);
         return;
       }
 
-      Alert.alert("Success", "Password updated successfully", [
-        {
-          text: "OK",
-          onPress: () => navigation.goBack(),
-        },
+      Alert.alert(t("success.title"), t("password.success.updated"), [
+        { text: t("ok"), onPress: () => navigation.goBack() },
       ]);
 
       setCurrentPassword("");
       setNewPassword("");
       setConfirmNewPassword("");
     } catch (e) {
-      Alert.alert("Error", e?.message ?? "Something went wrong");
+      Alert.alert(t("errors.title"), e?.message ?? t("errors.generic"));
     } finally {
       setLoading(false);
     }
@@ -121,143 +116,79 @@ export default function ChangePasswordScreen() {
       keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View
-          style={[
-            styles.container,
-            { paddingBottom: (insets?.bottom ?? 0) + 16 },
-          ]}
-        >
+        <View style={[styles.container, { paddingBottom: (insets?.bottom ?? 0) + 16 }]}>
           {/* Header */}
-          <View className="header" style={styles.header}>
+          <View style={styles.header}>
             <Pressable onPress={() => navigation.goBack()}>
-              <Ionicons name="arrow-back" size={24} color={COLORS.purple8} />
+              <Ionicons name={ "arrow-back"} size={24} color={COLORS.purple8} />
             </Pressable>
-            <Text style={styles.headerTitle}>{t("Change Password")}</Text>
+            <Text style={styles.headerTitle}>{t("password.title")}</Text>
             <View style={{ width: 24 }} />
           </View>
 
-          <ScrollView
-            style={{ flex: 1 }}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
-            <View
-              style={[
-                styles.card,
-                {
-                  backgroundColor: themeStyles.cardBackground,
-                  borderColor: themeStyles.borderColor,
-                },
-              ]}
-            >
+          <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled">
+            <View style={[styles.card, { backgroundColor: themeStyles.cardBackground, borderColor: themeStyles.borderColor }]}>
+              
               {/* Current password */}
-              <Text style={[styles.label, { color: themeStyles.textColor }]}>
-                {t("Current Password")}
-              </Text>
+              <Text style={[styles.label, { color: themeStyles.textColor }]}>{t("password.current")}</Text>
               <View>
                 <TextInput
-                  style={[
-                    styles.input,
-                    {
-                      backgroundColor: themeStyles.inputBackground,
-                      color: themeStyles.textColor,
-                    },
-                  ]}
+                  style={[styles.input, { backgroundColor: themeStyles.inputBackground, color: themeStyles.textColor }]}
                   value={currentPassword}
                   onChangeText={setCurrentPassword}
                   secureTextEntry={!showCurrent}
                   textAlign={isRTL ? "right" : "left"}
-                  placeholder="Enter current password"
+                  placeholder={t("password.placeholders.current")}
                   placeholderTextColor={theme.colors.subtext}
                 />
-                <TouchableOpacity
-                  style={styles.eyeBtn}
-                  onPress={() => setShowCurrent((v) => !v)}
-                >
-                  <Ionicons
-                    name={showCurrent ? "eye" : "eye-off"}
-                    size={20}
-                    color="#797df6"
-                  />
+                <TouchableOpacity style={styles.eyeBtn} onPress={() => setShowCurrent(v => !v)}>
+                  <Ionicons name={showCurrent ? "eye" : "eye-off"} size={20} color="#797df6" />
                 </TouchableOpacity>
               </View>
 
               {/* New password */}
-              <Text style={[styles.label, { color: themeStyles.textColor }]}>
-                {t("New Password")}
-              </Text>
+              <Text style={[styles.label, { color: themeStyles.textColor }]}>{t("password.new")}</Text>
               <View>
                 <TextInput
-                  style={[
-                    styles.input,
-                    {
-                      backgroundColor: themeStyles.inputBackground,
-                      color: themeStyles.textColor,
-                    },
-                  ]}
+                  style={[styles.input, { backgroundColor: themeStyles.inputBackground, color: themeStyles.textColor }]}
                   value={newPassword}
                   onChangeText={setNewPassword}
                   secureTextEntry={!showNew}
                   textAlign={isRTL ? "right" : "left"}
-                  placeholder="Enter new password"
+                  placeholder={t("password.placeholders.new")}
                   placeholderTextColor={theme.colors.subtext}
                 />
-                <TouchableOpacity
-                  style={styles.eyeBtn}
-                  onPress={() => setShowNew((v) => !v)}
-                >
-                  <Ionicons
-                    name={showNew ? "eye" : "eye-off"}
-                    size={20}
-                    color="#797df6"
-                  />
+                <TouchableOpacity style={styles.eyeBtn} onPress={() => setShowNew(v => !v)}>
+                  <Ionicons name={showNew ? "eye" : "eye-off"} size={20} color="#797df6" />
                 </TouchableOpacity>
               </View>
 
-              {/* Confirm new password */}
-              <Text style={[styles.label, { color: themeStyles.textColor }]}>
-                {t("Confirm New Password")}
-              </Text>
+              {/* Confirm */}
+              <Text style={[styles.label, { color: themeStyles.textColor }]}>{t("password.confirm")}</Text>
               <View>
                 <TextInput
-                  style={[
-                    styles.input,
-                    {
-                      backgroundColor: themeStyles.inputBackground,
-                      color: themeStyles.textColor,
-                    },
-                  ]}
+                  style={[styles.input, { backgroundColor: themeStyles.inputBackground, color: themeStyles.textColor }]}
                   value={confirmNewPassword}
                   onChangeText={setConfirmNewPassword}
                   secureTextEntry={!showConfirm}
                   textAlign={isRTL ? "right" : "left"}
-                  placeholder="Re-enter new password"
+                  placeholder={t("password.placeholders.confirm")}
                   placeholderTextColor={theme.colors.subtext}
                 />
-                <TouchableOpacity
-                  style={styles.eyeBtn}
-                  onPress={() => setShowConfirm((v) => !v)}
-                >
-                  <Ionicons
-                    name={showConfirm ? "eye" : "eye-off"}
-                    size={20}
-                    color="#797df6"
-                  />
+                <TouchableOpacity style={styles.eyeBtn} onPress={() => setShowConfirm(v => !v)}>
+                  <Ionicons name={showConfirm ? "eye" : "eye-off"} size={20} color="#797df6" />
                 </TouchableOpacity>
               </View>
 
               {/* Button */}
               <View style={styles.buttonRow}>
-                <Pressable
-                  style={[styles.saveButton, loading && { opacity: 0.7 }]}
-                  onPress={handleChangePassword}
-                  disabled={loading}
-                >
+                <Pressable style={[styles.saveButton, loading && { opacity: 0.7 }]} onPress={handleChangePassword}>
                   <Text style={styles.saveButtonText}>
-                    {loading ? t("Saving...") : t("save")}
+                    {loading ? t("loading") : t("save")}
                   </Text>
                 </Pressable>
               </View>
+
             </View>
           </ScrollView>
         </View>
@@ -268,49 +199,29 @@ export default function ChangePasswordScreen() {
 
 const createStyles = (theme, themeStyles, isRTL) =>
   StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: themeStyles.backgroundColor,
-      paddingHorizontal: 10,
-    },
+    container: { flex: 1, backgroundColor: themeStyles.backgroundColor, paddingHorizontal: 10 },
     header: {
-      flexDirection: isRTL ? "row-reverse" : "row",
+      flexDirection:  "row",
       justifyContent: "space-between",
       alignItems: "center",
       paddingTop: 50,
       paddingBottom: 30,
     },
-    headerTitle: {
-      fontSize: 20,
-      fontWeight: "600",
-      color: theme.colors.text,
-    },
+    headerTitle: { fontSize: 20, fontWeight: "600", color: theme.colors.text },
     card: {
       borderRadius: 16,
       padding: 24,
       marginHorizontal: 6,
       marginBottom: 20,
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.05,
-      shadowRadius: 2,
-      elevation: 2,
       borderWidth: 1,
     },
-    label: {
-      fontSize: 16,
-      fontWeight: "600",
-      marginBottom: 8,
-      marginTop: 16,
-      textAlign: isRTL ? "right" : "left",
-    },
+    label: { fontSize: 16, fontWeight: "600", marginBottom: 8, marginTop: 16, textAlign: isRTL ? "right" : "left" },
     input: {
       borderWidth: 2,
       borderRadius: 16,
       padding: 16,
       fontSize: 16,
       borderColor: COLORS.purple2,
-      textAlign: isRTL ? "right" : "left",
       writingDirection: isRTL ? "rtl" : "ltr",
     },
     eyeBtn: {
@@ -321,9 +232,7 @@ const createStyles = (theme, themeStyles, isRTL) =>
       alignItems: "center",
       justifyContent: "center",
     },
-    buttonRow: {
-      marginTop: 32,
-    },
+    buttonRow: { marginTop: 32 },
     saveButton: {
       paddingVertical: 16,
       borderRadius: 16,

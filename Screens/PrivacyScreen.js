@@ -1,4 +1,4 @@
-// Screens/PrivacyScreen.js
+// PrivacyScreen.js
 import React, { useMemo } from "react";
 import {
   View,
@@ -22,96 +22,81 @@ export default function PrivacyScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
         <Pressable onPress={() => navigation.goBack()}>
           <Ionicons
-            name="arrow-back"
+            name={"arrow-back"}
             size={24}
             color={COLORS.purple1}
-            style={isRTL && { transform: [{ scaleX: -1 }] }}
           />
         </Pressable>
-        <Text style={styles.headerTitle}>{t("privacy") || "Privacy"}</Text>
+
+        <Text style={styles.headerTitle}>{t("privacy.title")}</Text>
+
         <View style={{ width: 24 }} />
       </View>
 
+      {/* Content */}
       <ScrollView style={styles.privacyContent}>
-        <Text style={styles.privacyTitle}>Privacy Policy for KnightHoot</Text>
+        <Text style={styles.privacyTitle}>{t("privacy.heading")}</Text>
 
         <Text style={styles.privacyParagraph}>
-          Last Updated: [September 2025]
+          {t("privacy.lastUpdated")}
         </Text>
 
         <Text style={styles.privacyParagraph}>
-          KnightHoot is committed to protecting your privacy. This Privacy Policy
-          explains how we collect, use, and protect your information when you use
-          our app, KnightHoot, which helps protect users from scams through
-          email, calls, SMS, and URLs.
+          {t("privacy.intro")}
         </Text>
 
-        <Text style={styles.privacySubtitle}>1. Information We Collect</Text>
+        <Text style={styles.privacySubtitle}>{t("privacy.section1.title")}</Text>
         <Text style={styles.privacyParagraph}>
-          We may collect the following information: First name, last name, email
-          address, phone number, gender, device type (personal or family member),
-          scam alerts, reports, and keywords detected in calls for scam detection
-          purposes.
+          {t("privacy.section1.text")}
         </Text>
 
-        <Text style={styles.privacySubtitle}>2. How We Use Your Information</Text>
+        <Text style={styles.privacySubtitle}>{t("privacy.section2.title")}</Text>
         <Text style={styles.privacyParagraph}>
-          We use your information to detect and alert you about potential scams,
-          block suspicious URLs (if you enable it), store and display scam alert
-          history, improve the app’s features, and allow you to manage multiple
-          devices and family members.
+          {t("privacy.section2.text")}
         </Text>
 
-        <Text style={styles.privacySubtitle}>3. Permissions and Actions</Text>
+        <Text style={styles.privacySubtitle}>{t("privacy.section3.title")}</Text>
         <Text style={styles.privacyParagraph}>
-          KnightHoot may require permissions to monitor calls for scam keywords
-          and block unsafe URLs. You can choose between Alert Mode (only alerts)
-          and Action Mode (blocking URLs with permission).
+          {t("privacy.section3.text")}
         </Text>
 
-        <Text style={styles.privacySubtitle}>4. Data Storage and Management</Text>
+        <Text style={styles.privacySubtitle}>{t("privacy.section4.title")}</Text>
         <Text style={styles.privacyParagraph}>
-          If you allow data storage, it will be used for scam detection and
-          improving the app. You can delete your data or account anytime in the
-          settings.
+          {t("privacy.section4.text")}
         </Text>
 
-        <Text style={styles.privacySubtitle}>5. Family Member Devices</Text>
+        <Text style={styles.privacySubtitle}>{t("privacy.section5.title")}</Text>
         <Text style={styles.privacyParagraph}>
-          When you add family members, you can manage their devices and receive
-          scam alerts relevant to them.
+          {t("privacy.section5.text")}
         </Text>
 
-        <Text style={styles.privacySubtitle}>6. Your Privacy Choices</Text>
+        <Text style={styles.privacySubtitle}>{t("privacy.section6.title")}</Text>
         <Text style={styles.privacyParagraph}>
-          You can manage or delete your personal data and control permissions
-          such as call monitoring and URL blocking at any time.
+          {t("privacy.section6.text")}
         </Text>
 
-        <Text style={styles.privacySubtitle}>7. Security</Text>
+        <Text style={styles.privacySubtitle}>{t("privacy.section7.title")}</Text>
         <Text style={styles.privacyParagraph}>
-          We apply reasonable security measures to protect your personal data,
-          but no system can be completely secure.
+          {t("privacy.section7.text")}
         </Text>
 
-        <Text style={styles.privacySubtitle}>8. Children’s Privacy</Text>
+        <Text style={styles.privacySubtitle}>{t("privacy.section8.title")}</Text>
         <Text style={styles.privacyParagraph}>
-          KnightHoot is not intended for children under 13. If we learn we
-          collected information from a child, we will delete it.
+          {t("privacy.section8.text")}
         </Text>
 
-        <Text style={styles.privacySubtitle}>9. Changes to This Policy</Text>
+        <Text style={styles.privacySubtitle}>{t("privacy.section9.title")}</Text>
         <Text style={styles.privacyParagraph}>
-          We may update this Privacy Policy from time to time. Any changes will
-          be reflected in the app with the updated date shown above.
+          {t("privacy.section9.text")}
         </Text>
 
-        <Text style={styles.privacySubtitle}>10. Contact Us</Text>
+        <Text style={styles.privacySubtitle}>{t("privacy.section10.title")}</Text>
         <Text style={styles.privacyParagraph}>
-          If you have questions about this Privacy Policy, please contact us.
+          {t("privacy.section10.text")}
         </Text>
 
         <View style={{ height: 120 }} />
@@ -128,7 +113,7 @@ function createStyles(theme, isRTL) {
       paddingHorizontal: 10,
     },
     header: {
-      flexDirection: isRTL ? "row-reverse" : "row",
+      flexDirection:  "row",
       justifyContent: "space-between",
       alignItems: "center",
       paddingTop: 50,
