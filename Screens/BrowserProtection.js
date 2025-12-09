@@ -1,3 +1,4 @@
+// Screens/BrowserProtection.js
 import React from "react";
 import {
   View,
@@ -11,6 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useAppSettings } from "../src/context/AppSettingProvid";
 import { COLORS } from "../util/colors";
+import { useTranslation } from "react-i18next";
 
 const EXTENSION_URL =
   "https://chromewebstore.google.com/detail/EXTENSION_ID";
@@ -18,6 +20,7 @@ const EXTENSION_URL =
 export default function BrowserProtectionScreen() {
   const nav = useNavigation();
   const { theme, isRTL } = useAppSettings();
+  const { t } = useTranslation();
 
   const openExtensionPage = async () => {
     try {
@@ -28,8 +31,16 @@ export default function BrowserProtectionScreen() {
     }
   };
 
+  const steps = [
+    t("browserProtection.steps.s1"),
+    t("browserProtection.steps.s2"),
+    t("browserProtection.steps.s3"),
+  ];
+
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+    <View
+      style={[styles.container, { backgroundColor: theme.colors.background }]}
+    >
       {/* Header */}
       <View style={styles.headerWrapper}>
         <TouchableOpacity
@@ -40,14 +51,14 @@ export default function BrowserProtectionScreen() {
           ]}
         >
           <Ionicons
-            name={isRTL ? "arrow-forward" : "arrow-back"}
+            name={ "arrow-back"}
             size={22}
             color={theme.colors.text}
           />
         </TouchableOpacity>
 
         <Text style={[styles.headerTitle, { color: theme.colors.text }]}>
-          Browser Protection
+          {t("settings.BrowserProtection")}
         </Text>
       </View>
 
@@ -72,45 +83,84 @@ export default function BrowserProtectionScreen() {
               <Ionicons name="shield-checkmark" size={22} color="#FFF" />
             </View>
 
-            <Text
-              style={[styles.cardTitle, { color: theme.colors.text }]}
-            >
-              KnightHoot Detect – Chrome Extension
+            <Text style={[styles.cardTitle, { color: theme.colors.text }]}>
+              {t("browserProtection.cardTitle")}
             </Text>
           </View>
 
           <Text
-            style={[styles.cardSub, { color: theme.colors.subtext }]}
+            style={[
+              styles.cardSub,
+              {
+                color: theme.colors.subtext,
+                textAlign: isRTL ? "right" : "left",
+              },
+            ]}
           >
-            Enable real-time URL scam detection directly in your desktop browser.
+            {t("browserProtection.cardSubtitle")}
           </Text>
 
           <View style={styles.separator} />
 
-          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-            كيف تعمل الحماية؟
+          <Text
+            style={[
+              styles.sectionTitle,
+              { color: theme.colors.text, textAlign: isRTL ? "right" : "left" },
+            ]}
+          >
+            {t("browserProtection.howTitle")}
           </Text>
 
-          <Text style={[styles.paragraph, { color: theme.colors.subtext }]}>
-            عند تثبيت إضافة KnightHoot Detect على متصفح Chrome، تقوم الإضافة
-            بفحص أي موقع تزورينه لحظيًا وتعرض تنبيهًا داخل المتصفح يوضح ما إذا
-            كان الموقع آمنًا أو احتياليًا.
+          <Text
+            style={[
+              styles.paragraph,
+              {
+                color: theme.colors.subtext,
+                textAlign: isRTL ? "right" : "left",
+              },
+            ]}
+          >
+            {t("browserProtection.howBody")}
           </Text>
 
-          <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
-            خطوات التفعيل:
+          <Text
+            style={[
+              styles.sectionTitle,
+              { color: theme.colors.text, textAlign: isRTL ? "right" : "left" },
+            ]}
+          >
+            {t("browserProtection.stepsTitle")}
           </Text>
 
-          {[
-            "افتحي الرابط من جهاز الكمبيوتر (Chrome Desktop).",
-            "ثبّتي إضافة KnightHoot Detect من Chrome Web Store.",
-            "بعد التثبيت سيتم فحص المواقع تلقائيًا مع تنبيه فوري إذا كان الرابط مشبوهًا.",
-          ].map((step, i) => (
-            <View key={i} style={styles.bulletRow}>
-              <Text style={[styles.bulletDot, { color: theme.colors.text }]}>
+          {steps.map((step, i) => (
+            <View
+              key={i}
+              style={[
+                styles.bulletRow,
+                { flexDirection: isRTL ? "row-reverse" : "row" },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.bulletDot,
+                  {
+                    color: theme.colors.text,
+                    marginRight: isRTL ? 0 : 6,
+                    marginLeft: isRTL ? 6 : 0,
+                  },
+                ]}
+              >
                 •
               </Text>
-              <Text style={[styles.bulletText, { color: theme.colors.subtext }]}>
+              <Text
+                style={[
+                  styles.bulletText,
+                  {
+                    color: theme.colors.subtext,
+                    textAlign: isRTL ? "right" : "left",
+                  },
+                ]}
+              >
                 {step}
               </Text>
             </View>
@@ -123,7 +173,7 @@ export default function BrowserProtectionScreen() {
           >
             <Ionicons name="logo-chrome" size={18} color="#FFF" />
             <Text style={styles.primaryBtnText}>
-              فتح صفحة الإضافة / Open extension page
+              {t("browserProtection.buttonLabel")}
             </Text>
           </TouchableOpacity>
         </View>
@@ -138,13 +188,21 @@ export default function BrowserProtectionScreen() {
             },
           ]}
         >
-          <Ionicons name="information-circle-outline" size={20} color="#3B82F6" />
+          <Ionicons
+            name="information-circle-outline"
+            size={20}
+            color="#3B82F6"
+          />
           <Text
-            style={[styles.infoText, { color: theme.colors.text }]}
+            style={[
+              styles.infoText,
+              {
+                color: theme.colors.text,
+                textAlign: isRTL ? "right" : "left",
+              },
+            ]}
           >
-            تعمل حماية المتصفح فقط على Chrome Desktop.  
-            تطبيق KnightHoot على الجوال يركز على فحص الرسائل والروابط بينما الإضافة
-            توفر طبقة حماية إضافية أثناء التصفح على الكمبيوتر.
+            {t("browserProtection.infoText")}
           </Text>
         </View>
       </ScrollView>
@@ -227,12 +285,11 @@ const styles = StyleSheet.create({
   },
 
   bulletRow: {
-    flexDirection: "row",
     marginBottom: 6,
+    alignItems: "flex-start",
   },
   bulletDot: {
     fontSize: 18,
-    marginRight: 6,
   },
   bulletText: {
     flex: 1,

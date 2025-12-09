@@ -6,19 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="cbd3953f-9e27-42cd-b3ab-494e50d9e22f" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Screens/AddDevice.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/AddDevice.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Screens/AnalyzeCall.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/AnalyzeCall.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Screens/ChangeEmailScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/ChangeEmailScreen.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Screens/ChangePasswordScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/ChangePasswordScreen.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Screens/EditProfile.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/EditProfile.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Screens/Home.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/Home.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Screens/ManageAlerts.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/ManageAlerts.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Screens/PrivacyScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/PrivacyScreen.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Screens/Profile.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/Profile.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Screens/ReportScam.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/ReportScam.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Screens/SettingsScreen.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/SettingsScreen.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Screens/SmsScam.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/SmsScam.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Screens/Statics.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/Statics.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Screens/BrowserProtection.js" beforeDir="false" afterPath="$PROJECT_DIR$/Screens/BrowserProtection.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/i18n.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/i18n.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
