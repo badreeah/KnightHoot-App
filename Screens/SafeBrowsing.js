@@ -28,20 +28,20 @@ const API_BASE =
 // دالة استدعاء المودل + حساب الـ risk + label للتخزين
 const classifyUrlAI = async (inputUrl) => {
   const response = await fetch(`${API_BASE}/predict`, {
-    method: "POST",
+    method: "POST",//ترسل POST إلى: API_BASE مع { url: inputUrl }
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ url: inputUrl }),
   });
-
+// في حال ما استجاب api يرسل نتيجه 
   if (!response.ok) {
     const text = await response.text();
     throw new Error(`API error (${response.status}): ${text}`);
   }
 
   const data = await response.json();
-
+//تستخرج الدومين
   const domain =
     data.domain ||
     (inputUrl || "")
@@ -49,13 +49,14 @@ const classifyUrlAI = async (inputUrl) => {
       .split("/")[0]
       .toLowerCase();
 
+// تستقبل بروبابليتي 
   // احتمال أن الرابط خبيث من الـ API
   const proba =
     data.probability_malicious ?? data.probability ?? data.score ?? null;
 
   // تحديد الـ risk ثلاثي (للوصف)
   let risk = "safe"; // safe | suspicious | malicious
-
+//البروبابيليتي الي استخرجت هي الي تمثل لي ال therefor النسبه الي تدرب عليها المودل في التصنيف
   if (proba !== null) {
     if (proba >= 0.85) {
       risk = "malicious";
@@ -65,7 +66,7 @@ const classifyUrlAI = async (inputUrl) => {
       risk = "safe";
     }
   }
-
+// بعدها تطبق منطق تحويل الـ risk إلى label نهائي للتخزين والواجهة
   let finalLabel;
   if (risk === "malicious") {
     finalLabel = "notsafe";
@@ -78,7 +79,7 @@ const classifyUrlAI = async (inputUrl) => {
   } else {
     finalLabel = "safe";
   }
-
+//تضيف reasons نصية تشرح سبب التصنيف
   const reasons = [];
   if (risk === "malicious") {
     reasons.push("Model classified the URL as malicious");
@@ -87,7 +88,7 @@ const classifyUrlAI = async (inputUrl) => {
   } else {
     reasons.push("Model classified the URL as safe");
   }
-
+//بالنهايه ترجع object فيه: domain, risk, label, score, reasons, raw
   return {
     domain,
     risk, // safe | suspicious | malicious (لوصف الحالة)
